@@ -1,0 +1,24 @@
+dependency-reduced-pom.xml
+export-db-env-oracle.sh
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+target/
+bin/
+build/
+
+.settings/
+.classpath
+.project
+.gradle
+
+.idea
+*.iml
+
+# Mac
+.DS_Store
