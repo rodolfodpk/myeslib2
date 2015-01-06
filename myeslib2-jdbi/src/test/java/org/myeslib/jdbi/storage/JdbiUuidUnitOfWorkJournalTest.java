@@ -1,6 +1,5 @@
 package org.myeslib.jdbi.storage;
 
-import com.google.common.cache.Cache;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
@@ -9,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.jdbi.helpers.BaseTestClass;
@@ -27,9 +25,6 @@ import static org.myeslib.jdbi.helpers.SampleDomain.*;
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
 public class JdbiUuidUnitOfWorkJournalTest extends BaseTestClass {
-
-    @Mock
-    Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
 
     @Mock
     UnitOfWorkDao<UUID> dao;
