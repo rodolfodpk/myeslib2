@@ -1,6 +1,5 @@
 package org.myeslib.jdbi.storage;
 
-import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.storage.UnitOfWorkJournal;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class JdbiUuidUnitOfWorkJournal<A extends AggregateRoot> implements UnitOfWorkJournal<UUID> {
+public class JdbiUuidUnitOfWorkJournal implements UnitOfWorkJournal<UUID> {
 
     static final Logger logger = LoggerFactory.getLogger(JdbiUuidUnitOfWorkJournal.class);
 
