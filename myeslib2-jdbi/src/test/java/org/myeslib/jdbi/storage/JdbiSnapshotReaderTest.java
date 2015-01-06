@@ -9,13 +9,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
+import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.jdbi.helpers.BaseTestClass;
+import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
-import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -32,9 +32,9 @@ public class JdbiSnapshotReaderTest extends BaseTestClass {
     @Mock
     UnitOfWorkDao<UUID> dao;
 
-    Gson gson ;
-    AggregateRootFunctions<InventoryItemAggregateRoot> config ;
-    Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache ;
+    Gson gson;
+    AggregateRootFunctions<InventoryItemAggregateRoot> config;
+    Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -52,26 +52,26 @@ public class JdbiSnapshotReaderTest extends BaseTestClass {
     }
 
     @Test
-	public void lastSnapshotNullEmptyHistory() throws ExecutionException {
+    public void lastSnapshotNullEmptyHistory() throws ExecutionException {
 
-		UUID id = UUID.randomUUID();
-		
-		JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(config, dao, cache);
+        UUID id = UUID.randomUUID();
+
+        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(config, dao, cache);
 
         when(dao.get(id)).thenReturn(new UnitOfWorkHistory());
 
         assertThat(reader.getSnapshot(id).getAggregateInstance(), is(new InventoryItemAggregateRoot()));
 
-		verify(dao).get(id);
+        verify(dao).get(id);
 
-	}
-	
-	@Test
-	public void lastSnapshotNullWithHistory() {
+    }
 
-		UUID id = UUID.randomUUID();
-		
-		UnitOfWorkHistory transactionHistory = new UnitOfWorkHistory();
+    @Test
+    public void lastSnapshotNullWithHistory() {
+
+        UUID id = UUID.randomUUID();
+
+        UnitOfWorkHistory transactionHistory = new UnitOfWorkHistory();
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(new InventoryItemCreated(id, "item1")));
 
@@ -79,17 +79,17 @@ public class JdbiSnapshotReaderTest extends BaseTestClass {
 
         when(dao.get(id)).thenReturn(transactionHistory);
 
-		JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(config, dao, cache);
+        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(config, dao, cache);
 
-		Snapshot<InventoryItemAggregateRoot> resultingSnapshot = st.getSnapshot(id);
+        Snapshot<InventoryItemAggregateRoot> resultingSnapshot = st.getSnapshot(id);
 
-		verify(dao).get(id);
+        verify(dao).get(id);
 
-		InventoryItemAggregateRoot fromSnapshot = resultingSnapshot.getAggregateInstance();
+        InventoryItemAggregateRoot fromSnapshot = resultingSnapshot.getAggregateInstance();
 
-		assertThat(fromSnapshot.getAvailable(), is(0));
+        assertThat(fromSnapshot.getAvailable(), is(0));
 
-	}
+    }
 
     @Test
     public void lastSnapshotNotNullButUpToDate() {

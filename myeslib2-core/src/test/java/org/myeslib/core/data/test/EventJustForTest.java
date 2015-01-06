@@ -1,13 +1,13 @@
 package org.myeslib.core.data.test;
 
-import java.util.UUID;
-
 import org.myeslib.core.Event;
+
+import java.util.UUID;
 
 @SuppressWarnings("serial")
 public class EventJustForTest implements Event {
 
-	private final UUID id;
+    private final UUID id;
     private final int something;
 
     public EventJustForTest(UUID id, int something) {

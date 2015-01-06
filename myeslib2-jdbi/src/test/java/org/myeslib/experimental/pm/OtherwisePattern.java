@@ -10,14 +10,18 @@ public class OtherwisePattern<T> implements Pattern {
         this.function = function;
     }
 
-    @Override
-    public boolean matches(Object value) { return true; }
-
-    @Override
-    public T apply(Object value) { return function.apply(value); }
-
     public static <T> Pattern otherwise(Function<Object, T> function) {
         return new OtherwisePattern(function);
+    }
+
+    @Override
+    public boolean matches(Object value) {
+        return true;
+    }
+
+    @Override
+    public T apply(Object value) {
+        return function.apply(value);
     }
 
 }

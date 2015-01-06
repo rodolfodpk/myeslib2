@@ -20,6 +20,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @SuppressWarnings("serial")
 public class SampleDomain {
 
+    public static interface ItemDescriptionGeneratorService {
+        String generate(UUID id);
+    }
+
+    // command handlers
+
     @Data
     public static class InventoryItemAggregateRoot implements AggregateRoot {
 
@@ -43,14 +49,12 @@ public class SampleDomain {
         public void on(InventoryDecreased event) {
             this.available = this.available - event.howMany;
         }
-        
+
         public boolean isAvailable(int howMany) {
             return getAvailable() - howMany >= 0;
         }
 
     }
-    
-    // command handlers
 
     @AllArgsConstructor
     public static class CreateCommandHandler implements CommandHandler<CreateInventoryItem> {
@@ -65,10 +69,10 @@ public class SampleDomain {
             checkNotNull(service);
             String description = service.generate(command.getId());
             InventoryItemCreated event = new InventoryItemCreated(command.getId(), description);
-            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event)) ;
+            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
     }
-    
+
     @AllArgsConstructor
     public static class IncreaseCommandHandler implements CommandHandler<IncreaseInventory> {
 
@@ -79,10 +83,12 @@ public class SampleDomain {
             checkArgument(aggregateRoot.getId() != null, "before increasing you must create an item");
             checkArgument(aggregateRoot.getId().equals(command.getId()), "item id does not match");
             InventoryIncreased event = new InventoryIncreased(command.getId(), command.getHowMany());
-            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event)) ;
+            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
     }
-    
+
+    // commands
+
     @AllArgsConstructor
     public static class DecreaseCommandHandler implements CommandHandler<DecreaseInventory> {
 
@@ -94,19 +100,17 @@ public class SampleDomain {
             checkArgument(aggregateRoot.getId().equals(command.getId()), "item id does not match");
             checkArgument(aggregateRoot.isAvailable(command.howMany), "there are not enough items available");
             InventoryDecreased event = new InventoryDecreased(command.getId(), command.getHowMany());
-            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event)) ;
+            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
     }
-    
-    // commands
 
     @Value
     public static class CreateInventoryItem implements Command {
+        final Long targetVersion = 0L;
         @NonNull
         UUID commandId;
         @NonNull
         UUID id;
-        final Long targetVersion = 0L;
     }
 
     @Value
@@ -120,6 +124,8 @@ public class SampleDomain {
         Long targetVersion;
     }
 
+    // events
+
     @Value
     public static class DecreaseInventory implements Command {
         @NonNull
@@ -130,8 +136,6 @@ public class SampleDomain {
         Integer howMany;
         Long targetVersion;
     }
-
-    // events
 
     @Value
     public static class InventoryItemCreated implements Event {
@@ -149,18 +153,14 @@ public class SampleDomain {
         Integer howMany;
     }
 
+    // a service just for the sake of the example
+
     @Value
     public static class InventoryDecreased implements Event {
         @NonNull
         UUID id;
         @NonNull
         Integer howMany;
-    }
-
-    // a service just for the sake of the example
-
-    public static interface ItemDescriptionGeneratorService {
-        String generate(UUID id);
     }
 
 

@@ -13,15 +13,15 @@ public class ClassPattern<T> implements Pattern {
         this.function = function;
     }
 
+    public static <T> Pattern inCaseOf(Class<T> clazz, Function<T, Object> function) {
+        return new ClassPattern<T>(clazz, function);
+    }
+
     public boolean matches(Object value) {
         return clazz.isInstance(value);
     }
 
     public Object apply(Object value) {
         return function.apply((T) value);
-    }
-
-    public static <T> Pattern inCaseOf(Class<T> clazz, Function<T, Object> function) {
-        return new ClassPattern<T>(clazz, function);
     }
 }

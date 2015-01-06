@@ -5,7 +5,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.CommandHandler;
-import static org.myeslib.jdbi.helpers.SampleDomain.*;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +13,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.myeslib.experimental.pm.ClassPattern.inCaseOf;
 import static org.myeslib.experimental.pm.OtherwisePattern.otherwise;
+import static org.myeslib.jdbi.helpers.SampleDomain.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class Sample {
@@ -36,7 +36,7 @@ public class Sample {
                 otherwise(x -> Optional.empty())
         );
 
-        UUID key = UUID.randomUUID() ;
+        UUID key = UUID.randomUUID();
 
         // create
 

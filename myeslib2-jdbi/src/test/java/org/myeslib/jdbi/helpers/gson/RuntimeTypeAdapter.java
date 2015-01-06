@@ -25,72 +25,72 @@ import java.util.Map;
 
 public final class RuntimeTypeAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
 
-  private final Class<?> baseType;
-  private final String typeFieldName;
-  private final Map<String, Class<?>> labelToSubtype = new LinkedHashMap<String, Class<?>>();
-  private final Map<Class<?>, String> subtypeToLabel = new LinkedHashMap<Class<?>, String>();
+    private final Class<?> baseType;
+    private final String typeFieldName;
+    private final Map<String, Class<?>> labelToSubtype = new LinkedHashMap<String, Class<?>>();
+    private final Map<Class<?>, String> subtypeToLabel = new LinkedHashMap<Class<?>, String>();
 
-  public RuntimeTypeAdapter(Class<?> baseType, String typeFieldName) {
-    this.baseType = baseType;
-    this.typeFieldName = typeFieldName;
-  }
-
-  public static <T> RuntimeTypeAdapter<T> create(Class<T> c) {
-    return new RuntimeTypeAdapter<T>(c, "type");
-  }
-
-  public static <T> RuntimeTypeAdapter<T> create(Class<T> c, String typeFieldName) {
-    return new RuntimeTypeAdapter<T>(c, typeFieldName);
-  }
-
-  public void registerSubtype(Class<? extends T> type, String label) {
-    if (subtypeToLabel.containsKey(type) || labelToSubtype.containsKey(label)) {
-      throw new IllegalArgumentException("types and labels must be unique");
+    public RuntimeTypeAdapter(Class<?> baseType, String typeFieldName) {
+        this.baseType = baseType;
+        this.typeFieldName = typeFieldName;
     }
-    labelToSubtype.put(label, type);
-    subtypeToLabel.put(type, label);
-  }
 
-  public void registerSubtype(Class<? extends T> type) {
-    registerSubtype(type, type.getSimpleName());
-  }
+    public static <T> RuntimeTypeAdapter<T> create(Class<T> c) {
+        return new RuntimeTypeAdapter<T>(c, "type");
+    }
 
-  public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
-    Class<?> srcType = src.getClass();
-    String label = subtypeToLabel.get(srcType);
-    if (label == null) {
-      throw new IllegalArgumentException("cannot serialize " + srcType.getName()
-          + "; did you forget to register a subtype?");
+    public static <T> RuntimeTypeAdapter<T> create(Class<T> c, String typeFieldName) {
+        return new RuntimeTypeAdapter<T>(c, typeFieldName);
     }
-    JsonElement serialized = context.serialize(src, srcType);
-    final JsonObject jsonObject = serialized.getAsJsonObject();
-    if (jsonObject.has(typeFieldName)) {
-      throw new IllegalArgumentException("cannot serialize " + srcType.getName()
-          + " because it already defines a field named " + typeFieldName);
-    }
-    JsonObject clone = new JsonObject();
-    clone.add(typeFieldName, new JsonPrimitive(label));
-    for (Map.Entry<String, JsonElement> e : jsonObject.entrySet()) {
-      clone.add(e.getKey(), e.getValue());
-    }
-    return clone;
-  }
 
-  public T deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-      throws JsonParseException {
-    JsonElement labelJsonElement = json.getAsJsonObject().remove(typeFieldName);
-    if (labelJsonElement == null) {
-      throw new JsonParseException("cannot deserialize " + typeOfT
-          + " because it does not define a field named " + typeFieldName);
+    public void registerSubtype(Class<? extends T> type, String label) {
+        if (subtypeToLabel.containsKey(type) || labelToSubtype.containsKey(label)) {
+            throw new IllegalArgumentException("types and labels must be unique");
+        }
+        labelToSubtype.put(label, type);
+        subtypeToLabel.put(type, label);
     }
-    String label = labelJsonElement.getAsString();
-    Class<?> subtype = labelToSubtype.get(label);
-    if (subtype == null) {
-      throw new JsonParseException("cannot deserialize " + baseType + " subtype named "
-          + label + "; did you forget to register a subtype?");
+
+    public void registerSubtype(Class<? extends T> type) {
+        registerSubtype(type, type.getSimpleName());
     }
-    @SuppressWarnings("unchecked") // registration requires that subtype extends T
-    T result = (T) context.deserialize(json, subtype);
-    return result;
-  }
+
+    public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
+        Class<?> srcType = src.getClass();
+        String label = subtypeToLabel.get(srcType);
+        if (label == null) {
+            throw new IllegalArgumentException("cannot serialize " + srcType.getName()
+                    + "; did you forget to register a subtype?");
+        }
+        JsonElement serialized = context.serialize(src, srcType);
+        final JsonObject jsonObject = serialized.getAsJsonObject();
+        if (jsonObject.has(typeFieldName)) {
+            throw new IllegalArgumentException("cannot serialize " + srcType.getName()
+                    + " because it already defines a field named " + typeFieldName);
+        }
+        JsonObject clone = new JsonObject();
+        clone.add(typeFieldName, new JsonPrimitive(label));
+        for (Map.Entry<String, JsonElement> e : jsonObject.entrySet()) {
+            clone.add(e.getKey(), e.getValue());
+        }
+        return clone;
+    }
+
+    public T deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+            throws JsonParseException {
+        JsonElement labelJsonElement = json.getAsJsonObject().remove(typeFieldName);
+        if (labelJsonElement == null) {
+            throw new JsonParseException("cannot deserialize " + typeOfT
+                    + " because it does not define a field named " + typeFieldName);
+        }
+        String label = labelJsonElement.getAsString();
+        Class<?> subtype = labelToSubtype.get(label);
+        if (subtype == null) {
+            throw new JsonParseException("cannot deserialize " + baseType + " subtype named "
+                    + label + "; did you forget to register a subtype?");
+        }
+        @SuppressWarnings("unchecked") // registration requires that subtype extends T
+                T result = (T) context.deserialize(json, subtype);
+        return result;
+    }
 }

@@ -6,8 +6,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 import org.myeslib.jdbi.helpers.BaseTestClass;
+import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 import org.myeslib.jdbi.storage.config.AggregateRootDbMetadata;
 import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
 
@@ -19,10 +19,10 @@ import static org.myeslib.jdbi.helpers.SampleDomain.*;
 
 public class JdbiUuidDaoTest extends BaseTestClass {
 
-    Gson gson ;
+    Gson gson;
     AggregateRootFunctions<InventoryItemAggregateRoot> functions;
     AggregateRootDbMetadata dbMetadata;
-    JdbiUuidDao dao ;
+    JdbiUuidDao dao;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -79,12 +79,12 @@ public class JdbiUuidDaoTest extends BaseTestClass {
 
     }
 
-    @Test(expected=Exception.class)
+    @Test(expected = Exception.class)
     public void databaseIsHandlingOptimisticLocking() {
 
         UUID id = UUID.randomUUID();
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L),  Arrays.asList(new InventoryIncreased(id, 1)));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(new InventoryIncreased(id, 1)));
 
         UnitOfWorkHistory existing = new UnitOfWorkHistory();
 

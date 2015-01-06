@@ -26,8 +26,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
 
     static final Logger log = LoggerFactory.getLogger(JdbiUuidDao.class);
-
-	public JdbiUuidDao(AggregateRootFunctions functions, AggregateRootDbMetadata dbMetadata, DBI dbi) {
+    private final AggregateRootFunctions functions;
+    private final AggregateRootDbMetadata dbMetadata;
+    private final DBI dbi;
+    public JdbiUuidDao(AggregateRootFunctions functions, AggregateRootDbMetadata dbMetadata, DBI dbi) {
         checkNotNull(functions);
         this.functions = functions;
         checkNotNull(dbMetadata);
@@ -36,23 +38,19 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
         this.dbi = dbi;
     }
 
-	private final AggregateRootFunctions functions;
-    private final AggregateRootDbMetadata dbMetadata;
-    private final DBI dbi;
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.myeslib.jdbi.AggregateRootHistoryReader#getSnapshot(java.lang.Object)
-	 */
-	@Override
-	public UnitOfWorkHistory get(final UUID id) {
+    /*
+     * (non-Javadoc)
+     * @see org.myeslib.jdbi.AggregateRootHistoryReader#getSnapshot(java.lang.Object)
+     */
+    @Override
+    public UnitOfWorkHistory get(final UUID id) {
         return getPartial(id, 0L);
-	}
+    }
 
-/*
-	 * (non-Javadoc)
-	 * @see org.myeslib.jdbi.AggregateRootHistoryReader#getPartial(java.lang.Object)
-	 */
+    /*
+         * (non-Javadoc)
+         * @see org.myeslib.jdbi.AggregateRootHistoryReader#getPartial(java.lang.Object)
+         */
     @Override
     public UnitOfWorkHistory getPartial(UUID id, Long biggerThanThisVersion) {
 
@@ -81,7 +79,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
 
             if (unitsOfWork != null) {
                 log.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
-                for (UowRecord r : unitsOfWork){
+                for (UowRecord r : unitsOfWork) {
                     log.debug("converting to uow from {}", r.uowData);
                     Function<String, UnitOfWork> f = functions.fromStringFunction;
                     UnitOfWork uow = f.apply(r.uowData);
@@ -115,15 +113,15 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
                 .bind("id", id.toString())
                 .bind("uow_data", functions.toStringFunction.apply(uow))
                 .bind("version", uow.getVersion())
-                .execute()) ;
+                .execute());
 
         // TODO confirm execution of LocalCache().invalidate(id);
 
     }
 
     public static class UowRecord {
-		String id;
-		Long version;
+        String id;
+        Long version;
         String uowData;
         Long seqNumber;
 
@@ -134,19 +132,19 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
             this.seqNumber = seqNumber;
         }
 
-	}
-	
-	public static class UowRecordMapper implements ResultSetMapper<UowRecord> {
-		@Override
-		public UowRecord map(int index, ResultSet r, StatementContext ctx)
-				throws SQLException {
-			String id = r.getString("id");
-			Long version = r.getBigDecimal("version").longValue();
-			String uowData = new ClobToStringMapper("uow_data").map(index, r, ctx);
-			BigDecimal bdSeqNumber = r.getBigDecimal("seq_number");
-			Long seqNumber = bdSeqNumber == null ? null : bdSeqNumber.longValue();
-			return new UowRecord(id, version, uowData, seqNumber);
-		}
-	}
+    }
+
+    public static class UowRecordMapper implements ResultSetMapper<UowRecord> {
+        @Override
+        public UowRecord map(int index, ResultSet r, StatementContext ctx)
+                throws SQLException {
+            String id = r.getString("id");
+            Long version = r.getBigDecimal("version").longValue();
+            String uowData = new ClobToStringMapper("uow_data").map(index, r, ctx);
+            BigDecimal bdSeqNumber = r.getBigDecimal("seq_number");
+            Long seqNumber = bdSeqNumber == null ? null : bdSeqNumber.longValue();
+            return new UowRecord(id, version, uowData, seqNumber);
+        }
+    }
 
 }

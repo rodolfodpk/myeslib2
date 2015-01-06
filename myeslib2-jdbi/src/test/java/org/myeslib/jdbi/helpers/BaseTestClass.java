@@ -15,7 +15,8 @@ import java.net.URL;
 @Slf4j
 public class BaseTestClass {
 
-    protected static final JdbcConnectionPool pool = JdbcConnectionPool.create("jdbc:h2:mem:test;MODE=Oracle", "scott", "tiger");;
+    protected static final JdbcConnectionPool pool = JdbcConnectionPool.create("jdbc:h2:mem:test;MODE=Oracle", "scott", "tiger");
+    ;
     protected static final DBI dbi = new DBI(pool);
 
     public static void initDb() throws Exception {

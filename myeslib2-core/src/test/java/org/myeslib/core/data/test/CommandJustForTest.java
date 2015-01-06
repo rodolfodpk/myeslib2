@@ -1,11 +1,11 @@
 package org.myeslib.core.data.test;
 
-import java.util.UUID;
-
 import org.myeslib.core.Command;
 
+import java.util.UUID;
+
 @SuppressWarnings("serial")
-public class CommandJustForTest implements Command{
+public class CommandJustForTest implements Command {
 
     private final UUID commandId;
     private final UUID id;

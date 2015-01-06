@@ -15,42 +15,42 @@ public class UnitOfWorkHistory implements Serializable {
 
     private final List<UnitOfWork> unitsOfWork;
 
-	public UnitOfWorkHistory() {
-		this.unitsOfWork = new LinkedList<>();
-	}
+    public UnitOfWorkHistory() {
+        this.unitsOfWork = new LinkedList<>();
+    }
 
-	public List<Event> getAllEvents() {
-       return Collections.unmodifiableList(getEventsAfterUntil(0, Long.MAX_VALUE));
-	}
+    public List<Event> getAllEvents() {
+        return Collections.unmodifiableList(getEventsAfterUntil(0, Long.MAX_VALUE));
+    }
 
-	public List<Event> getEventsAfterUntil(long afterVersion, long untilVersion){
-		List<Event> events = new LinkedList<>();
+    public List<Event> getEventsAfterUntil(long afterVersion, long untilVersion) {
+        List<Event> events = new LinkedList<>();
         unitsOfWork.stream().filter(t -> t.getVersion() > afterVersion && t.getVersion() <= untilVersion).forEach(t -> {
             events.addAll(t.getEvents().stream().collect(Collectors.toList()));
         });
-		return Collections.unmodifiableList(events);
-	}
-	
-	public List<Event> getEventsUntil(long version){
-		List<Event> events = new LinkedList<>();
+        return Collections.unmodifiableList(events);
+    }
+
+    public List<Event> getEventsUntil(long version) {
+        List<Event> events = new LinkedList<>();
         unitsOfWork.stream().filter(t -> t.getVersion() <= version).forEach(t -> {
             events.addAll(t.getEvents().stream().collect(Collectors.toList()));
         });
-		return Collections.unmodifiableList(events);
-	}
-	
-	public Long getLastVersion() {
-		return unitsOfWork.size()==0 ? 0 : unitsOfWork.get(unitsOfWork.size()-1).getVersion();
-	}
+        return Collections.unmodifiableList(events);
+    }
+
+    public Long getLastVersion() {
+        return unitsOfWork.size() == 0 ? 0 : unitsOfWork.get(unitsOfWork.size() - 1).getVersion();
+    }
 
     public List<UnitOfWork> getUnitsOfWork() {
         return unitsOfWork;
     }
 
-	public void add(final UnitOfWork transaction) {
+    public void add(final UnitOfWork transaction) {
         requireNonNull(transaction);
-		unitsOfWork.add(transaction);
-	}
+        unitsOfWork.add(transaction);
+    }
 
     @Override
     public boolean equals(Object o) {

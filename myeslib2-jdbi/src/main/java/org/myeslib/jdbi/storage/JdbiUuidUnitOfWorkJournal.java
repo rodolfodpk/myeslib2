@@ -24,7 +24,7 @@ public class JdbiUuidUnitOfWorkJournal<A extends AggregateRoot> implements UnitO
 
     @Override
     public void append(final UUID id, final UnitOfWork uow) {
-       dao.append(id, uow);
+        dao.append(id, uow);
     }
 
 }

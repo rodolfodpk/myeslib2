@@ -4,6 +4,6 @@ import org.myeslib.core.data.UnitOfWork;
 
 public interface UnitOfWorkJournal<K> {
 
-     void append(final K id, final UnitOfWork uow) ;
-	
+    void append(final K id, final UnitOfWork uow);
+
 }

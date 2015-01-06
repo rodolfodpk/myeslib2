@@ -17,8 +17,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.myeslib.jdbi.helpers.eventsource.EventSourcingMagicHelper.applyEventsOn;
 
 public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotReader<K, A> {
-    
-	public JdbiSnapshotReader(AggregateRootFunctions<A> functions,
+
+    private final AggregateRootFunctions<A> config;
+    private final UnitOfWorkDao<K> dao;
+    private final Cache<K, Snapshot<A>> cache;
+    public JdbiSnapshotReader(AggregateRootFunctions<A> functions,
                               UnitOfWorkDao<K> dao, Cache<K, Snapshot<A>> cache) {
         checkNotNull(functions);
         this.config = functions;
@@ -28,17 +31,13 @@ public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotR
         this.cache = cache;
     }
 
-    private final AggregateRootFunctions<A> config;
-    private final UnitOfWorkDao<K> dao;
-    private final Cache<K, Snapshot<A>> cache;
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.myeslib.core.storage.SnapshotReader#getPartial(java.lang.Object)
-	 */
-	public Snapshot<A> getSnapshot(final K id) {
-		checkNotNull(id);
-		final Snapshot<A> lastSnapshot ;
+    /*
+     * (non-Javadoc)
+     * @see org.myeslib.core.storage.SnapshotReader#getPartial(java.lang.Object)
+     */
+    public Snapshot<A> getSnapshot(final K id) {
+        checkNotNull(id);
+        final Snapshot<A> lastSnapshot;
         final AtomicBoolean wasFullLoadPerformed = new AtomicBoolean(false);
         try {
             lastSnapshot = cache.get(id, () -> {
@@ -48,20 +47,20 @@ public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotR
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
         }
-        if (wasFullLoadPerformed.get()){
+        if (wasFullLoadPerformed.get()) {
             return lastSnapshot;
         }
         final UnitOfWorkHistory partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
-	    return applyMissingEventsOnThisInstance(partialTransactionHistory, lastSnapshot);
+        return applyMissingEventsOnThisInstance(partialTransactionHistory, lastSnapshot);
     }
 
-	private Snapshot<A> applyAllEventsOnFreshInstance(final UnitOfWorkHistory transactionHistory) {
+    private Snapshot<A> applyAllEventsOnFreshInstance(final UnitOfWorkHistory transactionHistory) {
         final A aggregateRootFreshInstance = config.supplier.get();
-		final Long lastVersion = transactionHistory.getLastVersion();
-		final List<? extends Event> eventsToApply = transactionHistory.getEventsUntil(lastVersion);
-		applyEventsOn(eventsToApply, aggregateRootFreshInstance);
-		return new Snapshot<>(aggregateRootFreshInstance, lastVersion);
-	}
+        final Long lastVersion = transactionHistory.getLastVersion();
+        final List<? extends Event> eventsToApply = transactionHistory.getEventsUntil(lastVersion);
+        applyEventsOn(eventsToApply, aggregateRootFreshInstance);
+        return new Snapshot<>(aggregateRootFreshInstance, lastVersion);
+    }
 
     private Snapshot<A> applyMissingEventsOnThisInstance(final UnitOfWorkHistory transactionHistory,
                                                          final Snapshot<A> lastSnapshot) {

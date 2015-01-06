@@ -1,14 +1,14 @@
 package org.myeslib.core.data;
 
+import org.myeslib.core.Command;
+import org.myeslib.core.Event;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.myeslib.core.Command;
-import org.myeslib.core.Event;
 
 import static java.util.Objects.requireNonNull;
 
@@ -19,57 +19,57 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     private final Command command;
     private final List<? extends Event> events;
     private final Long version;
-	
-	public UnitOfWork(UUID id, Command command, Long version, List<? extends Event> events) {
-	    requireNonNull(id, "id cannot be null");
-	    requireNonNull(command, "command cannot be null");
+
+    public UnitOfWork(UUID id, Command command, Long version, List<? extends Event> events) {
+        requireNonNull(id, "id cannot be null");
+        requireNonNull(command, "command cannot be null");
         targetVersionIsBiggerThanZero(command.getTargetVersion());
         versionIsBiggerThanZero(version);
-		requireNonNull(events, "events cannot be null");
-		for (Event e: events){
-			requireNonNull(e, "event within events list cannot be null");
-		}
-		this.id = id;
-		this.command = command;
-		this.version = version;
-		this.events = events;
-	}
+        requireNonNull(events, "events cannot be null");
+        for (Event e : events) {
+            requireNonNull(e, "event within events list cannot be null");
+        }
+        this.id = id;
+        this.command = command;
+        this.version = version;
+        this.events = events;
+    }
 
     private static void targetVersionIsBiggerThanZero(Long targetVersion) {
-        if (!(targetVersion>=0L)) {
+        if (!(targetVersion >= 0L)) {
             throw new IllegalArgumentException("target version must be >= 0");
         }
     }
 
     private static void versionIsBiggerThanZero(Long version) {
-        if (!(version >0L)) {
+        if (!(version > 0L)) {
             throw new IllegalArgumentException("version must be > 0");
         }
     }
 
     public static UnitOfWork create(UUID id, Command command, List<? extends Event> newEvents) {
-		requireNonNull(command.getTargetVersion(), "target version cannot be null");
+        requireNonNull(command.getTargetVersion(), "target version cannot be null");
         targetVersionIsBiggerThanZero(command.getTargetVersion());
-		return new UnitOfWork(id, command, command.getTargetVersion()+1, newEvents);
-	}
-	
-	public List<Event> getEvents(){
+        return new UnitOfWork(id, command, command.getTargetVersion() + 1, newEvents);
+    }
+
+    public List<Event> getEvents() {
         List<Event> result = events.stream().collect(Collectors.toCollection(LinkedList::new));
         return Collections.unmodifiableList(result);
-	}
-	
-	public int compareTo(UnitOfWork other) {
-		if (version < other.version) {
-			return -1;
-		} else if (version > other.version) {
-			return 1;
-		}
-		return 0;
-	}
+    }
 
-	public Long getTargetVersion() {
-		return command.getTargetVersion();
-	}
+    public int compareTo(UnitOfWork other) {
+        if (version < other.version) {
+            return -1;
+        } else if (version > other.version) {
+            return 1;
+        }
+        return 0;
+    }
+
+    public Long getTargetVersion() {
+        return command.getTargetVersion();
+    }
 
     public UUID getId() {
         return id;
