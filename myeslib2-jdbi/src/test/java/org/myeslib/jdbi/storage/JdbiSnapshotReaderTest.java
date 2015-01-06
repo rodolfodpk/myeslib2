@@ -31,13 +31,13 @@ public class JdbiSnapshotReaderTest {
     UnitOfWorkDao<UUID> dao;
 
     Gson gson;
-    AggregateRootFunctions<InventoryItemAggregateRoot> config;
+    AggregateRootFunctions<InventoryItemAggregateRoot> functions;
     Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
 
     @Before
     public void init() throws Exception {
         gson = new SampleDomainGsonFactory().create();
-        config = new AggregateRootFunctions<>(
+        functions = new AggregateRootFunctions<>(
                 InventoryItemAggregateRoot::new,
                 gson::toJson,
                 (json) -> gson.fromJson(json, UnitOfWork.class));
@@ -49,7 +49,7 @@ public class JdbiSnapshotReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(config, dao, cache);
+        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(functions, dao, cache);
 
         when(dao.get(id)).thenReturn(new UnitOfWorkHistory());
 
@@ -72,7 +72,7 @@ public class JdbiSnapshotReaderTest {
 
         when(dao.get(id)).thenReturn(transactionHistory);
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(config, dao, cache);
+        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(functions, dao, cache);
 
         Snapshot<InventoryItemAggregateRoot> resultingSnapshot = st.getSnapshot(id);
 
@@ -110,7 +110,7 @@ public class JdbiSnapshotReaderTest {
 
         when(dao.getPartial(id, expectedVersion)).thenReturn(transactionHistory);
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(config, dao, cache);
+        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(functions, dao, cache);
 
         Snapshot<InventoryItemAggregateRoot> resultingSnapshot = st.getSnapshot(id);
 
@@ -147,7 +147,7 @@ public class JdbiSnapshotReaderTest {
 
         when(dao.getPartial(id, currentVersion)).thenReturn(transactionHistory);
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(config, dao, cache);
+        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> st = new JdbiSnapshotReader<>(functions, dao, cache);
 
         Long expectedVersion = 2L;
         InventoryItemAggregateRoot expectedItem = new InventoryItemAggregateRoot();
