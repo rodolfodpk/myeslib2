@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.BaseTestClass;
+import org.myeslib.jdbi.helpers.DbAwareBaseTestClass;
 import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 import org.myeslib.jdbi.storage.config.AggregateRootDbMetadata;
 import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
@@ -17,7 +17,7 @@ import java.util.UUID;
 import static junit.framework.TestCase.assertEquals;
 import static org.myeslib.jdbi.helpers.SampleDomain.*;
 
-public class JdbiUuidDaoTest extends BaseTestClass {
+public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
 
     Gson gson;
     AggregateRootFunctions<InventoryItemAggregateRoot> functions;
