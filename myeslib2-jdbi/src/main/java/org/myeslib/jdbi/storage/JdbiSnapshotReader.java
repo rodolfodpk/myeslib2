@@ -18,13 +18,13 @@ import static org.myeslib.jdbi.helpers.eventsource.EventSourcingMagicHelper.appl
 
 public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotReader<K, A> {
 
-    private final AggregateRootFunctions<A> config;
+    private final AggregateRootFunctions<A> functions;
     private final UnitOfWorkDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
     public JdbiSnapshotReader(AggregateRootFunctions<A> functions,
                               UnitOfWorkDao<K> dao, Cache<K, Snapshot<A>> cache) {
         checkNotNull(functions);
-        this.config = functions;
+        this.functions = functions;
         checkNotNull(dao);
         this.dao = dao;
         checkNotNull(cache);
@@ -55,7 +55,7 @@ public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotR
     }
 
     private Snapshot<A> applyAllEventsOnFreshInstance(final UnitOfWorkHistory transactionHistory) {
-        final A aggregateRootFreshInstance = config.supplier.get();
+        final A aggregateRootFreshInstance = functions.supplier.get();
         final Long lastVersion = transactionHistory.getLastVersion();
         final List<? extends Event> eventsToApply = transactionHistory.getEventsUntil(lastVersion);
         applyEventsOn(eventsToApply, aggregateRootFreshInstance);
