@@ -3,14 +3,12 @@ package org.myeslib.jdbi.storage;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.BaseTestClass;
 import org.myeslib.jdbi.helpers.SampleDomain;
 import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
@@ -24,18 +22,13 @@ import static org.myeslib.jdbi.helpers.SampleDomain.*;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
-public class JdbiUuidUnitOfWorkJournalTest extends BaseTestClass {
+public class JdbiUuidUnitOfWorkJournalTest {
 
     @Mock
     UnitOfWorkDao<UUID> dao;
 
     Gson gson;
     AggregateRootFunctions<InventoryItemAggregateRoot> config;
-
-    @BeforeClass
-    public static void setup() throws Exception {
-        initDb();
-    }
 
     @Before
     public void init() throws Exception {

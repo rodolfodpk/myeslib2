@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -12,7 +11,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.BaseTestClass;
 import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
 import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
@@ -27,7 +25,7 @@ import static org.mockito.Mockito.*;
 import static org.myeslib.jdbi.helpers.SampleDomain.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JdbiSnapshotReaderTest extends BaseTestClass {
+public class JdbiSnapshotReaderTest {
 
     @Mock
     UnitOfWorkDao<UUID> dao;
@@ -35,11 +33,6 @@ public class JdbiSnapshotReaderTest extends BaseTestClass {
     Gson gson;
     AggregateRootFunctions<InventoryItemAggregateRoot> config;
     Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
-
-    @BeforeClass
-    public static void setup() throws Exception {
-        initDb();
-    }
 
     @Before
     public void init() throws Exception {
