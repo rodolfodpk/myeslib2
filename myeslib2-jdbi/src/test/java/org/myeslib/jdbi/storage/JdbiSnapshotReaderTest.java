@@ -142,15 +142,15 @@ public class JdbiSnapshotReaderTest extends BaseTestClass {
         currentItem.setAvailable(0);
         currentItem.setDescription(expectedDescription);
 
+        Snapshot<InventoryItemAggregateRoot> currentSnapshot = new Snapshot<>(currentItem, currentVersion);
+
+        cache.put(id, currentSnapshot);
+
         UnitOfWorkHistory transactionHistory = new UnitOfWorkHistory();
 
         UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 2, 1L), Arrays.asList(new InventoryIncreased(id, 2)));
 
         transactionHistory.add(partialUow);
-
-        Snapshot<InventoryItemAggregateRoot> currentSnapshot = new Snapshot<>(currentItem, currentVersion);
-
-        cache.put(id, currentSnapshot);
 
         when(dao.getPartial(id, currentVersion)).thenReturn(transactionHistory);
 
