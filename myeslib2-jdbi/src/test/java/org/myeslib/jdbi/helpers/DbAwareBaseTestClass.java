@@ -19,7 +19,7 @@ public abstract class DbAwareBaseTestClass {
     ;
     protected static final DBI dbi = new DBI(pool);
 
-    public static void initDb() throws Exception {
+    protected static void initDb() throws Exception {
         Handle h = dbi.open();
         for (String statement : statements()) {
             log.info("executing {}", statement);
@@ -28,7 +28,7 @@ public abstract class DbAwareBaseTestClass {
         h.close();
     }
 
-    public static Iterable<String> statements() throws IOException {
+    private static Iterable<String> statements() throws IOException {
         URL url = Resources.getResource("database/V1__Create_inventory_item_tables.sql");
         String content = Resources.toString(url, Charsets.UTF_8);
         return Splitter.on(CharMatcher.is(';'))
