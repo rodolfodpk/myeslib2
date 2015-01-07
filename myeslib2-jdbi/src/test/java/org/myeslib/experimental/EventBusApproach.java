@@ -59,7 +59,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     }
 
     @Test
-    public void testOneCommand() throws InterruptedException {
+    public void oneCommandShouldWork() throws InterruptedException {
 
         EventBus bus = new EventBus();
         bus.register(new CommandSubscriber(bus, snapshotReader, journal, id -> id.toString()));
@@ -80,6 +80,33 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
     }
+
+    @Test
+    public void validCommandPlusInvalidCommand() throws InterruptedException {
+
+        EventBus bus = new EventBus();
+        bus.register(new CommandSubscriber(bus, snapshotReader, journal, id -> id.toString()));
+        bus.register(new EventSubscriber(bus));
+
+        // create
+        UUID key = UUID.randomUUID() ;
+        CreateInventoryItem validCommand = new CreateInventoryItem(UUID.randomUUID(), key);
+        bus.post(validCommand);
+
+        // now increase (will fail since it has an invalid targetVersion)
+        IncreaseInventory invalidCommand = new IncreaseInventory(UUID.randomUUID(), key, 3, 0L); // note 0L as an invalid targetVersion
+        bus.post(invalidCommand);
+
+        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
+        expected.setId(key);
+        expected.setDescription(key.toString());
+        expected.setAvailable(0);
+        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+
+        assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
+
+    }
+
 
     @Test
     public void testCommandsInBatch() throws InterruptedException {
@@ -127,8 +154,14 @@ class CommandSubscriber {
         CreateCommandHandler handler = new CreateCommandHandler(service);
         UnitOfWork uow = handler.handle(command, snapshot);
         journal.append(command.getId(), uow);
-        // bus.post(uow);
-        // TODO publish Id, List<UnitOfWork> instead of events ??!!
+    }
+
+    @Subscribe
+    public void on(IncreaseInventory command) {
+        System.out.println("command " + command);
+        Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
+        UnitOfWork uow = new IncreaseCommandHandler().handle(command, snapshot);
+        journal.append(command.getId(), uow);
     }
 
 }
