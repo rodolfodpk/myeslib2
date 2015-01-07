@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.helpers;
+package org.myeslib.storage.helpers;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;

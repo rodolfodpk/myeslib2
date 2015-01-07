@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.helpers.h2;
+package org.myeslib.storage.helpers.h2;
 
 import com.google.common.io.CharStreams;
 import org.skife.jdbi.v2.util.TypedMapper;

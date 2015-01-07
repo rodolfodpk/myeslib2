@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.helpers;
+package org.myeslib.storage.helpers;
 
 import com.google.common.eventbus.Subscribe;
 import lombok.AllArgsConstructor;
@@ -9,6 +9,7 @@ import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Command;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.core.Event;
+import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
 
 import java.util.Arrays;
@@ -57,16 +58,15 @@ public class SampleDomain {
     }
 
     @AllArgsConstructor
-    public static class CreateCommandHandler implements CommandHandler<CreateInventoryItem> {
+    public static class CreateCommandHandler implements CommandHandler<CreateInventoryItem, InventoryItemAggregateRoot> {
 
-        @NonNull
-        final InventoryItemAggregateRoot aggregateRoot;
         @NonNull
         final ItemDescriptionGeneratorService service;
 
-        public org.myeslib.core.data.UnitOfWork handle(CreateInventoryItem command) {
-            checkArgument(aggregateRoot.getId() == null, "item already exists");
+        @Override
+        public UnitOfWork handle(CreateInventoryItem command, Snapshot<InventoryItemAggregateRoot> snapshot) {
             checkNotNull(service);
+            checkArgument(snapshot.getAggregateInstance().getId() == null, "item already exists");
             String description = service.generate(command.getId());
             InventoryItemCreated event = new InventoryItemCreated(command.getId(), description);
             return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
@@ -74,12 +74,10 @@ public class SampleDomain {
     }
 
     @AllArgsConstructor
-    public static class IncreaseCommandHandler implements CommandHandler<IncreaseInventory> {
+    public static class IncreaseCommandHandler implements CommandHandler<IncreaseInventory, InventoryItemAggregateRoot> {
 
-        @NonNull
-        final InventoryItemAggregateRoot aggregateRoot;
-
-        public org.myeslib.core.data.UnitOfWork handle(IncreaseInventory command) {
+        public UnitOfWork handle(IncreaseInventory command, Snapshot<InventoryItemAggregateRoot> snapshot) {
+            InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
             checkArgument(aggregateRoot.getId() != null, "before increasing you must create an item");
             checkArgument(aggregateRoot.getId().equals(command.getId()), "item id does not match");
             InventoryIncreased event = new InventoryIncreased(command.getId(), command.getHowMany());
@@ -90,12 +88,10 @@ public class SampleDomain {
     // commands
 
     @AllArgsConstructor
-    public static class DecreaseCommandHandler implements CommandHandler<DecreaseInventory> {
+    public static class DecreaseCommandHandler implements CommandHandler<DecreaseInventory, InventoryItemAggregateRoot> {
 
-        @NonNull
-        final InventoryItemAggregateRoot aggregateRoot;
-
-        public org.myeslib.core.data.UnitOfWork handle(DecreaseInventory command) {
+        public UnitOfWork handle(DecreaseInventory command, Snapshot<InventoryItemAggregateRoot> snapshot) {
+            InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
             checkArgument(aggregateRoot.getId() != null, "before decreasing you must create an item");
             checkArgument(aggregateRoot.getId().equals(command.getId()), "item id does not match");
             checkArgument(aggregateRoot.isAvailable(command.howMany), "there are not enough items available");

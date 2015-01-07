@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.storage.dao;
+package org.myeslib.storage.jdbi.dao;
 
 import com.google.gson.Gson;
 import org.junit.Before;
@@ -6,21 +6,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.DbAwareBaseTestClass;
-import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
-import org.myeslib.jdbi.storage.config.AggregateRootDbMetadata;
-import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
+import org.myeslib.storage.helpers.DbAwareBaseTestClass;
+import org.myeslib.storage.helpers.SampleDomainGsonFactory;
+import org.myeslib.storage.jdbi.dao.config.AggregateRootDbMetadata;
+import org.myeslib.storage.jdbi.dao.config.UowSerializationFunctions;
 
 import java.util.Arrays;
 import java.util.UUID;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.myeslib.jdbi.helpers.SampleDomain.*;
+import static org.myeslib.storage.helpers.SampleDomain.*;
 
 public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
 
     Gson gson;
-    AggregateRootFunctions<InventoryItemAggregateRoot> functions;
+    UowSerializationFunctions functions;
     AggregateRootDbMetadata dbMetadata;
     JdbiUuidDao dao;
 
@@ -32,8 +32,7 @@ public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
     @Before
     public void init() throws Exception {
         gson = new SampleDomainGsonFactory().create();
-        functions = new AggregateRootFunctions<>(
-                () -> new InventoryItemAggregateRoot(),
+        functions = new UowSerializationFunctions(
                 gson::toJson,
                 (json) -> gson.fromJson(json, UnitOfWork.class));
         dbMetadata = new AggregateRootDbMetadata("inventory_item");

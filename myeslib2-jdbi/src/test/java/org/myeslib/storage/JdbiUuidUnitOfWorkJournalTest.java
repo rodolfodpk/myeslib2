@@ -1,6 +1,5 @@
-package org.myeslib.jdbi.storage;
+package org.myeslib.storage;
 
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,16 +8,14 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.SampleDomain;
-import org.myeslib.jdbi.helpers.SampleDomainGsonFactory;
-import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
-import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
+import org.myeslib.storage.jdbi.JdbiUuidUnitOfWorkJournal;
+import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
 
 import java.util.Arrays;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
-import static org.myeslib.jdbi.helpers.SampleDomain.*;
+import static org.myeslib.storage.helpers.SampleDomain.*;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
@@ -27,17 +24,8 @@ public class JdbiUuidUnitOfWorkJournalTest {
     @Mock
     UnitOfWorkDao<UUID> dao;
 
-    Gson gson;
-    AggregateRootFunctions<InventoryItemAggregateRoot> config;
-
     @Before
     public void init() throws Exception {
-        gson = new SampleDomainGsonFactory().create();
-        config = new AggregateRootFunctions<>(
-                () -> new SampleDomain.InventoryItemAggregateRoot(),
-                gson::toJson,
-                (json) -> gson.fromJson(json, UnitOfWork.class));
-
     }
 
     @Test

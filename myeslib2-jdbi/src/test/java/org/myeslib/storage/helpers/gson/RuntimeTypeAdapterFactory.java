@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.myeslib.jdbi.helpers.gson;
+package org.myeslib.storage.helpers.gson;
 
 import com.google.gson.*;
 import com.google.gson.internal.Streams;

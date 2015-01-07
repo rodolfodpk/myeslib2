@@ -1,14 +1,11 @@
-package org.myeslib.jdbi.storage.dao;
+package org.myeslib.storage.jdbi.dao;
 
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.jdbi.helpers.h2.ClobToStringMapper;
-import org.myeslib.jdbi.storage.config.AggregateRootDbMetadata;
-import org.myeslib.jdbi.storage.config.AggregateRootFunctions;
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.TransactionIsolationLevel;
+import org.myeslib.storage.helpers.h2.ClobToStringMapper;
+import org.myeslib.storage.jdbi.dao.config.AggregateRootDbMetadata;
+import org.myeslib.storage.jdbi.dao.config.UowSerializationFunctions;
+import org.skife.jdbi.v2.*;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.slf4j.Logger;
@@ -26,10 +23,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
 
     static final Logger log = LoggerFactory.getLogger(JdbiUuidDao.class);
-    private final AggregateRootFunctions functions;
+    private final UowSerializationFunctions functions;
     private final AggregateRootDbMetadata dbMetadata;
     private final DBI dbi;
-    public JdbiUuidDao(AggregateRootFunctions functions, AggregateRootDbMetadata dbMetadata, DBI dbi) {
+    public JdbiUuidDao(UowSerializationFunctions functions, AggregateRootDbMetadata dbMetadata, DBI dbi) {
         checkNotNull(functions);
         this.functions = functions;
         checkNotNull(dbMetadata);
@@ -116,6 +113,26 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
                 .execute());
 
         // TODO confirm execution of LocalCache().invalidate(id);
+
+    }
+
+    @Override
+    public void appendBatch(UUID id, UnitOfWork... uowArray) {
+
+        String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
+
+        log.info(sql);
+
+        dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (h, ts) -> {
+            final PreparedBatch pb = h.prepareBatch(sql);
+            for (UnitOfWork uow : uowArray) {
+                log.debug(sql);
+                log.info("    --> batch appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
+                String asString = functions.toStringFunction.apply(uow);
+                pb.add().bind("id", id.toString()).bind("uow_data", asString).bind("version", uow.getVersion());
+            }
+            return pb.execute().length;
+        });
 
     }
 

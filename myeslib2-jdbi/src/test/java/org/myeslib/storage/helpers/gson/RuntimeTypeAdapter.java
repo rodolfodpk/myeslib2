@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.helpers.gson;
+package org.myeslib.storage.helpers.gson;
 
 /*
  * Copyright (C) 2011 Google Inc.

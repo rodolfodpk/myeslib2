@@ -1,13 +1,15 @@
-package org.myeslib.jdbi.helpers;
+package org.myeslib.storage.helpers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Command;
 import org.myeslib.core.Event;
-import org.myeslib.jdbi.helpers.gson.RuntimeTypeAdapterFactory;
+import org.myeslib.storage.helpers.gson.RuntimeTypeAdapterFactory;
 
 import java.lang.reflect.Modifier;
+
+import static org.myeslib.storage.helpers.SampleDomain.* ;
 
 /*
  * Produces a Gson instance able to ser/deserialize polymorfic types. 
@@ -21,19 +23,19 @@ public class SampleDomainGsonFactory {
 
         final RuntimeTypeAdapterFactory<AggregateRoot> aggregateRootAdapter =
                 RuntimeTypeAdapterFactory.of(AggregateRoot.class)
-                        .registerSubtype(SampleDomain.InventoryItemAggregateRoot.class, SampleDomain.InventoryItemAggregateRoot.class.getSimpleName());
+                        .registerSubtype(InventoryItemAggregateRoot.class, InventoryItemAggregateRoot.class.getSimpleName());
 
         final RuntimeTypeAdapterFactory<Command> commandAdapter =
                 RuntimeTypeAdapterFactory.of(Command.class)
-                        .registerSubtype(SampleDomain.CreateInventoryItem.class, SampleDomain.CreateInventoryItem.class.getSimpleName())
-                        .registerSubtype(SampleDomain.IncreaseInventory.class, SampleDomain.IncreaseInventory.class.getSimpleName())
-                        .registerSubtype(SampleDomain.DecreaseInventory.class, SampleDomain.DecreaseInventory.class.getSimpleName());
+                        .registerSubtype(CreateInventoryItem.class, CreateInventoryItem.class.getSimpleName())
+                        .registerSubtype(IncreaseInventory.class, IncreaseInventory.class.getSimpleName())
+                        .registerSubtype(DecreaseInventory.class, DecreaseInventory.class.getSimpleName());
 
         final RuntimeTypeAdapterFactory<Event> eventAdapter =
                 RuntimeTypeAdapterFactory.of(Event.class)
-                        .registerSubtype(SampleDomain.InventoryItemCreated.class, SampleDomain.InventoryItemCreated.class.getSimpleName())
-                        .registerSubtype(SampleDomain.InventoryIncreased.class, SampleDomain.InventoryIncreased.class.getSimpleName())
-                        .registerSubtype(SampleDomain.InventoryDecreased.class, SampleDomain.InventoryDecreased.class.getSimpleName());
+                        .registerSubtype(InventoryItemCreated.class, InventoryItemCreated.class.getSimpleName())
+                        .registerSubtype(InventoryIncreased.class, InventoryIncreased.class.getSimpleName())
+                        .registerSubtype(InventoryDecreased.class, InventoryDecreased.class.getSimpleName());
 
 
         this.gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT)

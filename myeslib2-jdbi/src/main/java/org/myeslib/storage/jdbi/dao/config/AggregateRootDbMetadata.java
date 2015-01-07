@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.storage.config;
+package org.myeslib.storage.jdbi.dao.config;
 
 public class AggregateRootDbMetadata {
 

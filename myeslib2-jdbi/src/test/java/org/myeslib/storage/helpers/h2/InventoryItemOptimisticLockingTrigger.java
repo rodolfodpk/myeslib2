@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.helpers.h2;
+package org.myeslib.storage.helpers.h2;
 
 import org.h2.api.Trigger;
 import org.skife.jdbi.v2.DBI;

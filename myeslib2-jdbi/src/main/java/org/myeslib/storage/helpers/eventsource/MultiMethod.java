@@ -3,7 +3,7 @@
  * See below for copyright and licensing information.
  */
 
-package org.myeslib.jdbi.helpers.eventsource;
+package org.myeslib.storage.helpers.eventsource;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
