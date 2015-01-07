@@ -8,8 +8,8 @@ import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.storage.helpers.DbAwareBaseTestClass;
 import org.myeslib.storage.helpers.SampleDomainGsonFactory;
-import org.myeslib.storage.jdbi.dao.config.AggregateRootDbMetadata;
-import org.myeslib.storage.jdbi.dao.config.UowSerializationFunctions;
+import org.myeslib.storage.jdbi.dao.config.DbMetadata;
+import org.myeslib.storage.jdbi.dao.config.UowSerialization;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -17,12 +17,12 @@ import java.util.UUID;
 import static junit.framework.TestCase.assertEquals;
 import static org.myeslib.storage.helpers.SampleDomain.*;
 
-public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
+public class JdbiDaoTest extends DbAwareBaseTestClass {
 
     Gson gson;
-    UowSerializationFunctions functions;
-    AggregateRootDbMetadata dbMetadata;
-    JdbiUuidDao dao;
+    UowSerialization functions;
+    DbMetadata dbMetadata;
+    JdbiDao<UUID> dao;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -32,11 +32,11 @@ public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
     @Before
     public void init() throws Exception {
         gson = new SampleDomainGsonFactory().create();
-        functions = new UowSerializationFunctions(
+        functions = new UowSerialization(
                 gson::toJson,
                 (json) -> gson.fromJson(json, UnitOfWork.class));
-        dbMetadata = new AggregateRootDbMetadata("inventory_item");
-        dao = new JdbiUuidDao(functions, dbMetadata, dbi);
+        dbMetadata = new DbMetadata("inventory_item");
+        dao = new JdbiDao<>(functions, dbMetadata, dbi);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
 
         dao.append(id, newUow);
 
-        UnitOfWorkHistory fromDb = dao.get(id);
+        UnitOfWorkHistory fromDb = dao.getFull(id);
 
         assertEquals(toSave, fromDb);
 
@@ -71,7 +71,7 @@ public class JdbiUuidDaoTest extends DbAwareBaseTestClass {
 
         dao.append(id, newUow);
 
-        UnitOfWorkHistory fromDb = dao.get(id);
+        UnitOfWorkHistory fromDb = dao.getFull(id);
 
         assertEquals(fromDb.getLastVersion().intValue(), 2);
 

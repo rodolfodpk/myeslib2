@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface UnitOfWorkDao<K> {
 
-    UnitOfWorkHistory get(K id);
+    UnitOfWorkHistory getFull(K id);
 
     UnitOfWorkHistory getPartial(K id, Long biggerThanThisVersion);
 

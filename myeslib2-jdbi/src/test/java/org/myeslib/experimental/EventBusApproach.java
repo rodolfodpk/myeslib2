@@ -14,11 +14,11 @@ import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.storage.helpers.DbAwareBaseTestClass;
 import org.myeslib.storage.helpers.SampleDomainGsonFactory;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
-import org.myeslib.storage.jdbi.JdbiSnapshotReader;
-import org.myeslib.storage.jdbi.JdbiUuidUnitOfWorkJournal;
-import org.myeslib.storage.jdbi.dao.JdbiUuidDao;
-import org.myeslib.storage.jdbi.dao.config.AggregateRootDbMetadata;
-import org.myeslib.storage.jdbi.dao.config.UowSerializationFunctions;
+import org.myeslib.storage.jdbi.JdbiJournal;
+import org.myeslib.storage.jdbi.JdbiReader;
+import org.myeslib.storage.jdbi.dao.JdbiDao;
+import org.myeslib.storage.jdbi.dao.config.DbMetadata;
+import org.myeslib.storage.jdbi.dao.config.UowSerialization;
 
 import java.util.UUID;
 
@@ -29,15 +29,15 @@ import static org.myeslib.storage.helpers.SampleDomain.*;
 public class EventBusApproach extends DbAwareBaseTestClass {
 
     Gson gson;
-    UowSerializationFunctions functions;
-    AggregateRootDbMetadata dbMetadata;
-    JdbiUuidDao dao;
+    UowSerialization functions;
+    DbMetadata dbMetadata;
+    JdbiDao<UUID> dao;
     Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
     SnapshotHelper<InventoryItemAggregateRoot> snapshotHelper;
-    JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> snapshotReader ;
-    JdbiUuidUnitOfWorkJournal journal;
+    JdbiReader<UUID, InventoryItemAggregateRoot> snapshotReader ;
+    JdbiJournal<UUID> journal;
     EventBus bus ;
-    ItemDescriptionGeneratorService service;
+    SampleDomainService service;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -47,15 +47,15 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     @Before
     public void init() throws Exception {
         gson = new SampleDomainGsonFactory().create();
-        functions = new UowSerializationFunctions(
+        functions = new UowSerialization(
                 gson::toJson,
                 (json) -> gson.fromJson(json, UnitOfWork.class));
-        dbMetadata = new AggregateRootDbMetadata("inventory_item");
-        dao = new JdbiUuidDao(functions, dbMetadata, dbi);
+        dbMetadata = new DbMetadata("inventory_item");
+        dao = new JdbiDao<>(functions, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
         snapshotHelper = new SnapshotHelper<>();
-        snapshotReader = new JdbiSnapshotReader<>(() -> new InventoryItemAggregateRoot(), dao, cache, snapshotHelper);
-        journal = new JdbiUuidUnitOfWorkJournal(dao);
+        snapshotReader = new JdbiReader<>(() -> new InventoryItemAggregateRoot(), dao, cache, snapshotHelper);
+        journal = new JdbiJournal<>(dao);
         bus = new EventBus();
         service = id -> id.toString();
     }
@@ -137,7 +137,6 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         public void on(CreateInventoryItem command) {
             System.out.println("command " + command);
             Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-            System.out.println("found snapshot " + snapshot);
             CreateCommandHandler handler = new CreateCommandHandler(service);
             UnitOfWork uow = handler.handle(command, snapshot);
             journal.append(command.getId(), uow);

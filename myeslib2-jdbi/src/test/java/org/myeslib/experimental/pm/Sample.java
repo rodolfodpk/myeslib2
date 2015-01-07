@@ -1,18 +1,10 @@
 package org.myeslib.experimental.pm;
 
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.core.CommandHandler;
-
-import java.util.Optional;
-import java.util.UUID;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import static org.myeslib.experimental.pm.ClassPattern.inCaseOf;
-import static org.myeslib.experimental.pm.OtherwisePattern.otherwise;
 import static org.myeslib.storage.helpers.SampleDomain.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -21,7 +13,7 @@ public class Sample {
     InventoryItemAggregateRoot aggregateRoot = new InventoryItemAggregateRoot();
 
     @Mock
-    ItemDescriptionGeneratorService service;
+    SampleDomainService service;
 
 //    @Test
 //    public void testOneCommand() {
@@ -42,7 +34,7 @@ public class Sample {
 //
 //        CreateInventoryItem command1 = new CreateInventoryItem(UUID.randomUUID(), key);
 //
-//        CommandHandler handler1 = pm.matchFor(command1).get();
+//        CommandHandler handler1 = pm.matchFor(command1).getFull();
 //
 //        System.out.println(handler1.handle(command1));
 //
@@ -53,7 +45,7 @@ public class Sample {
 //
 //        IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), key, 10, 0L);
 //
-//        CommandHandler handler2 = pm.matchFor(command2).get();
+//        CommandHandler handler2 = pm.matchFor(command2).getFull();
 //
 //        System.out.println(handler2.handle(command2));
 //

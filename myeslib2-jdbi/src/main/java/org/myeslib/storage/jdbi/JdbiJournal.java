@@ -11,23 +11,23 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class JdbiUuidUnitOfWorkJournal implements UnitOfWorkJournal<UUID> {
+public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
 
-    static final Logger logger = LoggerFactory.getLogger(JdbiUuidUnitOfWorkJournal.class);
+    static final Logger logger = LoggerFactory.getLogger(JdbiJournal.class);
 
-    private final UnitOfWorkDao<UUID> dao;
+    private final UnitOfWorkDao<K> dao;
 
-    public JdbiUuidUnitOfWorkJournal(UnitOfWorkDao<UUID> dao) {
+    public JdbiJournal(UnitOfWorkDao<K> dao) {
         checkNotNull(dao);
         this.dao = dao;
     }
 
     @Override
-    public void append(final UUID id, final UnitOfWork uow) {
+    public void append(final K id, final UnitOfWork uow) {
         dao.append(id, uow);
     }
 
-    @Override public void appendBatch(UUID id, List<UnitOfWork> uowList) {
+    @Override public void appendBatch(K id, List<UnitOfWork> uowList) {
         dao.appendBatch(id, uowList);
     }
 

@@ -11,7 +11,8 @@ import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
-import org.myeslib.storage.jdbi.JdbiSnapshotReader;
+import org.myeslib.storage.jdbi.JdbiReader;
+import org.myeslib.storage.jdbi.JdbiReader;
 import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
 
 import java.util.Arrays;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.*;
 import static org.myeslib.storage.helpers.SampleDomain.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JdbiSnapshotReaderTest {
+public class JdbiReaderTest {
 
     @Mock
     Supplier<InventoryItemAggregateRoot> supplier;
@@ -48,20 +49,20 @@ public class JdbiSnapshotReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
         InventoryItemAggregateRoot instance = new InventoryItemAggregateRoot();
         Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(instance, 0L);
 
         when(supplier.get()).thenReturn(instance);
-        when(dao.get(id)).thenReturn(expectedHistory);
+        when(dao.getFull(id)).thenReturn(expectedHistory);
         when(snapshotHelper.applyEventsOn(instance, expectedHistory)).thenReturn(expectedSnapshot);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier).get();
-        verify(dao).get(id);
+        verify(dao).getFull(id);
         verify(snapshotHelper).applyEventsOn(instance, expectedHistory);
 
     }
@@ -82,15 +83,15 @@ public class JdbiSnapshotReaderTest {
         expectedHistory.add(newUow);
 
         when(supplier.get()).thenReturn(expectedInstance);
-        when(dao.get(id)).thenReturn(expectedHistory);
+        when(dao.getFull(id)).thenReturn(expectedHistory);
         when(snapshotHelper.applyEventsOn(expectedInstance, expectedHistory)).thenReturn(expectedSnapshot);
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier).get();
-        verify(dao).get(id);
+        verify(dao).getFull(id);
         verify(snapshotHelper).applyEventsOn(expectedInstance, expectedHistory);
 
     }
@@ -122,13 +123,13 @@ public class JdbiSnapshotReaderTest {
         when(dao.getPartial(id, expectedVersion)).thenReturn(expectedHistory);
         when(snapshotHelper.applyEventsOn(expectedInstance, expectedHistory)).thenReturn(expectedSnapshot);
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier, times(0)).get();
         verify(dao, times(1)).getPartial(id, expectedVersion);
-        verify(dao, times(0)).get(id);
+        verify(dao, times(0)).getFull(id);
         verify(snapshotHelper).applyEventsOn(expectedInstance, expectedHistory);
 
     }
@@ -165,13 +166,13 @@ public class JdbiSnapshotReaderTest {
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
         when(snapshotHelper.applyEventsOn(currentInstance, remainingHistory)).thenReturn(expectedSnapshot);
 
-        JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> reader = new JdbiSnapshotReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier, times(0)).get();
         verify(dao, times(1)).getPartial(id, currentVersion);
-        verify(dao, times(0)).get(id);
+        verify(dao, times(0)).getFull(id);
         verify(snapshotHelper).applyEventsOn(currentInstance, remainingHistory);
 
     }

@@ -16,17 +16,17 @@ import java.util.function.Supplier;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotReader<K, A> {
+public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K, A> {
 
-    private static final Logger logger = LoggerFactory.getLogger(JdbiSnapshotReader.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbiReader.class);
 
     private final Supplier<A> supplier;
     private final UnitOfWorkDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
     private final SnapshotHelper<A> snapshotHelper;
 
-    public JdbiSnapshotReader(Supplier<A> supplier, UnitOfWorkDao<K> dao,
-                              Cache<K, Snapshot<A>> cache, SnapshotHelper<A> snapshotHelper) {
+    public JdbiReader(Supplier<A> supplier, UnitOfWorkDao<K> dao,
+                      Cache<K, Snapshot<A>> cache, SnapshotHelper<A> snapshotHelper) {
         checkNotNull(supplier);
         this.supplier = supplier;
         checkNotNull(dao);
@@ -46,10 +46,11 @@ public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotR
         final Snapshot<A> lastSnapshot;
         final AtomicBoolean wasDaoCalled = new AtomicBoolean(false);
         try {
-            logger.info("id {} cache.get(id)", id);
+            logger.info("id {} cache.getFull(id)", id);
             lastSnapshot = cache.get(id, () -> {
+                logger.info("id {} cache.getFull(id) does not contain anything for this id. Will search on dao", id);
                 wasDaoCalled.set(true);
-                return snapshotHelper.applyEventsOn(supplier.get(), dao.get(id));
+                return snapshotHelper.applyEventsOn(supplier.get(), dao.getFull(id));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());

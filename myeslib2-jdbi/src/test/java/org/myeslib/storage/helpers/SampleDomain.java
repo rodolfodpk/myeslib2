@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Command;
 import org.myeslib.core.CommandHandler;
@@ -21,7 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @SuppressWarnings("serial")
 public class SampleDomain {
 
-    public static interface ItemDescriptionGeneratorService {
+    public static interface SampleDomainService {
         String generate(UUID id);
     }
 
@@ -34,19 +35,16 @@ public class SampleDomain {
         String description;
         Integer available = 0;
 
-        @Subscribe
         public void on(InventoryItemCreated event) {
             this.id = event.id;
             this.description = event.description;
             this.available = 0;
         }
 
-        @Subscribe
         public void on(InventoryIncreased event) {
             this.available = this.available + event.howMany;
         }
 
-        @Subscribe
         public void on(InventoryDecreased event) {
             this.available = this.available - event.howMany;
         }
@@ -61,7 +59,7 @@ public class SampleDomain {
     public static class CreateCommandHandler implements CommandHandler<CreateInventoryItem, InventoryItemAggregateRoot> {
 
         @NonNull
-        final ItemDescriptionGeneratorService service;
+        final SampleDomainService service;
 
         @Override
         public UnitOfWork handle(CreateInventoryItem command, Snapshot<InventoryItemAggregateRoot> snapshot) {

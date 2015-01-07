@@ -8,7 +8,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.storage.jdbi.JdbiUuidUnitOfWorkJournal;
+import org.myeslib.storage.jdbi.JdbiJournal;
+import org.myeslib.storage.jdbi.JdbiJournal;
 import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
 
 import java.util.Arrays;
@@ -19,7 +20,7 @@ import static org.myeslib.storage.helpers.SampleDomain.*;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
-public class JdbiUuidUnitOfWorkJournalTest {
+public class JdbiJournalTest {
 
     @Mock
     UnitOfWorkDao<UUID> dao;
@@ -37,7 +38,7 @@ public class JdbiUuidUnitOfWorkJournalTest {
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(new InventoryItemCreated(id, "item1")));
         toSave.add(newUow);
 
-        JdbiUuidUnitOfWorkJournal store = new JdbiUuidUnitOfWorkJournal(dao);
+        JdbiJournal store = new JdbiJournal(dao);
 
         store.append(id, newUow);
 
@@ -56,7 +57,7 @@ public class JdbiUuidUnitOfWorkJournalTest {
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1, 1L), Arrays.asList(new InventoryDecreased(id, 1)));
 
-        JdbiUuidUnitOfWorkJournal store = new JdbiUuidUnitOfWorkJournal(dao);
+        JdbiJournal store = new JdbiJournal(dao);
 
         store.append(id, existingUow);
 

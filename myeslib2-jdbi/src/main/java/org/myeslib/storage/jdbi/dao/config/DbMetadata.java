@@ -1,12 +1,12 @@
 package org.myeslib.storage.jdbi.dao.config;
 
-public class AggregateRootDbMetadata {
+public class DbMetadata {
 
     public final String aggregateRootName;
     public final String aggregateRootTable;
     public final String unitOfWorkTable;
 
-    public AggregateRootDbMetadata(String aggregateRootName) {
+    public DbMetadata(String aggregateRootName) {
         this.aggregateRootName = aggregateRootName;
         this.aggregateRootTable = aggregateRootName.concat("_AR");
         this.unitOfWorkTable = aggregateRootName.concat("_UOW");

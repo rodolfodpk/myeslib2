@@ -3,8 +3,8 @@ package org.myeslib.storage.jdbi.dao;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.storage.helpers.h2.ClobToStringMapper;
-import org.myeslib.storage.jdbi.dao.config.AggregateRootDbMetadata;
-import org.myeslib.storage.jdbi.dao.config.UowSerializationFunctions;
+import org.myeslib.storage.jdbi.dao.config.DbMetadata;
+import org.myeslib.storage.jdbi.dao.config.UowSerialization;
 import org.skife.jdbi.v2.*;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
@@ -15,20 +15,19 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
+public class JdbiDao<K> implements UnitOfWorkDao<K> {
 
-    static final Logger log = LoggerFactory.getLogger(JdbiUuidDao.class);
+    static final Logger log = LoggerFactory.getLogger(JdbiDao.class);
 
-    private final UowSerializationFunctions functions;
-    private final AggregateRootDbMetadata dbMetadata;
+    private final UowSerialization functions;
+    private final DbMetadata dbMetadata;
     private final DBI dbi;
 
-    public JdbiUuidDao(UowSerializationFunctions functions, AggregateRootDbMetadata dbMetadata, DBI dbi) {
+    public JdbiDao(UowSerialization functions, DbMetadata dbMetadata, DBI dbi) {
         checkNotNull(functions);
         this.functions = functions;
         checkNotNull(dbMetadata);
@@ -42,7 +41,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
      * @see org.myeslib.jdbi.AggregateRootHistoryReader#getSnapshot(java.lang.Object)
      */
     @Override
-    public UnitOfWorkHistory get(final UUID id) {
+    public UnitOfWorkHistory getFull(final K id) {
         return getPartial(id, 0L);
     }
 
@@ -51,7 +50,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
          * @see org.myeslib.jdbi.AggregateRootHistoryReader#getPartial(java.lang.Object)
          */
     @Override
-    public UnitOfWorkHistory getPartial(UUID id, Long biggerThanThisVersion) {
+    public UnitOfWorkHistory getPartial(K id, Long biggerThanThisVersion) {
 
         final UnitOfWorkHistory arh = new UnitOfWorkHistory();
 
@@ -100,7 +99,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
     }
 
     @Override
-    public void append(final UUID id, final UnitOfWork uow) {
+    public void append(final K id, final UnitOfWork uow) {
 
         String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
 
@@ -119,7 +118,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
     }
 
     @Override
-    public void appendBatch(UUID id, UnitOfWork... uowArray) {
+    public void appendBatch(K id, UnitOfWork... uowArray) {
 
         String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
 
