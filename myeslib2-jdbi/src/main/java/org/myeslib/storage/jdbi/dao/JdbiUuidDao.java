@@ -23,9 +23,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
 
     static final Logger log = LoggerFactory.getLogger(JdbiUuidDao.class);
+
     private final UowSerializationFunctions functions;
     private final AggregateRootDbMetadata dbMetadata;
     private final DBI dbi;
+
     public JdbiUuidDao(UowSerializationFunctions functions, AggregateRootDbMetadata dbMetadata, DBI dbi) {
         checkNotNull(functions);
         this.functions = functions;
@@ -55,7 +57,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
 
         try {
 
-            log.debug("will load {} from {}", id.toString(), dbMetadata.aggregateRootTable);
+            log.info("will load {} from {}", id.toString(), dbMetadata.aggregateRootTable);
 
             List<UowRecord> unitsOfWork = dbi
                     .withHandle(new HandleCallback<List<UowRecord>>() {
@@ -121,7 +123,7 @@ public class JdbiUuidDao implements UnitOfWorkDao<UUID> {
 
         String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
 
-        log.info(sql);
+        log.info("batch appending {} units of work with id {} on table {}", uowArray.length, id, dbMetadata.aggregateRootTable);
 
         dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (h, ts) -> {
             final PreparedBatch pb = h.prepareBatch(sql);

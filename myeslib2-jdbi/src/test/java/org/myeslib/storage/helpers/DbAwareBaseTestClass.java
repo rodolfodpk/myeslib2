@@ -22,7 +22,7 @@ public abstract class DbAwareBaseTestClass {
     protected static void initDb() throws Exception {
         Handle h = dbi.open();
         for (String statement : statements()) {
-            log.info("executing {}", statement);
+            log.debug("executing {}", statement);
             h.execute(statement);
         }
         h.close();

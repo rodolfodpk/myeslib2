@@ -7,6 +7,8 @@ import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.core.storage.SnapshotReader;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
 import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,6 +17,8 @@ import java.util.function.Supplier;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotReader<K, A> {
+
+    private static final Logger logger = LoggerFactory.getLogger(JdbiSnapshotReader.class);
 
     private final Supplier<A> supplier;
     private final UnitOfWorkDao<K> dao;
@@ -40,19 +44,23 @@ public class JdbiSnapshotReader<K, A extends AggregateRoot> implements SnapshotR
     public Snapshot<A> getSnapshot(final K id) {
         checkNotNull(id);
         final Snapshot<A> lastSnapshot;
-        final AtomicBoolean wasFullLoadPerformed = new AtomicBoolean(false);
+        final AtomicBoolean wasDaoCalled = new AtomicBoolean(false);
         try {
+            logger.info("id {} cache.get(id)", id);
             lastSnapshot = cache.get(id, () -> {
-                wasFullLoadPerformed.set(true);
+                wasDaoCalled.set(true);
                 return snapshotHelper.applyEventsOn(supplier.get(), dao.get(id));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
         }
-        if (wasFullLoadPerformed.get()) {
+        logger.info("id {} wasDaoCalled ? {}", id, wasDaoCalled.get());
+        if (wasDaoCalled.get()) {
             return lastSnapshot;
         }
+        logger.info("id {} lastSnapshot has version {}. will check if there any version beyond it", id, lastSnapshot.getVersion());
         final UnitOfWorkHistory partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
+        logger.info("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.getAllEvents().size(), lastSnapshot.getVersion());
         return snapshotHelper.applyEventsOn(lastSnapshot.getAggregateInstance(), partialTransactionHistory);
     }
 

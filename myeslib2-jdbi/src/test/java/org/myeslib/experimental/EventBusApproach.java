@@ -11,7 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
-import org.myeslib.core.storage.SnapshotReader;
 import org.myeslib.storage.helpers.DbAwareBaseTestClass;
 import org.myeslib.storage.helpers.SampleDomainGsonFactory;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
@@ -37,7 +36,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     SnapshotHelper<InventoryItemAggregateRoot> snapshotHelper;
     JdbiSnapshotReader<UUID, InventoryItemAggregateRoot> snapshotReader ;
     JdbiUuidUnitOfWorkJournal journal;
-
+    EventBus bus ;
+    ItemDescriptionGeneratorService service;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -54,16 +54,17 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         dao = new JdbiUuidDao(functions, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
         snapshotHelper = new SnapshotHelper<>();
-        snapshotReader = new JdbiSnapshotReader<>(InventoryItemAggregateRoot::new, dao, cache, snapshotHelper);
+        snapshotReader = new JdbiSnapshotReader<>(() -> new InventoryItemAggregateRoot(), dao, cache, snapshotHelper);
         journal = new JdbiUuidUnitOfWorkJournal(dao);
+        bus = new EventBus();
+        service = id -> id.toString();
     }
 
     @Test
     public void oneCommandShouldWork() throws InterruptedException {
 
-        EventBus bus = new EventBus();
-        bus.register(new CommandSubscriber(bus, snapshotReader, journal, id -> id.toString()));
-        bus.register(new EventSubscriber(bus));
+        bus.register(new CommandSubscriber());
+        bus.register(new EventSubscriber());
 
         // create
 
@@ -85,8 +86,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     public void validCommandPlusInvalidCommand() throws InterruptedException {
 
         EventBus bus = new EventBus();
-        bus.register(new CommandSubscriber(bus, snapshotReader, journal, id -> id.toString()));
-        bus.register(new EventSubscriber(bus));
+        bus.register(new CommandSubscriber());
+        bus.register(new EventSubscriber());
 
         // create
         UUID key = UUID.randomUUID() ;
@@ -107,13 +108,12 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
     }
 
-
     @Test
     public void testCommandsInBatch() throws InterruptedException {
 
         EventBus bus = new EventBus();
-        bus.register(new CommandSubscriberBatch(bus, snapshotReader, snapshotHelper, journal, id -> id.toString()));
-        bus.register(new EventSubscriber(bus));
+        bus.register(new CommandSubscriberBatch());
+        bus.register(new EventSubscriber());
 
         // create
 
@@ -131,94 +131,61 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
     }
 
+    class CommandSubscriber {
 
-}
-class CommandSubscriber {
+        @Subscribe
+        public void on(CreateInventoryItem command) {
+            System.out.println("command " + command);
+            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
+            System.out.println("found snapshot " + snapshot);
+            CreateCommandHandler handler = new CreateCommandHandler(service);
+            UnitOfWork uow = handler.handle(command, snapshot);
+            journal.append(command.getId(), uow);
+        }
 
-    final EventBus bus;
-    final SnapshotReader snapshotReader;
-    final JdbiUuidUnitOfWorkJournal journal;
-    final ItemDescriptionGeneratorService service;
-
-    CommandSubscriber(EventBus bus, SnapshotReader snapshotReader, JdbiUuidUnitOfWorkJournal journal, ItemDescriptionGeneratorService service) {
-        this.bus = bus;
-        this.snapshotReader = snapshotReader;
-        this.journal = journal;
-        this.service = service;
-    }
-
-    @Subscribe
-    public void on(CreateInventoryItem command) {
-        System.out.println("command " + command);
-        Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-        CreateCommandHandler handler = new CreateCommandHandler(service);
-        UnitOfWork uow = handler.handle(command, snapshot);
-        journal.append(command.getId(), uow);
-    }
-
-    @Subscribe
-    public void on(IncreaseInventory command) {
-        System.out.println("command " + command);
-        Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-        UnitOfWork uow = new IncreaseCommandHandler().handle(command, snapshot);
-        journal.append(command.getId(), uow);
-    }
-
-}
-
-class CommandSubscriberBatch {
-
-    final EventBus bus;
-    final SnapshotReader snapshotReader;
-    final SnapshotHelper<InventoryItemAggregateRoot> snapshotHelper;
-    final JdbiUuidUnitOfWorkJournal journal;
-    final ItemDescriptionGeneratorService service;
-
-    CommandSubscriberBatch(EventBus bus, SnapshotReader snapshotReader,
-                           SnapshotHelper<InventoryItemAggregateRoot> snapshotHelper,
-                           JdbiUuidUnitOfWorkJournal journal, ItemDescriptionGeneratorService service) {
-        this.bus = bus;
-        this.snapshotReader = snapshotReader;
-        this.snapshotHelper = snapshotHelper;
-        this.journal = journal;
-        this.service = service;
-    }
-
-    @Subscribe
-    public void on(CreateInventoryItem command) {
-
-        UUID id = command.getId();
-
-        Snapshot<InventoryItemAggregateRoot> initialSnapshot = snapshotReader.getSnapshot(command.getId());
-        CreateCommandHandler handler = new CreateCommandHandler(service);
-        UnitOfWork uow = handler.handle(command, initialSnapshot);
-
-        Snapshot<InventoryItemAggregateRoot> afterFirstCommandSnapshot = snapshotHelper.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
-        IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), id, 3, 1L);
-        UnitOfWork uow2 = new IncreaseCommandHandler().handle(command2, afterFirstCommandSnapshot);
-
-        Snapshot<InventoryItemAggregateRoot> afterSecondCommandSnapshot = snapshotHelper.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
-        DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), id, 2, 2L);
-        UnitOfWork uow3 = new DecreaseCommandHandler().handle(command3, afterSecondCommandSnapshot);
-
-        journal.appendBatch(command.getId(), ImmutableList.of(uow, uow2, uow3));
+        @Subscribe
+        public void on(IncreaseInventory command) {
+            System.out.println("command " + command);
+            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new IncreaseCommandHandler().handle(command, snapshot);
+            journal.append(command.getId(), uow);
+        }
 
     }
 
+    class CommandSubscriberBatch {
+
+        @Subscribe
+        public void on(CreateInventoryItem command) {
+
+            UUID id = command.getId();
+
+            Snapshot<InventoryItemAggregateRoot> initialSnapshot = snapshotReader.getSnapshot(command.getId());
+            CreateCommandHandler handler = new CreateCommandHandler(service);
+            UnitOfWork uow = handler.handle(command, initialSnapshot);
+
+            Snapshot<InventoryItemAggregateRoot> afterFirstCommandSnapshot = snapshotHelper.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
+            IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), id, 3, 1L);
+            UnitOfWork uow2 = new IncreaseCommandHandler().handle(command2, afterFirstCommandSnapshot);
+
+            Snapshot<InventoryItemAggregateRoot> afterSecondCommandSnapshot = snapshotHelper.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
+            DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), id, 2, 2L);
+            UnitOfWork uow3 = new DecreaseCommandHandler().handle(command3, afterSecondCommandSnapshot);
+
+            journal.appendBatch(command.getId(), ImmutableList.of(uow, uow2, uow3));
+
+        }
+
+    }
+
+    class EventSubscriber {
+
+        @Subscribe
+        public void on(InventoryItemCreated event) {
+        }
+
+    }
 }
 
 
 
-class EventSubscriber {
-
-    final EventBus bus;
-
-    EventSubscriber(EventBus bus) {
-        this.bus = bus;
-    }
-
-    @Subscribe
-    public void on(InventoryItemCreated event) {
-    }
-
-}
