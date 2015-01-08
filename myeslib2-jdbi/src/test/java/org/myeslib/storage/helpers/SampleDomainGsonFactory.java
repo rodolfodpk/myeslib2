@@ -29,7 +29,8 @@ public class SampleDomainGsonFactory {
                 RuntimeTypeAdapterFactory.of(Command.class)
                         .registerSubtype(CreateInventoryItem.class, CreateInventoryItem.class.getSimpleName())
                         .registerSubtype(IncreaseInventory.class, IncreaseInventory.class.getSimpleName())
-                        .registerSubtype(DecreaseInventory.class, DecreaseInventory.class.getSimpleName());
+                        .registerSubtype(DecreaseInventory.class, DecreaseInventory.class.getSimpleName())
+                        .registerSubtype(CreateInventoryItemThenIncreaseAndDecrease.class, CreateInventoryItemThenIncreaseAndDecrease.class.getSimpleName());
 
         final RuntimeTypeAdapterFactory<Event> eventAdapter =
                 RuntimeTypeAdapterFactory.of(Event.class)

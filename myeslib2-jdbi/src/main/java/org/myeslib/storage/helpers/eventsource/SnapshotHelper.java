@@ -13,18 +13,18 @@ public class SnapshotHelper<A extends AggregateRoot> {
     public Snapshot<A> applyEventsOn(final A aggregateRootInstance,
                                      final UnitOfWorkHistory transactionHistory
                                      ) {
-        applyEventsOn(transactionHistory.getAllEvents(), aggregateRootInstance);
+        applyEventsOn(aggregateRootInstance, transactionHistory.getAllEvents());
         return new Snapshot<>(aggregateRootInstance, transactionHistory.getLastVersion());
     }
 
     public Snapshot<A> applyEventsOn(final A aggregateRootInstance,
                                      final UnitOfWork uow
                                      ) {
-        applyEventsOn(uow.getEvents(), aggregateRootInstance);
+        applyEventsOn(aggregateRootInstance, uow.getEvents());
         return new Snapshot<>(aggregateRootInstance, uow.getVersion());
     }
 
-    private void applyEventsOn(List<? extends Event> events, AggregateRoot instance) {
+    private void applyEventsOn(AggregateRoot instance, List<? extends Event> events) {
         MultiMethod mm = MultiMethod.getMultiMethod(instance.getClass(), "on");
         for (Event event : events) {
             try {

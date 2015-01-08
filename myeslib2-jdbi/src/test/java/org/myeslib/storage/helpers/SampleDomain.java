@@ -55,6 +55,8 @@ public class SampleDomain {
 
     }
 
+    // commands handlers
+
     @AllArgsConstructor
     public static class CreateCommandHandler implements CommandHandler<CreateInventoryItem, InventoryItemAggregateRoot> {
 
@@ -83,8 +85,6 @@ public class SampleDomain {
         }
     }
 
-    // commands
-
     @AllArgsConstructor
     public static class DecreaseCommandHandler implements CommandHandler<DecreaseInventory, InventoryItemAggregateRoot> {
 
@@ -97,6 +97,26 @@ public class SampleDomain {
             return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
     }
+
+    @AllArgsConstructor
+    public static class CreateThenIncreaseAndDecreaseCommandHandler implements CommandHandler<CreateInventoryItemThenIncreaseAndDecrease, InventoryItemAggregateRoot> {
+
+        @NonNull
+        final SampleDomainService service;
+
+        @Override
+        public UnitOfWork handle(CreateInventoryItemThenIncreaseAndDecrease command, Snapshot<InventoryItemAggregateRoot> snapshot) {
+            checkNotNull(service);
+            checkArgument(snapshot.getAggregateInstance().getId() == null, "item already exists");
+            String description = service.generate(command.getId());
+            InventoryItemCreated event1 = new InventoryItemCreated(command.getId(), description);
+            InventoryIncreased event2 = new InventoryIncreased(command.getId(), command.getHowManyToIncrease());
+            InventoryDecreased event3 = new InventoryDecreased(command.getId(), command.getHowManyToDecrease());
+            return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event1, event2, event3));
+        }
+    }
+
+    // commands
 
     @Value
     public static class CreateInventoryItem implements Command {
@@ -116,6 +136,28 @@ public class SampleDomain {
         @NonNull
         Integer howMany;
         Long targetVersion;
+    }
+
+
+    @Value
+    public static class InventoryDecreased implements Event {
+        @NonNull
+        UUID id;
+        @NonNull
+        Integer howMany;
+    }
+
+    @Value
+    public static class CreateInventoryItemThenIncreaseAndDecrease implements Command {
+        final Long targetVersion = 0L;
+        @NonNull
+        UUID commandId;
+        @NonNull
+        UUID id;
+        @NonNull
+        Integer howManyToIncrease;
+        @NonNull
+        Integer howManyToDecrease;
     }
 
     // events
@@ -146,16 +188,5 @@ public class SampleDomain {
         @NonNull
         Integer howMany;
     }
-
-    // a service just for the sake of the example
-
-    @Value
-    public static class InventoryDecreased implements Event {
-        @NonNull
-        UUID id;
-        @NonNull
-        Integer howMany;
-    }
-
 
 }

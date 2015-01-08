@@ -12,7 +12,6 @@ import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
 import org.myeslib.storage.jdbi.JdbiReader;
-import org.myeslib.storage.jdbi.JdbiReader;
 import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
 
 import java.util.Arrays;

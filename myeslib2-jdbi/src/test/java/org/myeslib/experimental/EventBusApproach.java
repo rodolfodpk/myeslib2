@@ -20,6 +20,8 @@ import org.myeslib.storage.jdbi.dao.JdbiDao;
 import org.myeslib.storage.jdbi.dao.config.DbMetadata;
 import org.myeslib.storage.jdbi.dao.config.UowSerialization;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,7 +66,6 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     public void oneCommandShouldWork() throws InterruptedException {
 
         bus.register(new CommandSubscriber());
-        bus.register(new EventSubscriber());
 
         // create
 
@@ -85,9 +86,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     @Test
     public void validCommandPlusInvalidCommand() throws InterruptedException {
 
-        EventBus bus = new EventBus();
         bus.register(new CommandSubscriber());
-        bus.register(new EventSubscriber());
 
         // create
         UUID key = UUID.randomUUID() ;
@@ -109,11 +108,9 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     }
 
     @Test
-    public void testCommandsInBatch() throws InterruptedException {
+    public void commandsInBatch() throws InterruptedException {
 
-        EventBus bus = new EventBus();
         bus.register(new CommandSubscriberBatch());
-        bus.register(new EventSubscriber());
 
         // create
 
@@ -128,6 +125,53 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 3L);
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
+
+    }
+
+    @Test
+    public void aCommandWithManyEvents() throws InterruptedException {
+
+        bus.register(new CommandSubscriber());
+
+        // create then increase and decrease
+
+        UUID key = UUID.randomUUID() ;
+        CreateInventoryItemThenIncreaseAndDecrease command1 = new CreateInventoryItemThenIncreaseAndDecrease(UUID.randomUUID(), key, 2, 1);
+        bus.post(command1);
+
+        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
+        expected.setId(key);
+        expected.setDescription(key.toString());
+        expected.setAvailable(1);
+        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+
+        assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
+
+    }
+
+    @Test
+    public void howToCaptureEventsFromCaller() throws InterruptedException {
+
+        EventBus bus = new EventBus();
+        StateFullCommandSubscriber commandSubscriber = new StateFullCommandSubscriber();
+        bus.register(commandSubscriber);
+        bus.register(new EventSubscriber());
+
+        UUID key = UUID.randomUUID() ;
+        CreateInventoryItemThenIncreaseAndDecrease command1 = new CreateInventoryItemThenIncreaseAndDecrease(UUID.randomUUID(), key, 2, 1);
+        bus.post(command1);
+
+        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
+        expected.setId(key);
+        expected.setDescription(key.toString());
+        expected.setAvailable(1);
+        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+
+        assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
+
+        assertThat(commandSubscriber.transactions.size(), is(1));
+
+        assertThat(commandSubscriber.transactions.get(0).getEvents().size(), is(3));
 
     }
 
@@ -148,6 +192,29 @@ public class EventBusApproach extends DbAwareBaseTestClass {
             Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
             UnitOfWork uow = new IncreaseCommandHandler().handle(command, snapshot);
             journal.append(command.getId(), uow);
+        }
+
+        @Subscribe
+        public void on(CreateInventoryItemThenIncreaseAndDecrease command) {
+            System.out.println("command " + command);
+            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new CreateThenIncreaseAndDecreaseCommandHandler(service).handle(command, snapshot);
+            journal.append(command.getId(), uow);
+        }
+
+    }
+
+    class StateFullCommandSubscriber  {
+
+        final List<UnitOfWork> transactions = new ArrayList<>();
+
+        @Subscribe
+        public void on(CreateInventoryItemThenIncreaseAndDecrease command) {
+            System.out.println("command " + command);
+            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new CreateThenIncreaseAndDecreaseCommandHandler(service).handle(command, snapshot);
+            journal.append(command.getId(), uow);
+            transactions.add(uow);
         }
 
     }
@@ -171,7 +238,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
             DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), id, 2, 2L);
             UnitOfWork uow3 = new DecreaseCommandHandler().handle(command3, afterSecondCommandSnapshot);
 
-            journal.appendBatch(command.getId(), ImmutableList.of(uow, uow2, uow3));
+            journal.appendBatch(id, ImmutableList.of(uow, uow2, uow3));
 
         }
 
