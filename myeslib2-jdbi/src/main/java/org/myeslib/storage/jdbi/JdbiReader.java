@@ -46,22 +46,22 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
         final Snapshot<A> lastSnapshot;
         final AtomicBoolean wasDaoCalled = new AtomicBoolean(false);
         try {
-            logger.info("id {} cache.getFull(id)", id);
+            logger.debug("id {} cache.getFull(id)", id);
             lastSnapshot = cache.get(id, () -> {
-                logger.info("id {} cache.getFull(id) does not contain anything for this id. Will search on dao", id);
+                logger.debug("id {} cache.getFull(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
                 return snapshotHelper.applyEventsOn(supplier.get(), dao.getFull(id));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
         }
-        logger.info("id {} wasDaoCalled ? {}", id, wasDaoCalled.get());
+        logger.debug("id {} wasDaoCalled ? {}", id, wasDaoCalled.get());
         if (wasDaoCalled.get()) {
             return lastSnapshot;
         }
-        logger.info("id {} lastSnapshot has version {}. will check if there any version beyond it", id, lastSnapshot.getVersion());
+        logger.debug("id {} lastSnapshot has version {}. will check if there any version beyond it", id, lastSnapshot.getVersion());
         final UnitOfWorkHistory partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
-        logger.info("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.getAllEvents().size(), lastSnapshot.getVersion());
+        logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.getAllEvents().size(), lastSnapshot.getVersion());
         return snapshotHelper.applyEventsOn(lastSnapshot.getAggregateInstance(), partialTransactionHistory);
     }
 

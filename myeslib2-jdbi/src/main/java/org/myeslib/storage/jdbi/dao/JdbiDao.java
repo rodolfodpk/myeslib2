@@ -56,7 +56,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
 
         try {
 
-            log.info("will load {} from {}", id.toString(), dbMetadata.aggregateRootTable);
+            log.debug("will load {} from {}", id.toString(), dbMetadata.aggregateRootTable);
 
             List<UowRecord> unitsOfWork = dbi
                     .withHandle(new HandleCallback<List<UowRecord>>() {
@@ -105,7 +105,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
 
         log.debug(sql);
 
-        log.info("appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
+        log.debug("appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
 
         dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> conn.createStatement(sql)
                 .bind("id", id.toString())
@@ -122,13 +122,13 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
 
         String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
 
-        log.info("batch appending {} units of work with id {} on table {}", uowArray.length, id, dbMetadata.aggregateRootTable);
+        log.debug("batch appending {} units of work with id {} on table {}", uowArray.length, id, dbMetadata.aggregateRootTable);
 
         dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (h, ts) -> {
             final PreparedBatch pb = h.prepareBatch(sql);
             for (UnitOfWork uow : uowArray) {
                 log.debug(sql);
-                log.info("    --> batch appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
+                log.debug("    --> batch appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
                 String asString = functions.toStringFunction.apply(uow);
                 pb.add().bind("id", id.toString()).bind("uow_data", asString).bind("version", uow.getVersion());
             }

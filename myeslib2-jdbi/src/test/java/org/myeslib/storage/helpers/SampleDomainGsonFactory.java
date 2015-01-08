@@ -23,14 +23,14 @@ public class SampleDomainGsonFactory {
 
         final RuntimeTypeAdapterFactory<AggregateRoot> aggregateRootAdapter =
                 RuntimeTypeAdapterFactory.of(AggregateRoot.class)
-                        .registerSubtype(InventoryItemAggregateRoot.class, InventoryItemAggregateRoot.class.getSimpleName());
+                        .registerSubtype(InventoryItem.class, InventoryItem.class.getSimpleName());
 
         final RuntimeTypeAdapterFactory<Command> commandAdapter =
                 RuntimeTypeAdapterFactory.of(Command.class)
                         .registerSubtype(CreateInventoryItem.class, CreateInventoryItem.class.getSimpleName())
                         .registerSubtype(IncreaseInventory.class, IncreaseInventory.class.getSimpleName())
                         .registerSubtype(DecreaseInventory.class, DecreaseInventory.class.getSimpleName())
-                        .registerSubtype(CreateInventoryItemThenIncreaseAndDecrease.class, CreateInventoryItemThenIncreaseAndDecrease.class.getSimpleName());
+                        .registerSubtype(CreateInventoryItemThenIncreaseThenDecrease.class, CreateInventoryItemThenIncreaseThenDecrease.class.getSimpleName());
 
         final RuntimeTypeAdapterFactory<Event> eventAdapter =
                 RuntimeTypeAdapterFactory.of(Event.class)

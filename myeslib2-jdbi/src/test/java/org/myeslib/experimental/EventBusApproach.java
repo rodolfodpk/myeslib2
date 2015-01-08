@@ -21,8 +21,6 @@ import org.myeslib.storage.jdbi.dao.JdbiDao;
 import org.myeslib.storage.jdbi.dao.config.DbMetadata;
 import org.myeslib.storage.jdbi.dao.config.UowSerialization;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -36,9 +34,9 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     UowSerialization functions;
     DbMetadata dbMetadata;
     JdbiDao<UUID> dao;
-    Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
-    SnapshotHelper<InventoryItemAggregateRoot> snapshotHelper;
-    JdbiReader<UUID, InventoryItemAggregateRoot> snapshotReader ;
+    Cache<UUID, Snapshot<InventoryItem>> cache;
+    SnapshotHelper<InventoryItem> snapshotHelper;
+    JdbiReader<UUID, InventoryItem> snapshotReader ;
     JdbiJournal<UUID> journal;
     EventBus bus ;
     SampleDomainService service;
@@ -58,7 +56,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         dao = new JdbiDao<>(functions, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
         snapshotHelper = new SnapshotHelper<>();
-        snapshotReader = new JdbiReader<>(() -> new InventoryItemAggregateRoot(), dao, cache, snapshotHelper);
+        snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotHelper);
         journal = new JdbiJournal<>(dao);
         bus = new EventBus();
         service = id -> id.toString();
@@ -75,11 +73,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         CreateInventoryItem command1 = new CreateInventoryItem(UUID.randomUUID(), key);
         bus.post(command1);
 
-        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
-        expected.setId(key);
-        expected.setDescription(key.toString());
-        expected.setAvailable(0);
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+        InventoryItem expected = InventoryItem.builder().id(key).description(key.toString()).available(0).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
@@ -99,11 +94,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         IncreaseInventory invalidCommand = new IncreaseInventory(UUID.randomUUID(), key, 3, 0L); // note 0L as an invalid targetVersion
         bus.post(invalidCommand);
 
-        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
-        expected.setId(key);
-        expected.setDescription(key.toString());
-        expected.setAvailable(0);
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+        InventoryItem expected = InventoryItem.builder().id(key).description(key.toString()).available(0).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
@@ -120,11 +112,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         CreateInventoryItem command1 = new CreateInventoryItem(UUID.randomUUID(), key);
         bus.post(command1);
 
-        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
-        expected.setId(key);
-        expected.setDescription(key.toString());
-        expected.setAvailable(1);
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 3L);
+        InventoryItem expected = InventoryItem.builder().id(key).description(key.toString()).available(8).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 3L);
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
@@ -138,14 +127,11 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         // create then increase and decrease
 
         UUID key = UUID.randomUUID() ;
-        CreateInventoryItemThenIncreaseAndDecrease command1 = new CreateInventoryItemThenIncreaseAndDecrease(UUID.randomUUID(), key, 2, 1);
+        CreateInventoryItemThenIncreaseThenDecrease command1 = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), key, 2, 1);
         bus.post(command1);
 
-        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
-        expected.setId(key);
-        expected.setDescription(key.toString());
-        expected.setAvailable(1);
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+        InventoryItem expected = InventoryItem.builder().id(key).description(key.toString()).available(1).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
@@ -162,14 +148,11 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         bus2.register(new EventsSubscriberToReflectQueryModel());
 
         UUID key = UUID.randomUUID() ;
-        CreateInventoryItemThenIncreaseAndDecrease command1 = new CreateInventoryItemThenIncreaseAndDecrease(UUID.randomUUID(), key, 2, 1);
+        CreateInventoryItemThenIncreaseThenDecrease command1 = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), key, 2, 1);
         bus.post(command1);
 
-        InventoryItemAggregateRoot expected = new InventoryItemAggregateRoot();
-        expected.setId(key);
-        expected.setDescription(key.toString());
-        expected.setAvailable(1);
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expected, 1L);
+        InventoryItem expected = InventoryItem.builder().id(key).description(key.toString()).available(1).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
@@ -184,8 +167,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         @Subscribe
         public void on(CreateInventoryItem command) {
             System.out.println("command " + command);
-            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-            CreateCommandHandler handler = new CreateCommandHandler(service);
+            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+            HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
             UnitOfWork uow = handler.handle(command, snapshot);
             journal.append(command.getId(), uow);
         }
@@ -193,16 +176,16 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         @Subscribe
         public void on(IncreaseInventory command) {
             System.out.println("command " + command);
-            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new IncreaseCommandHandler().handle(command, snapshot);
+            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new HandleIncrease().handle(command, snapshot);
             journal.append(command.getId(), uow);
         }
 
         @Subscribe
-        public void on(CreateInventoryItemThenIncreaseAndDecrease command) {
+        public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
             System.out.println("command " + command);
-            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new CreateThenIncreaseAndDecreaseCommandHandler(service).handle(command, snapshot);
+            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service).handle(command, snapshot);
             journal.append(command.getId(), uow);
         }
 
@@ -215,17 +198,17 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
             UUID id = command.getId();
 
-            Snapshot<InventoryItemAggregateRoot> initialSnapshot = snapshotReader.getSnapshot(command.getId());
-            CreateCommandHandler handler = new CreateCommandHandler(service);
+            Snapshot<InventoryItem> initialSnapshot = snapshotReader.getSnapshot(command.getId());
+            HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
             UnitOfWork uow = handler.handle(command, initialSnapshot);
 
-            Snapshot<InventoryItemAggregateRoot> afterFirstCommandSnapshot = snapshotHelper.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
-            IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), id, 3, 1L);
-            UnitOfWork uow2 = new IncreaseCommandHandler().handle(command2, afterFirstCommandSnapshot);
+            Snapshot<InventoryItem> afterFirstCommandSnapshot = snapshotHelper.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
+            IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), id, 10, 1L);
+            UnitOfWork uow2 = new HandleIncrease().handle(command2, afterFirstCommandSnapshot);
 
-            Snapshot<InventoryItemAggregateRoot> afterSecondCommandSnapshot = snapshotHelper.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
+            Snapshot<InventoryItem> afterSecondCommandSnapshot = snapshotHelper.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
             DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), id, 2, 2L);
-            UnitOfWork uow3 = new DecreaseCommandHandler().handle(command3, afterSecondCommandSnapshot);
+            UnitOfWork uow3 = new HandleDecrease().handle(command3, afterSecondCommandSnapshot);
 
             journal.appendBatch(id, ImmutableList.of(uow, uow2, uow3));
 
@@ -238,10 +221,10 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         final AtomicReference<UnitOfWork> transaction = new AtomicReference<>();
 
         @Subscribe
-        public void on(CreateInventoryItemThenIncreaseAndDecrease command) {
+        public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
             System.out.println("command " + command);
-            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new CreateThenIncreaseAndDecreaseCommandHandler(service).handle(command, snapshot);
+            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service).handle(command, snapshot);
             journal.append(command.getId(), uow);
             transaction.set(uow);
         }

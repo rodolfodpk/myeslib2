@@ -28,15 +28,15 @@ import static org.myeslib.storage.helpers.SampleDomain.*;
 public class JdbiReaderTest {
 
     @Mock
-    Supplier<InventoryItemAggregateRoot> supplier;
+    Supplier<InventoryItem> supplier;
 
     @Mock
     UnitOfWorkDao<UUID> dao;
 
     @Mock
-    SnapshotHelper<InventoryItemAggregateRoot> snapshotHelper;
+    SnapshotHelper<InventoryItem> snapshotHelper;
 
-    Cache<UUID, Snapshot<InventoryItemAggregateRoot>> cache;
+    Cache<UUID, Snapshot<InventoryItem>> cache;
 
     @Before
     public void init() throws Exception {
@@ -48,11 +48,11 @@ public class JdbiReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
-        InventoryItemAggregateRoot instance = new InventoryItemAggregateRoot();
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(instance, 0L);
+        InventoryItem instance = InventoryItem.builder().build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(instance, 0L);
 
         when(supplier.get()).thenReturn(instance);
         when(dao.getFull(id)).thenReturn(expectedHistory);
@@ -72,11 +72,9 @@ public class JdbiReaderTest {
         UUID id = UUID.randomUUID();
 
         UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
-        InventoryItemAggregateRoot expectedInstance = new InventoryItemAggregateRoot();
-        expectedInstance.setId(id);
-        expectedInstance.setDescription("item1");
-        expectedInstance.setAvailable(0);
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expectedInstance, 0L);
+        InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 0L);
+
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(new InventoryItemCreated(id, "item1")));
 
         expectedHistory.add(newUow);
@@ -85,7 +83,7 @@ public class JdbiReaderTest {
         when(dao.getFull(id)).thenReturn(expectedHistory);
         when(snapshotHelper.applyEventsOn(expectedInstance, expectedHistory)).thenReturn(expectedSnapshot);
 
-        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
@@ -103,11 +101,7 @@ public class JdbiReaderTest {
         Long expectedVersion = 1L;
         String expectedDescription = "item1";
 
-        InventoryItemAggregateRoot expectedInstance = new InventoryItemAggregateRoot();
-
-        expectedInstance.setId(id);
-        expectedInstance.setAvailable(0);
-        expectedInstance.setDescription(expectedDescription);
+        InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
         UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
 
@@ -115,14 +109,14 @@ public class JdbiReaderTest {
 
         expectedHistory.add(currentUow);
 
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
 
         cache.put(id, expectedSnapshot);
 
         when(dao.getPartial(id, expectedVersion)).thenReturn(expectedHistory);
         when(snapshotHelper.applyEventsOn(expectedInstance, expectedHistory)).thenReturn(expectedSnapshot);
 
-        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
@@ -141,12 +135,9 @@ public class JdbiReaderTest {
         Long currentVersion = 1L;
         String expectedDescription = "item1";
 
-        InventoryItemAggregateRoot currentInstance = new InventoryItemAggregateRoot();
-        currentInstance.setId(id);
-        currentInstance.setAvailable(0);
-        currentInstance.setDescription(expectedDescription);
+        InventoryItem currentInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
-        Snapshot<InventoryItemAggregateRoot> currentSnapshot = new Snapshot<>(currentInstance, currentVersion);
+        Snapshot<InventoryItem> currentSnapshot = new Snapshot<>(currentInstance, currentVersion);
 
         cache.put(id, currentSnapshot);
 
@@ -155,17 +146,14 @@ public class JdbiReaderTest {
         remainingHistory.add(partialUow);
 
         Long expectedVersion = 2L;
-        InventoryItemAggregateRoot expectedInstance = new InventoryItemAggregateRoot();
-        expectedInstance.setId(id);
-        expectedInstance.setAvailable(2);
-        expectedInstance.setDescription(expectedDescription);
+        InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(2).build();
 
-        Snapshot<InventoryItemAggregateRoot> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
 
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
         when(snapshotHelper.applyEventsOn(currentInstance, remainingHistory)).thenReturn(expectedSnapshot);
 
-        JdbiReader<UUID, InventoryItemAggregateRoot> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotHelper);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 

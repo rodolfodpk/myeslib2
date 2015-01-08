@@ -10,7 +10,7 @@ import static org.myeslib.storage.helpers.SampleDomain.*;
 @RunWith(MockitoJUnitRunner.class)
 public class Sample {
 
-    InventoryItemAggregateRoot aggregateRoot = new InventoryItemAggregateRoot();
+//    InventoryItem aggregateRoot = new InventoryItem();
 
     @Mock
     SampleDomainService service;
