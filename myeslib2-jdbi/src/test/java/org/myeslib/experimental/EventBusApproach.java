@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.myeslib.core.Event;
 import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.storage.helpers.DbAwareBaseTestClass;
@@ -155,7 +156,9 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         EventBus bus = new EventBus();
         StateFullCommandSubscriber commandSubscriber = new StateFullCommandSubscriber();
         bus.register(commandSubscriber);
-        bus.register(new EventSubscriber());
+
+        EventBus bus2 = new EventBus();
+        bus2.register(new EventsSubscriberToReflectQueryModel());
 
         UUID key = UUID.randomUUID() ;
         CreateInventoryItemThenIncreaseAndDecrease command1 = new CreateInventoryItemThenIncreaseAndDecrease(UUID.randomUUID(), key, 2, 1);
@@ -172,6 +175,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         assertThat(commandSubscriber.transactions.size(), is(1));
 
         assertThat(commandSubscriber.transactions.get(0).getEvents().size(), is(3));
+
+        bus2.post(commandSubscriber.transactions.get(0));
 
     }
 
@@ -244,10 +249,16 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
     }
 
-    class EventSubscriber {
+    class EventsSubscriberToReflectQueryModel {
 
         @Subscribe
-        public void on(InventoryItemCreated event) {
+        public void on(UnitOfWork uow) {
+
+            System.out.println("received a UnitOfWork with " + uow.getEvents().size() + " events: ");
+            for (Event e: uow.getEvents()) {
+                System.out.println("  "+ e);
+            }
+
         }
 
     }
