@@ -110,21 +110,19 @@ public class SampleDomain {
 
             InventoryItem that = (InventoryItem) o;
 
-            return Objects.equal(this.service, that.service) &&
-                    Objects.equal(this.id, that.id) &&
+            return Objects.equal(this.id, that.id) &&
                     Objects.equal(this.description, that.description) &&
                     Objects.equal(this.available, that.available);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(service, id, description, available);
+            return Objects.hashCode(id, description, available);
         }
 
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(this)
-                    .add("service", service)
                     .add("id", id)
                     .add("description", description)
                     .add("available", available)
