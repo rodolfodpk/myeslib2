@@ -24,6 +24,7 @@ import org.myeslib.storage.jdbi.dao.config.UowSerialization;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -172,11 +173,9 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
         assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
 
-        assertThat(commandSubscriber.transactions.size(), is(1));
+        assertThat(commandSubscriber.transaction.get().getEvents().size(), is(3));
 
-        assertThat(commandSubscriber.transactions.get(0).getEvents().size(), is(3));
-
-        bus2.post(commandSubscriber.transactions.get(0));
+        bus2.post(commandSubscriber.transaction);
 
     }
 
@@ -209,21 +208,6 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
     }
 
-    class StateFullCommandSubscriber  {
-
-        final List<UnitOfWork> transactions = new ArrayList<>();
-
-        @Subscribe
-        public void on(CreateInventoryItemThenIncreaseAndDecrease command) {
-            System.out.println("command " + command);
-            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new CreateThenIncreaseAndDecreaseCommandHandler(service).handle(command, snapshot);
-            journal.append(command.getId(), uow);
-            transactions.add(uow);
-        }
-
-    }
-
     class CommandSubscriberBatch {
 
         @Subscribe
@@ -245,6 +229,21 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
             journal.appendBatch(id, ImmutableList.of(uow, uow2, uow3));
 
+        }
+
+    }
+
+    class StateFullCommandSubscriber  {
+
+        final AtomicReference<UnitOfWork> transaction = new AtomicReference<>();
+
+        @Subscribe
+        public void on(CreateInventoryItemThenIncreaseAndDecrease command) {
+            System.out.println("command " + command);
+            Snapshot<InventoryItemAggregateRoot> snapshot = snapshotReader.getSnapshot(command.getId());
+            UnitOfWork uow = new CreateThenIncreaseAndDecreaseCommandHandler(service).handle(command, snapshot);
+            journal.append(command.getId(), uow);
+            transaction.set(uow);
         }
 
     }

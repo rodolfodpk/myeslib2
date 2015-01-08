@@ -1,11 +1,9 @@
 package org.myeslib.storage.helpers;
 
-import com.google.common.eventbus.Subscribe;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Command;
 import org.myeslib.core.CommandHandler;
@@ -31,9 +29,46 @@ public class SampleDomain {
     @Data
     public static class InventoryItemAggregateRoot implements AggregateRoot {
 
+        transient SampleDomainService service;
+
         UUID id;
         String description;
         Integer available = 0;
+
+        // domain behaviour (ok, it is coupled with Event interface but...)
+
+        public Event create(UUID id) {
+            isNew();
+            hasAllRequiredServices();
+            return new InventoryItemCreated(id, service.generate(id));
+        }
+
+        public Event increase(int howMany) {
+            isCreated();
+            return new InventoryIncreased(howMany);
+        }
+
+        public Event decrease(int howMany) {
+            isCreated();
+            checkArgument(howMany <= available, "there aren't enough items available");
+            return new InventoryDecreased(howMany);
+        }
+
+        // guards
+
+        private void isNew() {
+            checkArgument(this.id == null, "item already exists");
+        }
+
+        private void hasAllRequiredServices() {
+            checkNotNull(service, "SampleDomainService cannot be null");
+        }
+
+        private void isCreated() {
+            checkArgument(id != null, "This item is not created and no operations can be executed on it");
+        }
+
+        // events handlers (reflect the state)
 
         public void on(InventoryItemCreated event) {
             this.id = event.id;
@@ -49,10 +84,6 @@ public class SampleDomain {
             this.available = this.available - event.howMany;
         }
 
-        public boolean isAvailable(int howMany) {
-            return getAvailable() - howMany >= 0;
-        }
-
     }
 
     // commands handlers
@@ -65,10 +96,9 @@ public class SampleDomain {
 
         @Override
         public UnitOfWork handle(CreateInventoryItem command, Snapshot<InventoryItemAggregateRoot> snapshot) {
-            checkNotNull(service);
-            checkArgument(snapshot.getAggregateInstance().getId() == null, "item already exists");
-            String description = service.generate(command.getId());
-            InventoryItemCreated event = new InventoryItemCreated(command.getId(), description);
+            final InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
+            aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
+            final Event event = aggregateRoot.create(command.getId());
             return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
     }
@@ -77,10 +107,8 @@ public class SampleDomain {
     public static class IncreaseCommandHandler implements CommandHandler<IncreaseInventory, InventoryItemAggregateRoot> {
 
         public UnitOfWork handle(IncreaseInventory command, Snapshot<InventoryItemAggregateRoot> snapshot) {
-            InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
-            checkArgument(aggregateRoot.getId() != null, "before increasing you must create an item");
-            checkArgument(aggregateRoot.getId().equals(command.getId()), "item id does not match");
-            InventoryIncreased event = new InventoryIncreased(command.getId(), command.getHowMany());
+            final InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
+            final Event event = aggregateRoot.increase(command.getHowMany());
             return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
     }
@@ -89,13 +117,11 @@ public class SampleDomain {
     public static class DecreaseCommandHandler implements CommandHandler<DecreaseInventory, InventoryItemAggregateRoot> {
 
         public UnitOfWork handle(DecreaseInventory command, Snapshot<InventoryItemAggregateRoot> snapshot) {
-            InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
-            checkArgument(aggregateRoot.getId() != null, "before decreasing you must create an item");
-            checkArgument(aggregateRoot.getId().equals(command.getId()), "item id does not match");
-            checkArgument(aggregateRoot.isAvailable(command.howMany), "there are not enough items available");
-            InventoryDecreased event = new InventoryDecreased(command.getId(), command.getHowMany());
+            final InventoryItemAggregateRoot aggregateRoot = snapshot.getAggregateInstance();
+            final Event event = aggregateRoot.increase(command.getHowMany());
             return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
         }
+
     }
 
     @AllArgsConstructor
@@ -110,8 +136,8 @@ public class SampleDomain {
             checkArgument(snapshot.getAggregateInstance().getId() == null, "item already exists");
             String description = service.generate(command.getId());
             InventoryItemCreated event1 = new InventoryItemCreated(command.getId(), description);
-            InventoryIncreased event2 = new InventoryIncreased(command.getId(), command.getHowManyToIncrease());
-            InventoryDecreased event3 = new InventoryDecreased(command.getId(), command.getHowManyToDecrease());
+            InventoryIncreased event2 = new InventoryIncreased(command.getHowManyToIncrease());
+            InventoryDecreased event3 = new InventoryDecreased(command.getHowManyToDecrease());
             return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event1, event2, event3));
         }
     }
@@ -138,13 +164,15 @@ public class SampleDomain {
         Long targetVersion;
     }
 
-
     @Value
-    public static class InventoryDecreased implements Event {
+    public static class DecreaseInventory implements Command {
+        @NonNull
+        UUID commandId;
         @NonNull
         UUID id;
         @NonNull
         Integer howMany;
+        Long targetVersion;
     }
 
     @Value
@@ -162,16 +190,6 @@ public class SampleDomain {
 
     // events
 
-    @Value
-    public static class DecreaseInventory implements Command {
-        @NonNull
-        UUID commandId;
-        @NonNull
-        UUID id;
-        @NonNull
-        Integer howMany;
-        Long targetVersion;
-    }
 
     @Value
     public static class InventoryItemCreated implements Event {
@@ -184,7 +202,11 @@ public class SampleDomain {
     @Value
     public static class InventoryIncreased implements Event {
         @NonNull
-        UUID id;
+        Integer howMany;
+    }
+
+    @Value
+    public static class InventoryDecreased implements Event {
         @NonNull
         Integer howMany;
     }

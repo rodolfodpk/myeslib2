@@ -151,7 +151,7 @@ public class JdbiReaderTest {
         cache.put(id, currentSnapshot);
 
         UnitOfWorkHistory remainingHistory = new UnitOfWorkHistory();
-        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 2, 1L), Arrays.asList(new InventoryIncreased(id, 2)));
+        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 2, 1L), Arrays.asList(new InventoryIncreased(2)));
         remainingHistory.add(partialUow);
 
         Long expectedVersion = 2L;
