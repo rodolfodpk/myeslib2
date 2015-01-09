@@ -1,0 +1,17 @@
+package org.myeslib.sampledomain.aggregates.inventoryitem.events.domain;
+
+import com.google.auto.value.AutoValue;
+import org.myeslib.core.Event;
+
+import java.util.UUID;
+
+@AutoValue
+public abstract class InventoryItemCreated implements Event {
+    public abstract UUID id();
+    public abstract String description();
+    InventoryItemCreated() {
+    }
+    public static InventoryItemCreated create(UUID id, String description) {
+        return new AutoValue_InventoryItemCreated(id, description);
+    }
+}

@@ -12,8 +12,15 @@ import org.junit.Test;
 import org.myeslib.core.Event;
 import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.*;
+import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.SampleDomainGsonFactory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleCreateInventoryItem;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleCreateThenIncreaseThenDecrease;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleDecrease;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleIncrease;
+import org.myeslib.sampledomain.aggregates.inventoryitem.services.SampleDomainService;
 import org.myeslib.storage.helpers.DbAwareBaseTestClass;
-import org.myeslib.storage.helpers.SampleDomainGsonFactory;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
 import org.myeslib.storage.jdbi.JdbiJournal;
 import org.myeslib.storage.jdbi.JdbiReader;
@@ -26,7 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.myeslib.storage.helpers.SampleDomain.*;
 
 public class EventBusApproach extends DbAwareBaseTestClass {
 

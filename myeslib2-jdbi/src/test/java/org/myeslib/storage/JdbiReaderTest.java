@@ -10,6 +10,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.data.Snapshot;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryIncreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
 import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
 import org.myeslib.storage.jdbi.JdbiReader;
 import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
@@ -22,7 +27,6 @@ import java.util.function.Supplier;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
-import static org.myeslib.storage.helpers.SampleDomain.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JdbiReaderTest {
@@ -75,7 +79,7 @@ public class JdbiReaderTest {
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 0L);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(new InventoryItemCreated(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         expectedHistory.add(newUow);
 
@@ -105,7 +109,7 @@ public class JdbiReaderTest {
 
         UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
 
-        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(new InventoryItemCreated(id, expectedDescription)));
+        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         expectedHistory.add(currentUow);
 
@@ -142,7 +146,7 @@ public class JdbiReaderTest {
         cache.put(id, currentSnapshot);
 
         UnitOfWorkHistory remainingHistory = new UnitOfWorkHistory();
-        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 2, 1L), Arrays.asList(new InventoryIncreased(2)));
+        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 2, 1L), Arrays.asList(InventoryIncreased.create(2)));
         remainingHistory.add(partialUow);
 
         Long expectedVersion = 2L;

@@ -8,7 +8,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.data.UnitOfWork;
 import org.myeslib.core.data.UnitOfWorkHistory;
-import org.myeslib.storage.jdbi.JdbiJournal;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryDecreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryIncreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
 import org.myeslib.storage.jdbi.JdbiJournal;
 import org.myeslib.storage.jdbi.dao.UnitOfWorkDao;
 
@@ -16,7 +21,6 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
-import static org.myeslib.storage.helpers.SampleDomain.*;
 
 @Slf4j
 @RunWith(MockitoJUnitRunner.class)
@@ -35,7 +39,7 @@ public class JdbiJournalTest {
         UUID id = UUID.randomUUID();
 
         UnitOfWorkHistory toSave = new UnitOfWorkHistory();
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(new InventoryItemCreated(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(InventoryItemCreated.create(id, "item1")));
         toSave.add(newUow);
 
         JdbiJournal store = new JdbiJournal(dao);
@@ -51,11 +55,11 @@ public class JdbiJournalTest {
 
         UUID id = UUID.randomUUID();
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(new InventoryIncreased(1)));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(InventoryIncreased.create((1))));
         UnitOfWorkHistory existing = new UnitOfWorkHistory();
         existing.add(existingUow);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1, 1L), Arrays.asList(new InventoryDecreased(1)));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1, 1L), Arrays.asList(InventoryDecreased.create((1))));
 
         JdbiJournal store = new JdbiJournal(dao);
 
