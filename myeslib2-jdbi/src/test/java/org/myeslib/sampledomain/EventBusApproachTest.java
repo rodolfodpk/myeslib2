@@ -13,7 +13,7 @@ import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.SnapshotComputing;
-import org.myeslib.jdbi.function.SnapshotComputingImpl;
+import org.myeslib.jdbi.function.MutableSnapshotComputing;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.*;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.SampleDomainGsonFactory;
@@ -66,7 +66,7 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         dbMetadata = new DbMetadata("inventory_item");
         dao = new JdbiDao<>(functions, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        snapshotComputing = new SnapshotComputingImpl<>();
+        snapshotComputing = new MutableSnapshotComputing<>();
         snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotComputing);
         journal = new JdbiJournal<>(dao);
         bus = new EventBus();
@@ -101,8 +101,9 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         // create
         CreateInventoryItem validCommand = new CreateInventoryItem(UUID.randomUUID(), key);
         bus.post(validCommand);
+        // now we have version = 1
 
-        // now increase (will fail since it has an invalid targetVersion)
+        // now increase (will fail since it has targetVersion = 0 instead of 1)
         IncreaseInventory invalidCommand = new IncreaseInventory(UUID.randomUUID(), key, 3, 0L); // note 0L as an invalid targetVersion
         bus.post(invalidCommand);
 
@@ -258,7 +259,7 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         @Subscribe
         public void on(UnitOfWork uow) {
 
-            logger.info("received a UnitOfWork with {} events" + uow.getEvents().size());
+            logger.info("received a UnitOfWork with {} events:" + uow.getEvents().size());
             for (Event e: uow.getEvents()) {
                 logger.info("  {}", e);
             }

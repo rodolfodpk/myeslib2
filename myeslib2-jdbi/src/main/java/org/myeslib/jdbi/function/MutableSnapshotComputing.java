@@ -11,7 +11,7 @@ import org.myeslib.function.SnapshotComputing;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class SnapshotComputingImpl<A extends AggregateRoot> implements SnapshotComputing<A> {
+public class MutableSnapshotComputing<A extends AggregateRoot> implements SnapshotComputing<A> {
 
     @Override
     public Snapshot<A> applyEventsOn(final A aggregateRootInstance,

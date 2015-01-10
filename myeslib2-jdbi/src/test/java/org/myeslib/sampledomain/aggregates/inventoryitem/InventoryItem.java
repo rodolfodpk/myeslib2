@@ -10,6 +10,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.Inventory
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
 import org.myeslib.sampledomain.services.SampleDomainService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -41,6 +42,10 @@ public class InventoryItem implements AggregateRoot {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
         return InventoryDecreased.create(howMany);
+    }
+
+    public List<Event> domainBehaviourThatGeneratesTwoEvents() {
+        return null ; // just an example
     }
 
     // guards
