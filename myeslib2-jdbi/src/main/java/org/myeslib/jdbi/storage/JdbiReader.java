@@ -62,7 +62,7 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
         }
         logger.debug("id {} lastSnapshot has version {}. will check if there any version beyond it", id, lastSnapshot.getVersion());
         final UnitOfWorkHistory partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
-        if (partialTransactionHistory.getAllEvents().size()==0) {
+        if (partialTransactionHistory.isEmpty()) {
             return lastSnapshot;
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.getAllEvents().size(), partialTransactionHistory.getLastVersion());

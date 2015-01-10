@@ -52,6 +52,10 @@ public class UnitOfWorkHistory implements Serializable {
         unitsOfWork.add(transaction);
     }
 
+    public boolean isEmpty() {
+        return unitsOfWork.isEmpty();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

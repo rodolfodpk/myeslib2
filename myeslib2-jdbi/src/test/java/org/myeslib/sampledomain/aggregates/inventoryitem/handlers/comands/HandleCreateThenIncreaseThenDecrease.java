@@ -30,11 +30,11 @@ public class HandleCreateThenIncreaseThenDecrease implements CommandHandler<Crea
     @Override
     public UnitOfWork handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
 
-        final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
+        final InventoryItem aggregateRoot1 = snapshot.getAggregateInstance();
+        aggregateRoot1.setService(service); // instead, it could be using Guice to inject necessary services
 
-        final Event event1 = aggregateRoot.create(command.getId());
-        final InventoryItem aggregateRoot2 = snapshotComputing.applyEventsOn(aggregateRoot, event1);
+        final Event event1 = aggregateRoot1.create(command.getId());
+        final InventoryItem aggregateRoot2 = snapshotComputing.applyEventsOn(aggregateRoot1, event1);
 
         final Event event2 = aggregateRoot2.increase(command.getHowManyToIncrease());
         final InventoryItem aggregateRoot3 = snapshotComputing.applyEventsOn(aggregateRoot2, event2);

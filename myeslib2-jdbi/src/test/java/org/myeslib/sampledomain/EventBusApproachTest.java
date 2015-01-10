@@ -146,7 +146,7 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
-       assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
+        assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
 
     }
 
