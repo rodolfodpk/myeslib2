@@ -1,4 +1,4 @@
-package org.myeslib.experimental;
+package org.myeslib.sampledomain;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -37,9 +37,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class EventBusApproach extends DbAwareBaseTestClass {
+public class EventBusApproachTest extends DbAwareBaseTestClass {
 
-    static final Logger logger = LoggerFactory.getLogger(EventBusApproach.class);
+    static final Logger logger = LoggerFactory.getLogger(EventBusApproachTest.class);
 
     Gson gson;
     UowSerialization functions;
@@ -179,7 +179,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         @Subscribe
         public void on(CreateInventoryItem command) {
             try {
-                logger.info("command {}",  command);
+                logger.info("command {}", command);
                 Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
                 HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
                 UnitOfWork uow = handler.handle(command, snapshot);
@@ -192,7 +192,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
         @Subscribe
         public void on(IncreaseInventory command) {
-            logger.info("command {}",  command);
+            logger.info("command {}", command);
             Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
             UnitOfWork uow = new HandleIncrease().handle(command, snapshot);
             journal.append(command.getId(), uow);
@@ -201,7 +201,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         @Subscribe
         public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
             try {
-                logger.info("command {}",  command);
+                logger.info("command {}", command);
                 Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
                 UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, snapshotComputing).handle(command, snapshot);
                 journal.append(command.getId(), uow);
@@ -244,7 +244,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
         @Subscribe
         public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
-            logger.info("command {}",  command);
+            logger.info("command {}", command);
             Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
             UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, snapshotComputing).handle(command, snapshot);
             journal.append(command.getId(), uow);
