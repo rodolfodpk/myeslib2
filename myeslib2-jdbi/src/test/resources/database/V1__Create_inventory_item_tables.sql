@@ -32,7 +32,7 @@ create sequence seq_inventory_item_uow ;
 drop trigger if exists inventory_item_trigger ;
 
 create trigger inventory_item_trigger before insert on inventory_item_uow for each row 
-	call "org.myeslib.storage.helpers.h2.InventoryItemOptimisticLockingTrigger" ;
+	call "org.myeslib.jdbi.storage.helpers.h2.InventoryItemOptimisticLockingTrigger" ;
 	
 	
 	

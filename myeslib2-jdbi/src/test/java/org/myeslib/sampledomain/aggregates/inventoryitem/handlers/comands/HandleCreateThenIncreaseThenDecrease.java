@@ -1,12 +1,14 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands;
 
-import org.myeslib.core.CommandHandler;
+import org.myeslib.data.Snapshot;
+import org.myeslib.function.CommandHandler;
 import org.myeslib.core.Event;
-import org.myeslib.core.data.Snapshot;
-import org.myeslib.core.data.UnitOfWork;
+import org.myeslib.data.UnitOfWork;
+
+import org.myeslib.function.SnapshotComputing;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
-import org.myeslib.sampledomain.aggregates.inventoryitem.services.SampleDomainService;
+import org.myeslib.sampledomain.services.SampleDomainService;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -16,19 +18,29 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class HandleCreateThenIncreaseThenDecrease implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease, InventoryItem> {
 
     final SampleDomainService service;
+    final SnapshotComputing<InventoryItem> snapshotComputing;
 
-    public HandleCreateThenIncreaseThenDecrease(SampleDomainService service) {
+    public HandleCreateThenIncreaseThenDecrease(SampleDomainService service, SnapshotComputing<InventoryItem> snapshotComputing) {
         checkNotNull(service);
         this.service = service;
+        checkNotNull(snapshotComputing);
+        this.snapshotComputing = snapshotComputing;
     }
 
     @Override
     public UnitOfWork handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
+
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
+
         final Event event1 = aggregateRoot.create(command.getId());
-        final Event event2 = aggregateRoot.increase(command.getHowManyToIncrease());
-        final Event event3 = aggregateRoot.decrease(command.getHowManyToDecrease());
+        final InventoryItem aggregateRoot2 = snapshotComputing.applyEventsOn(aggregateRoot, event1);
+
+        final Event event2 = aggregateRoot2.increase(command.getHowManyToIncrease());
+        final InventoryItem aggregateRoot3 = snapshotComputing.applyEventsOn(aggregateRoot2, event2);
+
+        final Event event3 = aggregateRoot3.decrease(command.getHowManyToDecrease());
+
         return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event1, event2, event3));
     }
 }

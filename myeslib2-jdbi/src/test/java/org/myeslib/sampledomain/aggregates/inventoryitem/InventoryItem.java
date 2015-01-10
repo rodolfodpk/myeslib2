@@ -1,20 +1,21 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Event;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
-import org.myeslib.sampledomain.aggregates.inventoryitem.services.SampleDomainService;
+import org.myeslib.sampledomain.services.SampleDomainService;
 
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder @EqualsAndHashCode
+@Builder @EqualsAndHashCode @ToString(exclude = "service")
 public class InventoryItem implements AggregateRoot {
 
     private transient SampleDomainService service;

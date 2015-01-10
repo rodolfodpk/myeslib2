@@ -1,9 +1,9 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands;
 
-import org.myeslib.core.CommandHandler;
+import org.myeslib.data.Snapshot;
+import org.myeslib.function.CommandHandler;
 import org.myeslib.core.Event;
-import org.myeslib.core.data.Snapshot;
-import org.myeslib.core.data.UnitOfWork;
+import org.myeslib.data.UnitOfWork;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 

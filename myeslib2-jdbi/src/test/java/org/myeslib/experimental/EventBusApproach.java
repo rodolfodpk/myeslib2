@@ -10,8 +10,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.Event;
-import org.myeslib.core.data.Snapshot;
-import org.myeslib.core.data.UnitOfWork;
+import org.myeslib.data.Snapshot;
+import org.myeslib.data.UnitOfWork;
+import org.myeslib.function.SnapshotComputing;
+import org.myeslib.jdbi.function.SnapshotComputingImpl;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.*;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.SampleDomainGsonFactory;
@@ -19,14 +21,15 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.Handle
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleCreateThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleDecrease;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands.HandleIncrease;
-import org.myeslib.sampledomain.aggregates.inventoryitem.services.SampleDomainService;
-import org.myeslib.storage.helpers.DbAwareBaseTestClass;
-import org.myeslib.storage.helpers.eventsource.SnapshotHelper;
-import org.myeslib.storage.jdbi.JdbiJournal;
-import org.myeslib.storage.jdbi.JdbiReader;
-import org.myeslib.storage.jdbi.dao.JdbiDao;
-import org.myeslib.storage.jdbi.dao.config.DbMetadata;
-import org.myeslib.storage.jdbi.dao.config.UowSerialization;
+import org.myeslib.sampledomain.services.SampleDomainService;
+import org.myeslib.jdbi.storage.helpers.DbAwareBaseTestClass;
+import org.myeslib.jdbi.storage.JdbiJournal;
+import org.myeslib.jdbi.storage.JdbiReader;
+import org.myeslib.jdbi.storage.dao.JdbiDao;
+import org.myeslib.jdbi.storage.dao.config.DbMetadata;
+import org.myeslib.jdbi.storage.dao.config.UowSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,12 +39,14 @@ import static org.hamcrest.core.Is.is;
 
 public class EventBusApproach extends DbAwareBaseTestClass {
 
+    static final Logger logger = LoggerFactory.getLogger(EventBusApproach.class);
+
     Gson gson;
     UowSerialization functions;
     DbMetadata dbMetadata;
     JdbiDao<UUID> dao;
     Cache<UUID, Snapshot<InventoryItem>> cache;
-    SnapshotHelper<InventoryItem> snapshotHelper;
+    SnapshotComputing<InventoryItem> snapshotComputing;
     JdbiReader<UUID, InventoryItem> snapshotReader ;
     JdbiJournal<UUID> journal;
     EventBus bus ;
@@ -61,8 +66,8 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         dbMetadata = new DbMetadata("inventory_item");
         dao = new JdbiDao<>(functions, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        snapshotHelper = new SnapshotHelper<>();
-        snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotHelper);
+        snapshotComputing = new SnapshotComputingImpl<>();
+        snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotComputing);
         journal = new JdbiJournal<>(dao);
         bus = new EventBus();
         service = id -> id.toString();
@@ -89,10 +94,11 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     @Test
     public void validCommandPlusInvalidCommand() throws InterruptedException {
 
+        UUID key = UUID.randomUUID() ;
+
         bus.register(new CommandSubscriber());
 
         // create
-        UUID key = UUID.randomUUID() ;
         CreateInventoryItem validCommand = new CreateInventoryItem(UUID.randomUUID(), key);
         bus.post(validCommand);
 
@@ -132,14 +138,14 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
         // create then increase and decrease
 
-        UUID key = UUID.randomUUID() ;
-        CreateInventoryItemThenIncreaseThenDecrease command1 = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), key, 2, 1);
+        UUID itemId = UUID.randomUUID() ;
+        CreateInventoryItemThenIncreaseThenDecrease command1 = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), itemId, 2, 1);
         bus.post(command1);
 
-        InventoryItem expected = InventoryItem.builder().id(key).description(key.toString()).available(1).build();
+        InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
-        assertThat(snapshotReader.getSnapshot(key), is(expectedSnapshot));
+       assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
 
     }
 
@@ -147,7 +153,7 @@ public class EventBusApproach extends DbAwareBaseTestClass {
     public void howToCaptureEventsFromCaller() throws InterruptedException {
 
         EventBus bus = new EventBus();
-        StateFullCommandSubscriber commandSubscriber = new StateFullCommandSubscriber();
+        StatefulCommandSubscriber commandSubscriber = new StatefulCommandSubscriber();
         bus.register(commandSubscriber);
 
         EventBus bus2 = new EventBus();
@@ -172,16 +178,21 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
         @Subscribe
         public void on(CreateInventoryItem command) {
-            System.out.println("command " + command);
-            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-            HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
-            UnitOfWork uow = handler.handle(command, snapshot);
-            journal.append(command.getId(), uow);
+            try {
+                logger.info("command {}",  command);
+                Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+                HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
+                UnitOfWork uow = handler.handle(command, snapshot);
+                journal.append(command.getId(), uow);
+            } catch (Throwable t) {
+                // TODO to generate an error notification (event ?) to the caller
+            }
+
         }
 
         @Subscribe
         public void on(IncreaseInventory command) {
-            System.out.println("command " + command);
+            logger.info("command {}",  command);
             Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
             UnitOfWork uow = new HandleIncrease().handle(command, snapshot);
             journal.append(command.getId(), uow);
@@ -189,10 +200,15 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
         @Subscribe
         public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
-            System.out.println("command " + command);
-            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service).handle(command, snapshot);
-            journal.append(command.getId(), uow);
+            try {
+                logger.info("command {}",  command);
+                Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+                UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, snapshotComputing).handle(command, snapshot);
+                journal.append(command.getId(), uow);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+
         }
 
     }
@@ -208,11 +224,11 @@ public class EventBusApproach extends DbAwareBaseTestClass {
             HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
             UnitOfWork uow = handler.handle(command, initialSnapshot);
 
-            Snapshot<InventoryItem> afterFirstCommandSnapshot = snapshotHelper.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
+            Snapshot<InventoryItem> afterFirstCommandSnapshot = snapshotComputing.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
             IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), id, 10, 1L);
             UnitOfWork uow2 = new HandleIncrease().handle(command2, afterFirstCommandSnapshot);
 
-            Snapshot<InventoryItem> afterSecondCommandSnapshot = snapshotHelper.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
+            Snapshot<InventoryItem> afterSecondCommandSnapshot = snapshotComputing.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
             DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), id, 2, 2L);
             UnitOfWork uow3 = new HandleDecrease().handle(command3, afterSecondCommandSnapshot);
 
@@ -222,15 +238,15 @@ public class EventBusApproach extends DbAwareBaseTestClass {
 
     }
 
-    class StateFullCommandSubscriber  {
+    class StatefulCommandSubscriber {
 
         final AtomicReference<UnitOfWork> transaction = new AtomicReference<>();
 
         @Subscribe
         public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
-            System.out.println("command " + command);
+            logger.info("command {}",  command);
             Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service).handle(command, snapshot);
+            UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, snapshotComputing).handle(command, snapshot);
             journal.append(command.getId(), uow);
             transaction.set(uow);
         }
@@ -242,9 +258,9 @@ public class EventBusApproach extends DbAwareBaseTestClass {
         @Subscribe
         public void on(UnitOfWork uow) {
 
-            System.out.println("received a UnitOfWork with " + uow.getEvents().size() + " events: ");
+            logger.info("received a UnitOfWork with {} events" + uow.getEvents().size());
             for (Event e: uow.getEvents()) {
-                System.out.println("  "+ e);
+                logger.info("  {}", e);
             }
 
         }

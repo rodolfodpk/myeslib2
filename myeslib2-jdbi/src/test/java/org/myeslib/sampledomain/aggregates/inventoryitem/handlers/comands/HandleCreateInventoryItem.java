@@ -1,12 +1,12 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands;
 
-import org.myeslib.core.CommandHandler;
+import org.myeslib.data.Snapshot;
+import org.myeslib.function.CommandHandler;
 import org.myeslib.core.Event;
-import org.myeslib.core.data.Snapshot;
-import org.myeslib.core.data.UnitOfWork;
+import org.myeslib.data.UnitOfWork;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
-import org.myeslib.sampledomain.aggregates.inventoryitem.services.SampleDomainService;
+import org.myeslib.sampledomain.services.SampleDomainService;
 
 
 import java.util.Arrays;
@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class HandleCreateInventoryItem implements CommandHandler<CreateInventoryItem, InventoryItem> {
 
-    final SampleDomainService service;
+    final transient SampleDomainService service;
 
     public HandleCreateInventoryItem(SampleDomainService service) {
         checkNotNull(service);

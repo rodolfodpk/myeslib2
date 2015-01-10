@@ -10,7 +10,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventor
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
-import org.myeslib.storage.helpers.gson.RuntimeTypeAdapterFactory;
+import org.myeslib.jdbi.storage.helpers.gson.RuntimeTypeAdapterFactory;
 
 import java.lang.reflect.Modifier;
 
