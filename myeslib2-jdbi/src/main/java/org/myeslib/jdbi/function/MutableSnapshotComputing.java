@@ -39,7 +39,7 @@ public class MutableSnapshotComputing<A extends AggregateRoot> implements Snapsh
             try {
                 mm.invoke(instance, event);
             } catch (Exception e) {
-                throw new RuntimeException("Error when executing with reflection");
+                throw new RuntimeException("Error when executing with reflection", e.getCause());
             }
         }
     }
