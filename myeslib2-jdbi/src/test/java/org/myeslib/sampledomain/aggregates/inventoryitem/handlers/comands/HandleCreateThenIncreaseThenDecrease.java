@@ -1,11 +1,12 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands;
 
-import org.myeslib.data.Snapshot;
-import org.myeslib.function.CommandHandler;
+import com.google.common.eventbus.EventBus;
 import org.myeslib.core.Event;
+import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
-
+import org.myeslib.function.CommandHandler;
 import org.myeslib.function.SnapshotComputing;
+import org.myeslib.jdbi.function.StatefulEventBus;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -18,29 +19,28 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class HandleCreateThenIncreaseThenDecrease implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease, InventoryItem> {
 
     final SampleDomainService service;
-    final SnapshotComputing<InventoryItem> snapshotComputing;
+    final EventBus bus;
 
-    public HandleCreateThenIncreaseThenDecrease(SampleDomainService service, SnapshotComputing<InventoryItem> snapshotComputing) {
+    public HandleCreateThenIncreaseThenDecrease(SampleDomainService service, EventBus bus) {
         checkNotNull(service);
         this.service = service;
-        checkNotNull(snapshotComputing);
-        this.snapshotComputing = snapshotComputing;
+        checkNotNull(bus);
+        this.bus = bus;
     }
 
     @Override
     public UnitOfWork handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
 
-        final InventoryItem aggregateRoot1 = snapshot.getAggregateInstance();
-        aggregateRoot1.setService(service); // instead, it could be using Guice to inject necessary services
+        final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
+        final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot, bus);
 
-        final Event event1 = aggregateRoot1.create(command.getId());
-        final InventoryItem aggregateRoot2 = snapshotComputing.applyEventsOn(aggregateRoot1, event1);
+        aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
+        aggregateRoot.setBus(statefulBus);
 
-        final Event event2 = aggregateRoot2.increase(command.getHowManyToIncrease());
-        final InventoryItem aggregateRoot3 = snapshotComputing.applyEventsOn(aggregateRoot2, event2);
+        aggregateRoot.create(command.getId());
+        aggregateRoot.increase(command.getHowManyToIncrease());
+        aggregateRoot.decrease(command.getHowManyToDecrease());
 
-        final Event event3 = aggregateRoot3.decrease(command.getHowManyToDecrease());
-
-        return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event1, event2, event3));
+        return UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents());
     }
 }

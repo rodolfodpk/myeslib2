@@ -34,8 +34,6 @@ import org.myeslib.sampledomain.services.SampleDomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,7 +51,6 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
     SnapshotComputing<InventoryItem> snapshotComputing;
     JdbiReader<UUID, InventoryItem> snapshotReader ;
     JdbiJournal<UUID> journal;
-    EventBus bus ;
     SampleDomainService service;
 
     @BeforeClass
@@ -73,20 +70,21 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         snapshotComputing = new MutableSnapshotComputing<>();
         snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotComputing);
         journal = new JdbiJournal<>(dao);
-        bus = new EventBus();
         service = id -> id.toString();
     }
 
     @Test
     public void oneCommandShouldWork() throws InterruptedException {
 
-        bus.register(new CommandSubscriber());
-
         // create
 
         UUID itemId = UUID.randomUUID() ;
-        CreateInventoryItem command1 = new CreateInventoryItem(UUID.randomUUID(), itemId);
-        bus.post(command1);
+        CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), itemId);
+
+        Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+        HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service, new EventBus());
+        UnitOfWork uow = handler.handle(command, snapshot);
+        journal.append(command.getId(), uow);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
@@ -95,23 +93,44 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
 
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void validCommandPlusInvalidCommand() throws InterruptedException {
 
         UUID itemId = UUID.randomUUID() ;
 
-        bus.register(new CommandSubscriber());
-
         // create
         CreateInventoryItem validCommand = new CreateInventoryItem(UUID.randomUUID(), itemId);
-        bus.post(validCommand);
+        Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(validCommand.getId());
+        HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service, new EventBus());
+        UnitOfWork uow = handler.handle(validCommand, snapshot);
+        journal.append(validCommand.getId(), uow);
+
+        InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
+
         // now we have version = 1
+        assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
 
         // now increase (will fail since it has targetVersion = 0 instead of 1)
         IncreaseInventory invalidCommand = new IncreaseInventory(UUID.randomUUID(), itemId, 3, 0L); // note 0L as an invalid targetVersion
-        bus.post(invalidCommand);
+        UnitOfWork uowWillFail = new HandleIncrease(new EventBus()).handle(invalidCommand, expectedSnapshot);
+        journal.append(invalidCommand.getId(), uowWillFail);
 
-        InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
+    }
+
+    @Test
+    public void aCommandWithManyEvents() throws InterruptedException {
+
+        // command to create then increase and decrease
+
+        UUID itemId = UUID.randomUUID() ;
+        CreateInventoryItemThenIncreaseThenDecrease command = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), itemId, 2, 1);
+
+        Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
+        UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, new EventBus()).handle(command, snapshot);
+        journal.append(command.getId(), uow);
+
+        InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
 
         assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
@@ -121,13 +140,21 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
     @Test
     public void commandsInBatch() throws InterruptedException {
 
-        bus.register(new CommandSubscriberBatch());
-
         // create
 
         UUID itemId = UUID.randomUUID() ;
+        Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(itemId);
+
         CreateInventoryItem command1 = new CreateInventoryItem(UUID.randomUUID(), itemId);
-        bus.post(command1);
+        UnitOfWork uow = new HandleCreateInventoryItem(service, new EventBus()).handle(command1, snapshot);
+
+        IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), itemId, 10, 1L);
+        UnitOfWork uow2 = new HandleIncrease(new EventBus()).handle(command2, snapshot);
+
+        DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), itemId, 2, 2L);
+        UnitOfWork uow3 = new HandleDecrease(new EventBus()).handle(command3, snapshot);
+
+        journal.appendBatch(itemId, ImmutableList.of(uow, uow2, uow3));
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(8).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 3L);
@@ -135,165 +162,6 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
 
     }
-
-    @Test
-    public void aCommandWithManyEvents() throws InterruptedException {
-
-        bus.register(new CommandSubscriber());
-
-        // create then increase and decrease
-
-        UUID itemId = UUID.randomUUID() ;
-        CreateInventoryItemThenIncreaseThenDecrease command1 = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), itemId, 2, 1);
-        bus.post(command1);
-
-        InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
-
-        assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
-
-    }
-
-    @Test
-    public void howToCaptureEventsFromCaller() throws InterruptedException {
-
-        EventBus perCommandBus = new EventBus();
-        StatefulCommandSubscriber commandSubscriber = new PerCommandExecSubscriber();
-        perCommandBus.register(commandSubscriber);
-
-        EventBus domainEventsBus = new EventBus();
-        domainEventsBus.register(new EventsSubscriberToReflectQueryModel());
-
-        EventBus errorBus = new EventBus();
-        domainEventsBus.register(new EventBusToNotifyAboutCommandErrors());
-
-        UUID itemId = UUID.randomUUID() ;
-        CreateInventoryItemThenIncreaseThenDecrease command = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), itemId, 2, 1);
-        perCommandBus.post(command);
-
-        InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
-
-        assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
-
-        assertThat(commandSubscriber.successfulEvents().get().size(), is(3));
-
-        if (commandSubscriber.wasSuccessful()) {
-            domainEventsBus.post(commandSubscriber.transaction());
-        }
-
-        if (commandSubscriber.wasFailed()) {
-            errorBus.post(commandSubscriber.errorEvent());
-        }
-
-    }
-
-    class CommandSubscriber {
-
-        @Subscribe
-        public void on(CreateInventoryItem command) {
-            try {
-                logger.info("command {}", command);
-                Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-                HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
-                UnitOfWork uow = handler.handle(command, snapshot);
-                journal.append(command.getId(), uow);
-            } catch (Throwable t) {
-                // TODO to generate an error notification (event ?) to the caller
-            }
-
-        }
-
-        @Subscribe
-        public void on(IncreaseInventory command) {
-            logger.info("command {}", command);
-            Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-            UnitOfWork uow = new HandleIncrease().handle(command, snapshot);
-            journal.append(command.getId(), uow);
-        }
-
-        @Subscribe
-        public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
-            try {
-                logger.info("command {}", command);
-                Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-                UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, snapshotComputing).handle(command, snapshot);
-                journal.append(command.getId(), uow);
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-
-        }
-
-    }
-
-    class CommandSubscriberBatch {
-
-        @Subscribe
-        public void on(CreateInventoryItem command) {
-
-            UUID id = command.getId();
-
-            Snapshot<InventoryItem> initialSnapshot = snapshotReader.getSnapshot(command.getId());
-            HandleCreateInventoryItem handler = new HandleCreateInventoryItem(service);
-            UnitOfWork uow = handler.handle(command, initialSnapshot);
-
-            Snapshot<InventoryItem> afterFirstCommandSnapshot = snapshotComputing.applyEventsOn(initialSnapshot.getAggregateInstance(), uow);
-            IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), id, 10, 1L);
-            UnitOfWork uow2 = new HandleIncrease().handle(command2, afterFirstCommandSnapshot);
-
-            Snapshot<InventoryItem> afterSecondCommandSnapshot = snapshotComputing.applyEventsOn(afterFirstCommandSnapshot.getAggregateInstance(), uow2);
-            DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), id, 2, 2L);
-            UnitOfWork uow3 = new HandleDecrease().handle(command3, afterSecondCommandSnapshot);
-
-            journal.appendBatch(id, ImmutableList.of(uow, uow2, uow3));
-
-        }
-
-    }
-
-    /*
-    Not thread safe !! just one per Command execution
-     */
-    class PerCommandExecSubscriber implements StatefulCommandSubscriber {
-
-        Optional<UnitOfWork> transaction = Optional.empty();
-        Optional<ErrorEvent> errorEvent = Optional.empty();
-
-        @Subscribe
-        public void on(final CreateInventoryItemThenIncreaseThenDecrease command) {
-            try {
-                logger.info("command {}", command);
-                Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-                UnitOfWork uow = new HandleCreateThenIncreaseThenDecrease(service, snapshotComputing).handle(command, snapshot);
-                journal.append(command.getId(), uow);
-                transaction = Optional.of(uow);
-            } catch (Throwable t) {
-                logger.error("command {} failed: {} ", command, t);
-                errorEvent = Optional.of(new ErrorEvent() {
-                    @Override
-                    public UUID commandID() {
-                        return command.getId();
-                    }
-                    @Override
-                    public String errorDescription() {
-                        return t.getMessage();
-                    }
-                });
-            }
-        }
-
-        @Override
-        public Optional<UnitOfWork> transaction() {
-            return transaction;
-        }
-
-        @Override
-        public Optional<ErrorEvent> errorEvent() {
-            return this.errorEvent;
-        }
-
-     }
 
     class EventsSubscriberToReflectQueryModel {
 
@@ -307,46 +175,5 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
 
         }
 
-    }
-
-    class EventBusToNotifyAboutCommandErrors {
-        // TODO
-        @Subscribe
-        public void on(ErrorEvent errorEvent) {
-            logger.error(errorEvent.toString());
-        }
-    }
-
-}
-
-
-interface ErrorEvent extends Event {
-    UUID commandID();
-    String errorDescription();
-}
-
-interface DomainEvent extends Event {
-
-}
-
-interface ConcurrencyErrorEvent extends ErrorEvent {
-
-}
-
-interface StatefulCommandSubscriber {
-
-    Optional<UnitOfWork> transaction();
-    Optional<ErrorEvent> errorEvent();
-
-    public default Optional<List<Event>> successfulEvents() {
-        return Optional.of(transaction().get().getEvents());
-    }
-
-    public default boolean wasSuccessful() {
-        return !errorEvent().isPresent();
-    }
-
-    public default boolean wasFailed() {
-        return errorEvent().isPresent();
     }
 }

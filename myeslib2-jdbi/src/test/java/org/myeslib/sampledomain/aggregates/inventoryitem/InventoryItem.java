@@ -1,51 +1,48 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
+import com.google.common.eventbus.Subscribe;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.core.Event;
+import org.myeslib.jdbi.function.StatefulEventBus;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
 import org.myeslib.sampledomain.services.SampleDomainService;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder @EqualsAndHashCode @ToString(exclude = "service")
+@Builder @EqualsAndHashCode(exclude = "service,bus") @ToString(exclude = "service,bus")
 public class InventoryItem implements AggregateRoot {
-
-    private transient SampleDomainService service;
 
     private UUID id;
     private String description;
     private Integer available = 0;
 
-    // domain behaviour (ok, it is coupled with Event interface but...)
+    private transient SampleDomainService service;
+    private transient StatefulEventBus bus;
 
-    public Event create(UUID id) {
+    // domain behaviour
+
+    public void create(UUID id) {
         isNew();
         hasAllRequiredServices();
-        return InventoryItemCreated.create(id, service.generateItemDescription(id));
+        bus.post(InventoryItemCreated.create(id, service.generateItemDescription(id)));
     }
 
-    public Event increase(int howMany) {
+    public void increase(int howMany) {
         isCreated();
-        return InventoryIncreased.create(howMany);
+        bus.post(InventoryIncreased.create(howMany));
     }
 
-    public Event decrease(int howMany) {
+    public void decrease(int howMany) {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
-        return InventoryDecreased.create(howMany);
-    }
-
-    public List<Event> domainBehaviourThatGeneratesTwoEvents() {
-        return null ; // just an example
+        bus.post(InventoryDecreased.create(howMany));;
     }
 
     // guards
@@ -64,16 +61,19 @@ public class InventoryItem implements AggregateRoot {
 
     // events handlers (reflect the state)
 
+    @Subscribe
     public void on(InventoryItemCreated event) {
         this.id = event.id();
         this.description = event.description();
         this.available = 0;
     }
 
+    @Subscribe
     public void on(InventoryIncreased event) {
         this.available = this.available + event.howMany();
     }
 
+    @Subscribe
     public void on(InventoryDecreased event) {
         this.available = this.available - event.howMany();
     }
@@ -82,6 +82,10 @@ public class InventoryItem implements AggregateRoot {
 
     public void setService(SampleDomainService service) {
         this.service = service;
+    }
+
+    public void setBus(StatefulEventBus bus) {
+        this.bus = bus;
     }
 
     // static factories

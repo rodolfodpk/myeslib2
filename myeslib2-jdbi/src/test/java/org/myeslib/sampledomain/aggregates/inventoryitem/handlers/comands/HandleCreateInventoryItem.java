@@ -1,9 +1,11 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands;
 
+import com.google.common.eventbus.EventBus;
 import org.myeslib.data.Snapshot;
 import org.myeslib.function.CommandHandler;
 import org.myeslib.core.Event;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.jdbi.function.StatefulEventBus;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -17,18 +19,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class HandleCreateInventoryItem implements CommandHandler<CreateInventoryItem, InventoryItem> {
 
-    final transient SampleDomainService service;
+    final SampleDomainService service;
+    final EventBus bus;
 
-    public HandleCreateInventoryItem(SampleDomainService service) {
+    public HandleCreateInventoryItem(SampleDomainService service, EventBus bus) {
         checkNotNull(service);
         this.service = service;
+        checkNotNull(bus);
+        this.bus = bus;
     }
 
     @Override
     public UnitOfWork handle(CreateInventoryItem command, Snapshot<InventoryItem> snapshot) {
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
-        final Event event = aggregateRoot.create(command.getId());
-        return UnitOfWork.create(UUID.randomUUID(), command, Arrays.asList(event));
+        aggregateRoot.setService(service);
+        final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot, bus);
+        aggregateRoot.setBus(statefulBus);
+        aggregateRoot.create(command.getId());
+        return UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents());
     }
 }
