@@ -2,7 +2,6 @@ package org.myeslib.sampledomain.aggregates.inventoryitem.events;
 
 import com.google.auto.value.AutoValue;
 import org.myeslib.core.Event;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.AutoValue_InventoryItemCreated;
 
 import java.util.UUID;
 

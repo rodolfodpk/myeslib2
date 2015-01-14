@@ -6,9 +6,9 @@ import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.jdbi.function.StatefulEventBus;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryDecreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryIncreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 import org.myeslib.sampledomain.services.SampleDomainService;
 
 import java.util.UUID;

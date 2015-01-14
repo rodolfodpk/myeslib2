@@ -14,8 +14,8 @@ import org.myeslib.data.UnitOfWorkHistory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryIncreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.InventoryItemCreated;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
 
 import java.util.Arrays;

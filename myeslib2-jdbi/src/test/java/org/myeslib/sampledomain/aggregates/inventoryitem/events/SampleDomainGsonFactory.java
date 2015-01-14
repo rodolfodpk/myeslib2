@@ -11,9 +11,6 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventor
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.jdbi.storage.helpers.gson.RuntimeTypeAdapterFactory;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.AutoValue_InventoryDecreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.AutoValue_InventoryIncreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.domain.AutoValue_InventoryItemCreated;
 
 import java.lang.reflect.Modifier;
 
