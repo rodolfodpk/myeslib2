@@ -1,7 +1,6 @@
-package org.myeslib.sampledomain.aggregates.inventoryitem.handlers.comands;
+package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
 import com.google.common.eventbus.EventBus;
-import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.CommandHandler;
@@ -9,16 +8,15 @@ import org.myeslib.jdbi.function.StatefulEventBus;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class HandleDecrease implements CommandHandler<DecreaseInventory, InventoryItem> {
+public class DecreaseHandler implements CommandHandler<DecreaseInventory, InventoryItem> {
 
     final EventBus bus;
 
-    public HandleDecrease(EventBus bus) {
+    public DecreaseHandler(EventBus bus) {
         checkNotNull(bus);
         this.bus = bus;
     }
