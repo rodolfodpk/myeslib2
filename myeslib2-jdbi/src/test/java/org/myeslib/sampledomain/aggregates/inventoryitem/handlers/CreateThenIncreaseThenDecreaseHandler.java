@@ -1,6 +1,6 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
-import com.google.common.eventbus.EventBus;
+import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.CommandHandler;
@@ -16,20 +16,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease, InventoryItem> {
 
     final SampleDomainService service;
-    final EventBus bus;
 
-    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, EventBus bus) {
+    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service) {
         checkNotNull(service);
         this.service = service;
-        checkNotNull(bus);
-        this.bus = bus;
     }
 
     @Override
-    public UnitOfWork handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
+    public CommandResults handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
 
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot, bus);
+        final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
 
         aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
         aggregateRoot.setBus(statefulBus);
@@ -38,6 +35,6 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.increase(command.getHowManyToIncrease());
         aggregateRoot.decrease(command.getHowManyToDecrease());
 
-        return UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents());
+        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents()));
     }
 }

@@ -3,7 +3,6 @@ package org.myeslib.sampledomain;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
-import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.Gson;
 import org.junit.Before;
@@ -82,8 +81,8 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), itemId);
 
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service, new EventBus());
-        UnitOfWork uow = handler.handle(command, snapshot);
+        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service);
+        UnitOfWork uow = handler.handle(command, snapshot).getUnitOfWork();
         journal.append(command.getId(), uow);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
@@ -101,8 +100,8 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         // create
         CreateInventoryItem validCommand = new CreateInventoryItem(UUID.randomUUID(), itemId);
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(validCommand.getId());
-        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service, new EventBus());
-        UnitOfWork uow = handler.handle(validCommand, snapshot);
+        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service);
+        UnitOfWork uow = handler.handle(validCommand, snapshot).getUnitOfWork();
         journal.append(validCommand.getId(), uow);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
@@ -113,7 +112,7 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
 
         // now increase (will fail since it has targetVersion = 0 instead of 1)
         IncreaseInventory invalidCommand = new IncreaseInventory(UUID.randomUUID(), itemId, 3, 0L); // note 0L as an invalid targetVersion
-        UnitOfWork uowWillFail = new IncreaseHandler(new EventBus()).handle(invalidCommand, expectedSnapshot);
+        UnitOfWork uowWillFail = new IncreaseHandler().handle(invalidCommand, expectedSnapshot).getUnitOfWork();
         journal.append(invalidCommand.getId(), uowWillFail);
 
     }
@@ -127,7 +126,7 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         CreateInventoryItemThenIncreaseThenDecrease command = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), itemId, 2, 1);
 
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getId());
-        UnitOfWork uow = new CreateThenIncreaseThenDecreaseHandler(service, new EventBus()).handle(command, snapshot);
+        UnitOfWork uow = new CreateThenIncreaseThenDecreaseHandler(service).handle(command, snapshot).getUnitOfWork();
         journal.append(command.getId(), uow);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
@@ -146,13 +145,13 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(itemId);
 
         CreateInventoryItem command1 = new CreateInventoryItem(UUID.randomUUID(), itemId);
-        UnitOfWork uow = new CreateInventoryItemHandler(service, new EventBus()).handle(command1, snapshot);
+        UnitOfWork uow = new CreateInventoryItemHandler(service).handle(command1, snapshot).getUnitOfWork();
 
         IncreaseInventory command2 = new IncreaseInventory(UUID.randomUUID(), itemId, 10, 1L);
-        UnitOfWork uow2 = new IncreaseHandler(new EventBus()).handle(command2, snapshot);
+        UnitOfWork uow2 = new IncreaseHandler().handle(command2, snapshot).getUnitOfWork();
 
         DecreaseInventory command3 = new DecreaseInventory(UUID.randomUUID(), itemId, 2, 2L);
-        UnitOfWork uow3 = new DecreaseHandler(new EventBus()).handle(command3, snapshot);
+        UnitOfWork uow3 = new DecreaseHandler().handle(command3, snapshot).getUnitOfWork();
 
         journal.appendBatch(itemId, ImmutableList.of(uow, uow2, uow3));
 

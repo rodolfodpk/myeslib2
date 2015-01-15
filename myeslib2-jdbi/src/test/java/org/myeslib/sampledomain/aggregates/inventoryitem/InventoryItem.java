@@ -31,18 +31,18 @@ public class InventoryItem implements AggregateRoot {
     public void create(UUID id) {
         isNew();
         hasAllRequiredServices();
-        bus.post(InventoryItemCreated.create(id, service.generateItemDescription(id)));
+        bus.apply(InventoryItemCreated.create(id, service.generateItemDescription(id)));
     }
 
     public void increase(int howMany) {
         isCreated();
-        bus.post(InventoryIncreased.create(howMany));
+        bus.apply(InventoryIncreased.create(howMany));
     }
 
     public void decrease(int howMany) {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
-        bus.post(InventoryDecreased.create(howMany));;
+        bus.apply(InventoryDecreased.create(howMany));;
     }
 
     // guards

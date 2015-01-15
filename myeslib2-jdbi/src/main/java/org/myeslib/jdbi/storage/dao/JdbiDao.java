@@ -112,8 +112,6 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
                 .bind("version", uow.getVersion())
                 .execute());
 
-        // TODO confirm execution of LocalCache().invalidate(id);
-
     }
 
     @Override
