@@ -7,12 +7,11 @@ import org.myeslib.core.Command;
 import java.util.UUID;
 
 @Value
-public class CreateInventoryItemThenIncreaseThenDecrease implements Command {
-    final Long targetVersion = 0L;
+public class CreateInventoryItemThenIncreaseThenDecrease implements Command<UUID> {
     @NonNull
     UUID commandId;
     @NonNull
-    UUID id;
+    UUID targetId;
     @NonNull
     Integer howManyToIncrease;
     @NonNull

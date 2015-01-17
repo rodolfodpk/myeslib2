@@ -17,7 +17,7 @@ public class DecreaseHandler implements CommandHandler<DecreaseInventory, Invent
         final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
         aggregateRoot.setBus(statefulBus);
         aggregateRoot.decrease(command.getHowMany());
-        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents()));
+        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, snapshot.getVersion(), statefulBus.getEvents()));
     }
 
 }

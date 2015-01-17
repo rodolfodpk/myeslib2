@@ -7,13 +7,11 @@ import org.myeslib.core.Command;
 import java.util.UUID;
 
 @Value
-public class DecreaseInventory implements Command {
+public class DecreaseInventory implements Command<UUID> {
     @NonNull
     UUID commandId;
     @NonNull
-    UUID id;
+    UUID targetId;
     @NonNull
     Integer howMany;
-    @NonNull
-    Long targetVersion;
 }

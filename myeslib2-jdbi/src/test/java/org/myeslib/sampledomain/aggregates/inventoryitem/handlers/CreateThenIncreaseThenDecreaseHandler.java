@@ -31,10 +31,10 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
         aggregateRoot.setBus(statefulBus);
 
-        aggregateRoot.create(command.getId());
+        aggregateRoot.create(command.getTargetId());
         aggregateRoot.increase(command.getHowManyToIncrease());
         aggregateRoot.decrease(command.getHowManyToDecrease());
 
-        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents()));
+        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, snapshot.getVersion(), statefulBus.getEvents()));
     }
 }

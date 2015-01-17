@@ -29,7 +29,7 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
         aggregateRoot.setService(service);
         final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
         aggregateRoot.setBus(statefulBus);
-        aggregateRoot.create(command.getId());
-        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents()));
+        aggregateRoot.create(command.getTargetId());
+        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, snapshot.getVersion(), statefulBus.getEvents()));
     }
 }

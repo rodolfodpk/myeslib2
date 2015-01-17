@@ -5,27 +5,23 @@ import org.myeslib.core.Command;
 import java.util.UUID;
 
 @SuppressWarnings("serial")
-public class CommandJustForTest implements Command {
+public class CommandJustForTest implements Command<UUID> {
 
     private final UUID commandId;
     private final UUID id;
-    private final Long targetVersion;
 
-    public CommandJustForTest(UUID commandId, UUID id, Long targetVersion) {
+    public CommandJustForTest(UUID commandId, UUID id) {
         this.commandId = commandId;
         this.id = id;
-        this.targetVersion = targetVersion;
     }
 
     public UUID getCommandId() {
         return commandId;
     }
 
-    public UUID getId() {
+    @Override
+    public UUID getTargetId() {
         return id;
     }
 
-    public Long getTargetVersion() {
-        return targetVersion;
-    }
 }

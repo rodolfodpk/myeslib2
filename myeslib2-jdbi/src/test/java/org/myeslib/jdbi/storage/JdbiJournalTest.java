@@ -38,7 +38,7 @@ public class JdbiJournalTest {
         UUID id = UUID.randomUUID();
 
         UnitOfWorkHistory toSave = new UnitOfWorkHistory();
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
         toSave.add(newUow);
 
         JdbiJournal store = new JdbiJournal(dao);
@@ -54,11 +54,11 @@ public class JdbiJournalTest {
 
         UUID id = UUID.randomUUID();
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1), 0L, Arrays.asList(InventoryIncreased.create((1))));
         UnitOfWorkHistory existing = new UnitOfWorkHistory();
         existing.add(existingUow);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1, 1L), Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
         JdbiJournal store = new JdbiJournal(dao);
 

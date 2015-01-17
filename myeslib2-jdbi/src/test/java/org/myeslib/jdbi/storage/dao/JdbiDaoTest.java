@@ -48,7 +48,7 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         UUID id = UUID.randomUUID();
 
         UnitOfWorkHistory toSave = new UnitOfWorkHistory();
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(InventoryIncreased.create(1)));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1), 0L, Arrays.asList(InventoryIncreased.create(1)));
         toSave.add(newUow);
 
         dao.append(id, newUow);
@@ -64,11 +64,11 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         UUID id = UUID.randomUUID();
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(InventoryIncreased.create(1)));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1), 0L, Arrays.asList(InventoryIncreased.create(1)));
         UnitOfWorkHistory existing = new UnitOfWorkHistory();
         existing.add(existingUow);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1, 1L), Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
         dao.append(id, existingUow);
 
@@ -86,7 +86,7 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         UUID id = UUID.randomUUID();
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 1), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
         UnitOfWorkHistory existing = new UnitOfWorkHistory();
 
@@ -94,7 +94,7 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         dao.append(id, existingUow);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1, 0L), Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new DecreaseInventory(UUID.randomUUID(), id, 1), 0L, Arrays.asList(InventoryDecreased.create((1))));
 
         dao.append(id, newUow);
 

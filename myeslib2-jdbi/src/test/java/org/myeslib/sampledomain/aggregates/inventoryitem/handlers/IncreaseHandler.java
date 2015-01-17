@@ -17,6 +17,6 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory, Invent
         final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
         aggregateRoot.setBus(statefulBus);
         aggregateRoot.increase(command.getHowMany());
-        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, statefulBus.getEvents()));
+        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, snapshot.getVersion(), statefulBus.getEvents()));
     }
 }

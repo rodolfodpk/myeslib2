@@ -17,10 +17,10 @@ public class UnitOfWorkTest {
 
     @Test
     public void versionShouldBeCommandVersionPlusOne() {
+        Long snapshotVersion = 0L;
         List<Event> events = Arrays.asList(new EventJustForTest(UUID.randomUUID(), 1));
-        CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID(), 0L);
-        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command, events);
-        assertThat(uow.getTargetVersion(), is(0L));
+        CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
+        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command, snapshotVersion, events);
         assertThat(uow.getVersion(), is(1L));
     }
 
@@ -28,7 +28,7 @@ public class UnitOfWorkTest {
     @Test(expected = NullPointerException.class)
     public void nullEvent() {
         List<Event> events = Arrays.asList(null);
-        CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID(), 1L);
-        UnitOfWork uow = new UnitOfWork(UUID.randomUUID(), command, 1L, events);
+        CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
+        UnitOfWork uow = new UnitOfWork(UUID.randomUUID(), command, null, events);
     }
 }

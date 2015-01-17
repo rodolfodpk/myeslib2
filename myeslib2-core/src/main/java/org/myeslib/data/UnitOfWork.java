@@ -15,14 +15,13 @@ import static java.util.Objects.requireNonNull;
 public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
 
     private final UUID id;
-    private final Command command;
+    private final Command<?> command;
     private final List<? extends Event> events;
     private final Long version;
 
     public UnitOfWork(UUID id, Command command, Long version, List<? extends Event> events) {
         requireNonNull(id, "id cannot be null");
         requireNonNull(command, "command cannot be null");
-        targetVersionIsBiggerThanZero(command.getTargetVersion());
         versionIsBiggerThanZero(version);
         requireNonNull(events, "events cannot be null");
         for (Event e : events) {
@@ -34,22 +33,14 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
         this.events = events;
     }
 
-    private static void targetVersionIsBiggerThanZero(Long targetVersion) {
-        if (!(targetVersion >= 0L)) {
-            throw new IllegalArgumentException("target version must be >= 0");
-        }
-    }
-
     private static void versionIsBiggerThanZero(Long version) {
         if (!(version > 0L)) {
             throw new IllegalArgumentException("version must be > 0");
         }
     }
 
-    public static UnitOfWork create(UUID id, Command command, List<? extends Event> newEvents) {
-        requireNonNull(command.getTargetVersion(), "target version cannot be null");
-        targetVersionIsBiggerThanZero(command.getTargetVersion());
-        return new UnitOfWork(id, command, command.getTargetVersion() + 1, newEvents);
+    public static UnitOfWork create(UUID id, Command<?> command, Long snapshotVersion, List<? extends Event> newEvents) {
+        return new UnitOfWork(id, command, snapshotVersion + 1, newEvents);
     }
 
     public List<Event> getEvents() {
@@ -69,15 +60,11 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
         return 0;
     }
 
-    public Long getTargetVersion() {
-        return command.getTargetVersion();
-    }
-
     public UUID getId() {
         return id;
     }
 
-    public Command getCommand() {
+    public Command<?> getCommand() {
         return command;
     }
 
