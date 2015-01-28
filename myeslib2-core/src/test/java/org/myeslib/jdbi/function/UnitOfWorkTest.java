@@ -29,6 +29,6 @@ public class UnitOfWorkTest {
     public void nullEvent() {
         List<Event> events = Arrays.asList(null);
         CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
-        UnitOfWork uow = new UnitOfWork(UUID.randomUUID(), command, null, events);
+        UnitOfWork uow = new UnitOfWork(UUID.randomUUID(), command.getCommandId(), null, events);
     }
 }

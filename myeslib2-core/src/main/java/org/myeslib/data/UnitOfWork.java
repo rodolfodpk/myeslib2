@@ -15,20 +15,20 @@ import static java.util.Objects.requireNonNull;
 public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
 
     private final UUID id;
-    private final Command<?> command;
+    private final UUID commandId;
     private final List<? extends Event> events;
     private final Long version;
 
-    public UnitOfWork(UUID id, Command command, Long version, List<? extends Event> events) {
+    public UnitOfWork(UUID id, UUID commandId, Long version, List<? extends Event> events) {
         requireNonNull(id, "id cannot be null");
-        requireNonNull(command, "command cannot be null");
+        requireNonNull(commandId, "commandId cannot be null");
         versionIsBiggerThanZero(version);
         requireNonNull(events, "events cannot be null");
         for (Event e : events) {
             requireNonNull(e, "event within events list cannot be null");
         }
         this.id = id;
-        this.command = command;
+        this.commandId = commandId;
         this.version = version;
         this.events = events;
     }
@@ -40,7 +40,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     }
 
     public static UnitOfWork create(UUID id, Command<?> command, Long snapshotVersion, List<? extends Event> newEvents) {
-        return new UnitOfWork(id, command, snapshotVersion + 1, newEvents);
+        return new UnitOfWork(id, command.getCommandId(), snapshotVersion + 1, newEvents);
     }
 
     public List<Event> getEvents() {
@@ -64,8 +64,8 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
         return id;
     }
 
-    public Command<?> getCommand() {
-        return command;
+    public UUID getCommandId() {
+        return commandId;
     }
 
     public Long getVersion() {
@@ -79,7 +79,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
 
         UnitOfWork that = (UnitOfWork) o;
 
-        if (!command.equals(that.command)) return false;
+        if (!commandId.equals(that.commandId)) return false;
         if (!events.equals(that.events)) return false;
         if (!id.equals(that.id)) return false;
         if (!version.equals(that.version)) return false;
@@ -90,7 +90,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     @Override
     public int hashCode() {
         int result = id.hashCode();
-        result = 31 * result + command.hashCode();
+        result = 31 * result + commandId.hashCode();
         result = 31 * result + events.hashCode();
         result = 31 * result + version.hashCode();
         return result;
@@ -99,7 +99,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     @Override public String toString() {
         return "UnitOfWork{" +
                 "id=" + id +
-                ", command=" + command +
+                ", commandId=" + commandId +
                 ", events=" + events +
                 ", version=" + version +
                 '}';

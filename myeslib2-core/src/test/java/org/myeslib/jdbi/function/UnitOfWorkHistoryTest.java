@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UnitOfWorkHistoryTest {
@@ -50,7 +49,7 @@ public class UnitOfWorkHistoryTest {
         transactions.add(UnitOfWork.create(UUID.randomUUID(), command, 0L, Arrays.asList(event1)));
 
         assertThat(transactions.getUnitsOfWork().size(), is(1));
-        assertThat(transactions.getUnitsOfWork().get(0).getCommand(), sameInstance(command));
+        assertThat(transactions.getUnitsOfWork().get(0).getCommandId(), is(command.getCommandId()));
 
         assertThat(transactions.getAllEvents().size(), is(1));
         assertThat(transactions.getAllEvents().get(0), sameInstance(event1));
@@ -70,7 +69,7 @@ public class UnitOfWorkHistoryTest {
 
         assertThat(transactions.getLastVersion(), is(1L));
         assertThat(transactions.getUnitsOfWork().size(), is(1));
-        assertThat(transactions.getUnitsOfWork().get(0).getCommand(), sameInstance(command));
+        assertThat(transactions.getUnitsOfWork().get(0).getCommandId(), is(command.getCommandId()));
 
         assertThat(transactions.getAllEvents().size(), is(2));
 
