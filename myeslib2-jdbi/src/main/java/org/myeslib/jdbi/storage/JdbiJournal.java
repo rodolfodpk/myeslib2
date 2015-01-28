@@ -26,7 +26,8 @@ public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
         dao.append(id, uow);
     }
 
-    @Override public void appendBatch(K id, List<UnitOfWork> uowList) {
+    @Deprecated @Override
+    public void appendBatch(K id, List<UnitOfWork> uowList) {
         dao.appendBatch(id, uowList);
     }
 
