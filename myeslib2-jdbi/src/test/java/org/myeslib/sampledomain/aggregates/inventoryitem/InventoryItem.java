@@ -2,6 +2,7 @@ package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import com.google.common.eventbus.Subscribe;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
@@ -16,7 +17,8 @@ import java.util.UUID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder @EqualsAndHashCode(exclude = {"service", "bus"})  @ToString(exclude = {"service", "bus"})
+@Builder @Getter
+@EqualsAndHashCode(exclude = {"service", "bus"})  @ToString(exclude = {"service", "bus"})
 public class InventoryItem implements AggregateRoot {
 
     private UUID id;

@@ -11,7 +11,7 @@ import org.myeslib.function.SnapshotComputing;
 import java.util.List;
 
 @SuppressWarnings("serial")
-public class MutableSnapshotComputing<A extends AggregateRoot> implements SnapshotComputing<A> {
+public class MutableSnapshotComputing2<A extends AggregateRoot> implements SnapshotComputing<A> {
 
     @Override
     public Snapshot<A> applyEventsOn(final A aggregateRootInstance,
@@ -34,19 +34,13 @@ public class MutableSnapshotComputing<A extends AggregateRoot> implements Snapsh
     }
 
     @Override
-    public A applyEventsOn(A aggregateRootInstance, Event event) {
+    public A applyEventsOn(final A aggregateRootInstance, final Event event) {
         _applyEventsOn(aggregateRootInstance, ImmutableList.of(event));
         return aggregateRootInstance;
     }
 
-    private void _applyEventsOn(AggregateRoot instance, List<? extends Event> events) {
-        MultiMethod mm = MultiMethod.getMultiMethod(instance.getClass(), "on");
-        for (Event event : events) {
-            try {
-                mm.invoke(instance, event);
-            } catch (Exception e) {
-                throw new RuntimeException("Error when executing with reflection", e.getCause());
-            }
-        }
+    private void _applyEventsOn(final AggregateRoot instance, final List<? extends Event> events) {
+        StatefulEventBus bus = new StatefulEventBus(instance);
+        events.forEach(bus::apply);
     }
 }
