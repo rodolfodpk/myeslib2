@@ -21,28 +21,6 @@ public class StatefulEventBus {
     private final List<Event> events;
     private final List<Command> commands;
 
-    public StatefulEventBus(AggregateRoot aggregateRoot, EventBus bus, List<Event> events, List<Command> commands) {
-        checkNotNull(bus);
-        this.bus = bus;
-        checkNotNull(events);
-        this.events = events;
-        checkNotNull(commands);
-        this.commands = commands;
-        checkNotNull(aggregateRoot);
-        this.aggregateRoot = aggregateRoot;
-        bus.register(aggregateRoot);
-    }
-
-    public StatefulEventBus(AggregateRoot aggregateRoot, EventBus bus) {
-        checkNotNull(bus);
-        this.bus = bus;
-        this.events = new ArrayList<>();
-        this.commands = new ArrayList<>();
-        checkNotNull(aggregateRoot);
-        this.aggregateRoot = aggregateRoot;
-        bus.register(aggregateRoot);
-    }
-
     public StatefulEventBus(AggregateRoot aggregateRoot) {
         this.bus = new EventBus();
         this.events = new ArrayList<>();
