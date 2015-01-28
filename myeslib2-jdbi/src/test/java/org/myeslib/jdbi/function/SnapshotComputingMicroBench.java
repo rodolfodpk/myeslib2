@@ -1,6 +1,5 @@
 package org.myeslib.jdbi.function;
 
-import com.sun.javafx.sg.prism.NGShape;
 import org.myeslib.core.Event;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
@@ -45,7 +44,7 @@ public class SnapshotComputingMicroBench {
     @Benchmark
     public void eventBusEngine() {
 
-        MutableSnapshotComputing2<InventoryItem> engine = new MutableSnapshotComputing2<>();
+        EventBusSnapshotComputing<InventoryItem> engine = new EventBusSnapshotComputing<>();
 
         InventoryItem item = InventoryItem.builder().build();
 
