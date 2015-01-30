@@ -1,5 +1,6 @@
 package org.myeslib.jdbi.storage.dao;
 
+import org.myeslib.core.Command;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.storage.dao.config.CommandSerialization;
@@ -29,14 +30,14 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
 
     static final Logger logger = LoggerFactory.getLogger(JdbiDao.class);
 
-    private final UowSerialization functions;
+    private final UowSerialization uowSer;
     private final CommandSerialization<K> cmdSer;
     private final DbMetadata dbMetadata;
     private final DBI dbi;
 
-    public JdbiDao(UowSerialization functions, CommandSerialization<K> cmdSer, DbMetadata dbMetadata, DBI dbi) {
-        checkNotNull(functions);
-        this.functions = functions;
+    public JdbiDao(UowSerialization uowSer, CommandSerialization<K> cmdSer, DbMetadata dbMetadata, DBI dbi) {
+        checkNotNull(uowSer);
+        this.uowSer = uowSer;
         checkNotNull(cmdSer);
         this.cmdSer = cmdSer;
         checkNotNull(dbMetadata);
@@ -88,7 +89,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
                 logger.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
                 for (UowRecord r : unitsOfWork) {
                     logger.debug("converting to uow from {}", r.uowData);
-                    Function<String, UnitOfWork> f = functions.fromStringFunction;
+                    Function<String, UnitOfWork> f = uowSer.fromStringFunction;
                     UnitOfWork uow = f.apply(r.uowData);
                     logger.debug(uow.toString());
                     arh.add(uow);
@@ -126,7 +127,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
         dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> {
                     int result1 = conn.createStatement(insertUowSql)
                             .bind("id", targetId.toString())
-                            .bind("uow_data", functions.toStringFunction.apply(uow))
+                            .bind("uow_data", uowSer.toStringFunction.apply(uow))
                             .bind("version", uow.getVersion())
                             .execute() ;
                     int result2 = conn.createStatement(insertCommandSql)
@@ -140,9 +141,22 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public CommandResults<K> getCommandResults(K commandId) {
-        // TODO
-        throw new NotImplementedException();
+    public Command<K> getCommand(final K commandId) {
+        return dbi
+                .withHandle(new HandleCallback<Command<K>>() {
+                                final String sql = String.format("select id, cmd_data " +
+                                        "from %s where id = :id ", dbMetadata.commandTable);
+                                public Command<K> withHandle(final Handle h) {
+                                    return h.createQuery(sql)
+                                            .bind("id", commandId.toString())
+                                            .map((i, r, ctx) -> {
+                                                final String cmdData = new ClobToStringMapper("cmd_data").map(i, r, ctx);
+                                                final Command<K> cmd = cmdSer.fromStringFunction.apply(cmdData);
+                                                return cmd;
+                                            }).first();
+                                }
+                            }
+                );
     }
 
     public static class UowRecord {

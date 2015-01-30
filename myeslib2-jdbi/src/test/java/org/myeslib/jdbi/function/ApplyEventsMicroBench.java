@@ -18,12 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class SnapshotComputingMicroBench {
+public class ApplyEventsMicroBench {
 
     public static void main(String[] args) throws RunnerException {
 
         Options opt = new OptionsBuilder()
-                .include(SnapshotComputingMicroBench.class.getSimpleName())
+                .include(ApplyEventsMicroBench.class.getSimpleName())
                 .forks(1)
                 .build();
 

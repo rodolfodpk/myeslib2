@@ -1,5 +1,6 @@
 package org.myeslib.jdbi.storage.dao;
 
+import org.myeslib.core.Command;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
 
@@ -13,5 +14,5 @@ public interface UnitOfWorkDao<K> {
 
     void append(CommandResults<K> commandResults);
 
-    CommandResults<K> getCommandResults(K commandId);
+    Command<K> getCommand(K commandId);
 }
