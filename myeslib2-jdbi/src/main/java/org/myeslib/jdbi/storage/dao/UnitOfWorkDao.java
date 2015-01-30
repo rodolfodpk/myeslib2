@@ -1,5 +1,7 @@
 package org.myeslib.jdbi.storage.dao;
 
+import org.myeslib.core.Command;
+import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkHistory;
 
@@ -11,12 +13,7 @@ public interface UnitOfWorkDao<K> {
 
     UnitOfWorkHistory getPartial(K id, Long biggerThanThisVersion);
 
-    void append(K id, UnitOfWork uow);
+    void append(CommandResults<K> commandResults);
 
-    void appendBatch(K id, UnitOfWork... uow);
-
-    default void appendBatch(K id, List<UnitOfWork> uowList) {
-        appendBatch(id, uowList.toArray(new UnitOfWork[uowList.size()]));
-    }
-
+    Command<K> getCommand(K commandId);
 }

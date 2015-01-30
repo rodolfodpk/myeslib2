@@ -1,14 +1,9 @@
 package org.myeslib.storage;
 
-import org.myeslib.data.UnitOfWork;
-
-import java.util.List;
+import org.myeslib.data.CommandResults;
 
 public interface UnitOfWorkJournal<K> {
 
-    void append(final K id, final UnitOfWork uow);
-
-    @Deprecated
-    void appendBatch(final K id, final List<UnitOfWork> uowList);
+    void append(CommandResults<K> commandResults);
 
 }

@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.jdbi.function.StatefulEventBus;
+import org.myeslib.function.InteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
@@ -18,7 +18,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Builder @Getter
-@EqualsAndHashCode(exclude = {"service", "bus"})  @ToString(exclude = {"service", "bus"})
+@EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
     private UUID id;
@@ -26,25 +26,25 @@ public class InventoryItem implements AggregateRoot {
     private Integer available = 0;
 
     private transient SampleDomainService service;
-    private transient StatefulEventBus bus;
+    private transient InteractionContext interactionContext;
 
     // domain behaviour
 
     public void create(UUID id) {
         isNew();
         hasAllRequiredServices();
-        bus.apply(InventoryItemCreated.create(id, service.generateItemDescription(id)));
+        interactionContext.apply(InventoryItemCreated.create(id, service.generateItemDescription(id)));
     }
 
     public void increase(int howMany) {
         isCreated();
-        bus.apply(InventoryIncreased.create(howMany));
+        interactionContext.apply(InventoryIncreased.create(howMany));
     }
 
     public void decrease(int howMany) {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
-        bus.apply(InventoryDecreased.create(howMany));;
+        interactionContext.apply(InventoryDecreased.create(howMany));;
     }
 
     // guards
@@ -86,8 +86,8 @@ public class InventoryItem implements AggregateRoot {
         this.service = service;
     }
 
-    public void setBus(StatefulEventBus bus) {
-        this.bus = bus;
+    public void setInteractionContext(InteractionContext interactionContext) {
+        this.interactionContext = interactionContext;
     }
 
     // static factories

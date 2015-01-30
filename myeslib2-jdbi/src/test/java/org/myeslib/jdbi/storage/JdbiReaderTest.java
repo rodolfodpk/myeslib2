@@ -78,7 +78,9 @@ public class JdbiReaderTest {
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 0L);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
+        
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         expectedHistory.add(newUow);
 
@@ -108,7 +110,9 @@ public class JdbiReaderTest {
 
         UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
 
-        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), new CreateInventoryItem(UUID.randomUUID(), id), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
+        CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
+        
+        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         expectedHistory.add(currentUow);
 
@@ -144,8 +148,10 @@ public class JdbiReaderTest {
 
         cache.put(id, currentSnapshot);
 
+        IncreaseInventory command = new IncreaseInventory(UUID.randomUUID(), id, 2);;
+
         UnitOfWorkHistory remainingHistory = new UnitOfWorkHistory();
-        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), new IncreaseInventory(UUID.randomUUID(), id, 2), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
+        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
         remainingHistory.add(partialUow);
 
         Long expectedVersion = 2L;

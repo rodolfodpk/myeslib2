@@ -37,7 +37,7 @@ public class UnitOfWorkHistoryTest {
     @Test(expected = NullPointerException.class)
     public void nullEventsList() {
         UnitOfWorkHistory transactions = new UnitOfWorkHistory();
-        transactions.add(UnitOfWork.create(UUID.randomUUID(), Mockito.mock(Command.class), 0L, null));
+        transactions.add(UnitOfWork.create(UUID.randomUUID(), UUID.randomUUID(), 0L, null));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class UnitOfWorkHistoryTest {
         UnitOfWorkHistory transactions = new UnitOfWorkHistory();
         Command command = new CommandJustForTest(UUID.randomUUID(), id);
         Event event1 = new EventJustForTest(id, 1);
-        transactions.add(UnitOfWork.create(UUID.randomUUID(), command, 0L, Arrays.asList(event1)));
+        transactions.add(UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(event1)));
 
         assertThat(transactions.getUnitsOfWork().size(), is(1));
         assertThat(transactions.getUnitsOfWork().get(0).getCommandId(), is(command.getCommandId()));
@@ -65,7 +65,7 @@ public class UnitOfWorkHistoryTest {
         Event event1 = new EventJustForTest(id, 1);
         Event event2 = new EventJustForTest(id, 1);
 
-        transactions.add(UnitOfWork.create(UUID.randomUUID(), command, 0L, Arrays.asList(event1, event2)));
+        transactions.add(UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(event1, event2)));
 
         assertThat(transactions.getLastVersion(), is(1L));
         assertThat(transactions.getUnitsOfWork().size(), is(1));
@@ -85,7 +85,7 @@ public class UnitOfWorkHistoryTest {
         UnitOfWorkHistory transactions = new UnitOfWorkHistory();
         Command command = new CommandJustForTest(UUID.randomUUID(), id);
         Event event1 = (Event) null;
-        transactions.add(UnitOfWork.create(UUID.randomUUID(), command, 1L, Arrays.asList(event1)));
+        transactions.add(UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 1L, Arrays.asList(event1)));
 
     }
 

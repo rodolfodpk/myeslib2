@@ -39,8 +39,8 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
         }
     }
 
-    public static UnitOfWork create(UUID id, Command<?> command, Long snapshotVersion, List<? extends Event> newEvents) {
-        return new UnitOfWork(id, command.getCommandId(), snapshotVersion + 1, newEvents);
+    public static UnitOfWork create(UUID id, UUID commandId, Long snapshotVersion, List<? extends Event> newEvents) {
+        return new UnitOfWork(id, commandId, snapshotVersion + 1, newEvents);
     }
 
     public List<Event> getEvents() {

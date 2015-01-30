@@ -12,11 +12,11 @@ import java.util.UUID;
 
 public class IncreaseHandler implements CommandHandler<IncreaseInventory, InventoryItem> {
 
-    public CommandResults handle(IncreaseInventory command, Snapshot<InventoryItem> snapshot) {
+    public CommandResults<UUID> handle(IncreaseInventory command, Snapshot<InventoryItem> snapshot) {
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
-        aggregateRoot.setBus(statefulBus);
+        aggregateRoot.setInteractionContext(statefulBus);
         aggregateRoot.increase(command.getHowMany());
-        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, snapshot.getVersion(), statefulBus.getEvents()));
+        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), statefulBus.getEvents()));
     }
 }

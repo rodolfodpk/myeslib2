@@ -24,12 +24,12 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
     }
 
     @Override
-    public CommandResults handle(CreateInventoryItem command, Snapshot<InventoryItem> snapshot) {
+    public CommandResults<UUID> handle(CreateInventoryItem command, Snapshot<InventoryItem> snapshot) {
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         aggregateRoot.setService(service);
         final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
-        aggregateRoot.setBus(statefulBus);
+        aggregateRoot.setInteractionContext(statefulBus);
         aggregateRoot.create(command.getTargetId());
-        return new CommandResults(UnitOfWork.create(UUID.randomUUID(), command, snapshot.getVersion(), statefulBus.getEvents()));
+        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), statefulBus.getEvents()));
     }
 }

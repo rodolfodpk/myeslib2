@@ -20,7 +20,7 @@ public class UnitOfWorkTest {
         Long snapshotVersion = 0L;
         List<Event> events = Arrays.asList(new EventJustForTest(UUID.randomUUID(), 1));
         CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
-        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command, snapshotVersion, events);
+        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshotVersion, events);
         assertThat(uow.getVersion(), is(1L));
     }
 

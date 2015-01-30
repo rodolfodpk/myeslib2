@@ -34,7 +34,13 @@ drop trigger if exists inventory_item_trigger ;
 create trigger inventory_item_trigger before insert on inventory_item_uow for each row 
 	call "org.myeslib.jdbi.storage.helpers.h2.InventoryItemOptimisticLockingTrigger" ;
 	
-	
+drop table if exists inventory_item_cmd ;
+
+create table
+	inventory_item_cmd (id varchar(36) not null,
+						cmd_data clob not null,
+						constraint cmd_pk primary key (id));
+
 	
 	
 	

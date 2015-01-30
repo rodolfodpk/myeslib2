@@ -1,7 +1,10 @@
 package org.myeslib.jdbi.storage.dao;
 
+import org.myeslib.core.Command;
+import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkHistory;
+import org.myeslib.jdbi.storage.dao.config.CommandSerialization;
 import org.myeslib.jdbi.storage.dao.config.DbMetadata;
 import org.myeslib.jdbi.storage.dao.config.UowSerialization;
 import org.skife.jdbi.v2.*;
@@ -9,6 +12,7 @@ import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -23,12 +27,15 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     static final Logger logger = LoggerFactory.getLogger(JdbiDao.class);
 
     private final UowSerialization functions;
+    private final CommandSerialization<K> cmdSer;
     private final DbMetadata dbMetadata;
     private final DBI dbi;
 
-    public JdbiDao(UowSerialization functions, DbMetadata dbMetadata, DBI dbi) {
+    public JdbiDao(UowSerialization functions, CommandSerialization<K> cmdSer, DbMetadata dbMetadata, DBI dbi) {
         checkNotNull(functions);
         this.functions = functions;
+        checkNotNull(cmdSer);
+        this.cmdSer = cmdSer;
         checkNotNull(dbMetadata);
         this.dbMetadata = dbMetadata;
         checkNotNull(dbi);
@@ -98,40 +105,41 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public void append(final K id, final UnitOfWork uow) {
+    public void append(final CommandResults<K> commandResults) {
 
-        String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
+        checkNotNull(commandResults);
 
-        logger.debug(sql);
+        K targetId = commandResults.getTargetId();
 
-        logger.debug("appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
+        UnitOfWork uow = commandResults.getUnitOfWork();
 
-        dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> conn.createStatement(sql)
-                .bind("id", id.toString())
-                .bind("uow_data", functions.toStringFunction.apply(uow))
-                .bind("version", uow.getVersion())
-                .execute());
+        String insertUowSql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
+        String insertCommandSql = String.format("insert into %s (id, cmd_data) values (:id, :cmd_data)", dbMetadata.commandTable);
+
+        logger.debug(insertUowSql);
+
+        logger.debug("appending uow to {} with id {}", dbMetadata.aggregateRootTable, targetId);
+
+        dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> {
+                    int result1 = conn.createStatement(insertUowSql)
+                            .bind("id", targetId.toString())
+                            .bind("uow_data", functions.toStringFunction.apply(uow))
+                            .bind("version", uow.getVersion())
+                            .execute() ;
+                    int result2 = conn.createStatement(insertCommandSql)
+                            .bind("id", commandResults.getCommandId().toString())
+                            .bind("cmd_data", cmdSer.toStringFunction.apply(commandResults.getCommand()))
+                            .execute() ;
+                    return result1 + result2 == 2;
+                }
+        );
 
     }
 
     @Override
-    public void appendBatch(K id, UnitOfWork... uowArray) {
-
-        String sql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
-
-        logger.debug("batch appending {} units of work with id {} on table {}", uowArray.length, id, dbMetadata.aggregateRootTable);
-
-        dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (h, ts) -> {
-            final PreparedBatch pb = h.prepareBatch(sql);
-            for (UnitOfWork uow : uowArray) {
-                logger.debug(sql);
-                logger.debug("    --> batch appending uow to {} with id {}", dbMetadata.aggregateRootTable, id);
-                String asString = functions.toStringFunction.apply(uow);
-                pb.add().bind("id", id.toString()).bind("uow_data", asString).bind("version", uow.getVersion());
-            }
-            return pb.execute().length;
-        });
-
+    public Command<K> getCommand(K commandId) {
+        // TODO
+        throw new NotImplementedException();
     }
 
     public static class UowRecord {
