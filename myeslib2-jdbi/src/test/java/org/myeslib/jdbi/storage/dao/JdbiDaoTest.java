@@ -127,7 +127,7 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         dao.append(command1, existingUow);
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
-        CommandResults<UUID> results2 = new CommandResults(command2, newUow);
+        CommandResults<UUID> results2 = new CommandResults(newUow);
 
         dao.append(command2, newUow);
 
