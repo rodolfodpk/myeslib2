@@ -11,11 +11,14 @@ import org.myeslib.storage.SnapshotReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -76,11 +79,7 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
     }
 
     List<Event> unfold(List<UnitOfWork> uows) {
-        List<Event> events = new ArrayList<>();
-        for (UnitOfWork uow : uows) {
-            events.addAll(uow.getEvents());
-        }
-        return events;
+        return uows.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
     }
 
     Long lastVersion(List<UnitOfWork> uows) {
