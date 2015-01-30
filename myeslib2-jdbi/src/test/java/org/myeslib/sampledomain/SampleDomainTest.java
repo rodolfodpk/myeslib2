@@ -13,7 +13,7 @@ import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.SnapshotComputing;
-import org.myeslib.jdbi.function.MultiMethodSnapshotComputing;
+import org.myeslib.jdbi.function.multimethod.MultiMethodSnapshotComputing;
 import org.myeslib.jdbi.storage.JdbiJournal;
 import org.myeslib.jdbi.storage.JdbiReader;
 import org.myeslib.jdbi.storage.dao.JdbiDao;
@@ -38,9 +38,9 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class EventBusApproachTest extends DbAwareBaseTestClass {
+public class SampleDomainTest extends DbAwareBaseTestClass {
 
-    static final Logger logger = LoggerFactory.getLogger(EventBusApproachTest.class);
+    static final Logger logger = LoggerFactory.getLogger(SampleDomainTest.class);
 
     Gson gson;
     UowSerialization functions;

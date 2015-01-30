@@ -3,7 +3,7 @@
  * See below for copyright and licensing information.
  */
 
-package org.myeslib.jdbi.function;
+package org.myeslib.jdbi.function.multimethod;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

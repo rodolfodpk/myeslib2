@@ -4,7 +4,8 @@ import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.CommandHandler;
-import org.myeslib.jdbi.function.StatefulEventBus;
+import org.myeslib.function.InteractionContext;
+import org.myeslib.jdbi.function.multimethod.MultiMethodInteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -27,9 +28,9 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
     public CommandResults<UUID> handle(CreateInventoryItem command, Snapshot<InventoryItem> snapshot) {
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         aggregateRoot.setService(service);
-        final StatefulEventBus statefulBus = new StatefulEventBus(aggregateRoot);
-        aggregateRoot.setInteractionContext(statefulBus);
+        final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
+        aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.create(command.getTargetId());
-        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), statefulBus.getEvents()));
+        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents()));
     }
 }

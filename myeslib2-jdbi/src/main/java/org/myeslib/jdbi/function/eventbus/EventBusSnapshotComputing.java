@@ -1,11 +1,10 @@
-package org.myeslib.jdbi.function;
+package org.myeslib.jdbi.function.eventbus;
 
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWorkHistory;
 import org.myeslib.function.SnapshotComputing;
-import org.myeslib.jdbi.function.StatefulEventBus;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class EventBusSnapshotComputing<A extends AggregateRoot> implements Snaps
     }
 
     private void _applyEventsOn(final AggregateRoot instance, final List<? extends Event> events) {
-        StatefulEventBus bus = new StatefulEventBus(instance);
+        EventBusInteractionContext bus = new EventBusInteractionContext(instance);
         events.forEach(bus::apply);
     }
 }

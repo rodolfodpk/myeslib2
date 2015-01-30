@@ -4,7 +4,8 @@ import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.CommandHandler;
-import org.myeslib.jdbi.function.MultiMethodInteractionContext;
+import org.myeslib.function.InteractionContext;
+import org.myeslib.jdbi.function.multimethod.MultiMethodInteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -26,15 +27,15 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
     public CommandResults<UUID> handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
 
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final MultiMethodInteractionContext statefulBus = new MultiMethodInteractionContext(aggregateRoot);
+        final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
 
         aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
-        aggregateRoot.setInteractionContext(statefulBus);
+        aggregateRoot.setInteractionContext(interactionContext);
 
         aggregateRoot.create(command.getTargetId());
         aggregateRoot.increase(command.getHowManyToIncrease());
         aggregateRoot.decrease(command.getHowManyToDecrease());
 
-        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), statefulBus.getEvents()));
+        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents()));
     }
 }

@@ -1,6 +1,8 @@
 package org.myeslib.jdbi.function;
 
 import org.myeslib.core.Event;
+import org.myeslib.jdbi.function.eventbus.EventBusSnapshotComputing;
+import org.myeslib.jdbi.function.multimethod.MultiMethodSnapshotComputing;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;

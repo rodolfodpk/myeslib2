@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.function;
+package org.myeslib.jdbi.function.multimethod;
 
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Event;
