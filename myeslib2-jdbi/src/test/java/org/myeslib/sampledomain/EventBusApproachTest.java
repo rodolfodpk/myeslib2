@@ -13,7 +13,7 @@ import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.SnapshotComputing;
-import org.myeslib.jdbi.function.MutableSnapshotComputing;
+import org.myeslib.jdbi.function.MultiMethodSnapshotComputing;
 import org.myeslib.jdbi.storage.JdbiJournal;
 import org.myeslib.jdbi.storage.JdbiReader;
 import org.myeslib.jdbi.storage.dao.JdbiDao;
@@ -70,7 +70,7 @@ public class EventBusApproachTest extends DbAwareBaseTestClass {
         dbMetadata = new DbMetadata("inventory_item");
         dao = new JdbiDao<>(functions, cmdSer, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        snapshotComputing = new MutableSnapshotComputing<>();
+        snapshotComputing = new MultiMethodSnapshotComputing<>();
         snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotComputing);
         journal = new JdbiJournal<>(dao);
         service = id -> id.toString();

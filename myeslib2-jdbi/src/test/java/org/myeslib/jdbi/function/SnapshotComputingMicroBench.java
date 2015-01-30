@@ -30,7 +30,7 @@ public class SnapshotComputingMicroBench {
     @Benchmark
     public void multiMethodEngine() {
 
-        MutableSnapshotComputing<InventoryItem> engine = new MutableSnapshotComputing<>();
+        MultiMethodSnapshotComputing<InventoryItem> engine = new MultiMethodSnapshotComputing<>();
 
         InventoryItem item = InventoryItem.builder().build();
 
