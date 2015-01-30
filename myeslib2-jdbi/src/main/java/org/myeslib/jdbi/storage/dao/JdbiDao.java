@@ -1,13 +1,14 @@
 package org.myeslib.jdbi.storage.dao;
 
-import org.myeslib.core.Command;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkHistory;
 import org.myeslib.jdbi.storage.dao.config.CommandSerialization;
 import org.myeslib.jdbi.storage.dao.config.DbMetadata;
 import org.myeslib.jdbi.storage.dao.config.UowSerialization;
-import org.skife.jdbi.v2.*;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.TransactionIsolationLevel;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.slf4j.Logger;
@@ -17,6 +18,8 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -47,7 +50,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
      * @see org.myeslib.jdbi.AggregateRootHistoryReader#getSnapshot(java.lang.Object)
      */
     @Override
-    public UnitOfWorkHistory getFull(final K id) {
+    public List<UnitOfWork> getFull(final K id) {
         return getPartial(id, 0L);
     }
 
@@ -56,9 +59,9 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
          * @see org.myeslib.jdbi.AggregateRootHistoryReader#getPartial(java.lang.Object)
          */
     @Override
-    public UnitOfWorkHistory getPartial(K id, Long biggerThanThisVersion) {
+    public List<UnitOfWork> getPartial(K id, Long biggerThanThisVersion) {
 
-        final UnitOfWorkHistory arh = new UnitOfWorkHistory();
+        final List<UnitOfWork> arh = new ArrayList<>();
 
         try {
 
@@ -101,7 +104,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
         } finally {
         }
 
-        return arh;
+        return Collections.unmodifiableList(arh);
     }
 
     @Override
@@ -137,7 +140,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public Command<K> getCommand(K commandId) {
+    public CommandResults<K> getCommandResults(K commandId) {
         // TODO
         throw new NotImplementedException();
     }

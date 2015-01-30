@@ -12,8 +12,8 @@ import org.myeslib.core.Event;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.function.SnapshotComputing;
-import org.myeslib.jdbi.function.multimethod.MultiMethodSnapshotComputing;
+import org.myeslib.function.ApplyEventsFunction;
+import org.myeslib.jdbi.function.multimethod.MultiMethodApplyEventsFunction;
 import org.myeslib.jdbi.storage.JdbiJournal;
 import org.myeslib.jdbi.storage.JdbiReader;
 import org.myeslib.jdbi.storage.dao.JdbiDao;
@@ -48,7 +48,7 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
     DbMetadata dbMetadata;
     JdbiDao<UUID> dao;
     Cache<UUID, Snapshot<InventoryItem>> cache;
-    SnapshotComputing<InventoryItem> snapshotComputing;
+    ApplyEventsFunction<InventoryItem> applyEventsFunction;
     JdbiReader<UUID, InventoryItem> snapshotReader ;
     JdbiJournal<UUID> journal;
     SampleDomainService service;
@@ -70,8 +70,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         dbMetadata = new DbMetadata("inventory_item");
         dao = new JdbiDao<>(functions, cmdSer, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        snapshotComputing = new MultiMethodSnapshotComputing<>();
-        snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, snapshotComputing);
+        applyEventsFunction = new MultiMethodApplyEventsFunction<>();
+        snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, applyEventsFunction);
         journal = new JdbiJournal<>(dao);
         service = id -> id.toString();
     }

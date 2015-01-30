@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkHistory;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
@@ -38,9 +37,7 @@ public class JdbiJournalTest {
 
         CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
 
-        UnitOfWorkHistory toSave = new UnitOfWorkHistory();
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
-        toSave.add(newUow);
 
         CommandResults<UUID> results = new CommandResults(command, newUow);
 
@@ -60,8 +57,6 @@ public class JdbiJournalTest {
         IncreaseInventory command1 = new IncreaseInventory(UUID.randomUUID(), id, 1);
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
-        UnitOfWorkHistory existing = new UnitOfWorkHistory();
-        existing.add(existingUow);
 
         CommandResults<UUID> results1 = new CommandResults(command1, existingUow);
 

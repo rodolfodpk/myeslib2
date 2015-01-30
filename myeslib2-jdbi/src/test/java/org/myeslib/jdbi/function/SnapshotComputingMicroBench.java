@@ -1,8 +1,9 @@
 package org.myeslib.jdbi.function;
 
 import org.myeslib.core.Event;
-import org.myeslib.jdbi.function.eventbus.EventBusSnapshotComputing;
-import org.myeslib.jdbi.function.multimethod.MultiMethodSnapshotComputing;
+import org.myeslib.function.ApplyEventsFunction;
+import org.myeslib.jdbi.function.eventbus.EventBusApplyEventsFunction;
+import org.myeslib.jdbi.function.multimethod.MultiMethodApplyEventsFunction;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
@@ -32,11 +33,11 @@ public class SnapshotComputingMicroBench {
     @Benchmark
     public void multiMethodEngine() {
 
-        MultiMethodSnapshotComputing<InventoryItem> engine = new MultiMethodSnapshotComputing<>();
+        ApplyEventsFunction<InventoryItem> engine = new MultiMethodApplyEventsFunction<>();
 
         InventoryItem item = InventoryItem.builder().build();
 
-        engine.applyEventsOn(item, events());
+        engine.apply(item, events());
 
       //  assert(item.getAvailable()==0);
 
@@ -46,11 +47,11 @@ public class SnapshotComputingMicroBench {
     @Benchmark
     public void eventBusEngine() {
 
-        EventBusSnapshotComputing<InventoryItem> engine = new EventBusSnapshotComputing<>();
+        ApplyEventsFunction<InventoryItem> engine = new EventBusApplyEventsFunction<>();
 
         InventoryItem item = InventoryItem.builder().build();
 
-        engine.applyEventsOn(item, events());
+        engine.apply(item, events());
 
        // assert(item.getAvailable()==0);
 

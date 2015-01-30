@@ -2,15 +2,16 @@ package org.myeslib.jdbi.storage;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
-import org.myeslib.function.SnapshotComputing;
+import org.myeslib.function.ApplyEventsFunction;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkHistory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -18,7 +19,9 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreas
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -37,7 +40,7 @@ public class JdbiReaderTest {
     UnitOfWorkDao<UUID> dao;
 
     @Mock
-    SnapshotComputing<InventoryItem> snapshotComputing;
+    ApplyEventsFunction<InventoryItem> applyEventsFunction;
 
     Cache<UUID, Snapshot<InventoryItem>> cache;
 
@@ -51,21 +54,22 @@ public class JdbiReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotComputing);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
 
-        UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
         InventoryItem instance = InventoryItem.builder().build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(instance, 0L);
+        List<UnitOfWork> expectedHistory = new ArrayList<>();
+        List<Event> expectedEvents = new ArrayList<>();
 
         when(supplier.get()).thenReturn(instance);
         when(dao.getFull(id)).thenReturn(expectedHistory);
-        when(snapshotComputing.applyEventsOn(instance, expectedHistory)).thenReturn(expectedSnapshot);
+        when(applyEventsFunction.apply(instance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier).get();
         verify(dao).getFull(id);
-        verify(snapshotComputing).applyEventsOn(instance, expectedHistory);
+        verify(applyEventsFunction).apply(instance, expectedEvents);
 
     }
 
@@ -74,27 +78,27 @@ public class JdbiReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 0L);
+        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 1L);
 
         CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
         
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
-        expectedHistory.add(newUow);
+        List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
+        List<Event> expectedEvents = new ArrayList<>(newUow.getEvents());
 
         when(supplier.get()).thenReturn(expectedInstance);
         when(dao.getFull(id)).thenReturn(expectedHistory);
-        when(snapshotComputing.applyEventsOn(expectedInstance, expectedHistory)).thenReturn(expectedSnapshot);
+        when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotComputing);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier).get();
         verify(dao).getFull(id);
-        verify(snapshotComputing).applyEventsOn(expectedInstance, expectedHistory);
+        verify(applyEventsFunction).apply(expectedInstance, expectedEvents);
 
     }
 
@@ -108,29 +112,28 @@ public class JdbiReaderTest {
 
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
-        UnitOfWorkHistory expectedHistory = new UnitOfWorkHistory();
-
         CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
         
         UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
-        expectedHistory.add(currentUow);
+        List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
+        List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
 
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
 
         cache.put(id, expectedSnapshot);
 
         when(dao.getPartial(id, expectedVersion)).thenReturn(expectedHistory);
-        when(snapshotComputing.applyEventsOn(expectedInstance, expectedHistory)).thenReturn(expectedSnapshot);
+        when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<UUID, InventoryItem>(supplier, dao, cache, snapshotComputing);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<UUID, InventoryItem>(supplier, dao, cache, applyEventsFunction);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier, times(0)).get();
         verify(dao, times(1)).getPartial(id, expectedVersion);
         verify(dao, times(0)).getFull(id);
-        verify(snapshotComputing).applyEventsOn(expectedInstance, expectedHistory);
+        verify(applyEventsFunction).apply(expectedInstance, expectedEvents);
 
     }
 
@@ -150,9 +153,10 @@ public class JdbiReaderTest {
 
         IncreaseInventory command = new IncreaseInventory(UUID.randomUUID(), id, 2);;
 
-        UnitOfWorkHistory remainingHistory = new UnitOfWorkHistory();
         UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
-        remainingHistory.add(partialUow);
+
+        List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
+        List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());
 
         Long expectedVersion = 2L;
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(2).build();
@@ -160,16 +164,16 @@ public class JdbiReaderTest {
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
 
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
-        when(snapshotComputing.applyEventsOn(currentInstance, remainingHistory)).thenReturn(expectedSnapshot);
+        when(applyEventsFunction.apply(currentInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, snapshotComputing);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier, times(0)).get();
         verify(dao, times(1)).getPartial(id, currentVersion);
         verify(dao, times(0)).getFull(id);
-        verify(snapshotComputing).applyEventsOn(currentInstance, remainingHistory);
+        verify(applyEventsFunction).apply(currentInstance, expectedEvents);
 
     }
 

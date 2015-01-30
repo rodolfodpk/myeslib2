@@ -10,10 +10,12 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Immutable
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease, InventoryItem> {
 
     final SampleDomainService service;

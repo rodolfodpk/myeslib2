@@ -1,5 +1,6 @@
 package org.myeslib.jdbi.storage.dao;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -7,7 +8,6 @@ import org.junit.Test;
 import org.myeslib.core.Command;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkHistory;
 import org.myeslib.jdbi.storage.dao.config.CommandSerialization;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
@@ -19,9 +19,10 @@ import org.myeslib.jdbi.storage.dao.config.DbMetadata;
 import org.myeslib.jdbi.storage.dao.config.UowSerialization;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class JdbiDaoTest extends DbAwareBaseTestClass {
 
@@ -56,17 +57,15 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         IncreaseInventory command = new IncreaseInventory(UUID.randomUUID(), id, 1);
         
-        UnitOfWorkHistory toSave = new UnitOfWorkHistory();
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
-        toSave.add(newUow);
 
         CommandResults<UUID> results = new CommandResults(command, newUow);
 
         dao.append(results);
 
-        UnitOfWorkHistory fromDb = dao.getFull(id);
+        List<UnitOfWork> fromDb = dao.getFull(id);
 
-        assertEquals(toSave, fromDb);
+        assertEquals(Lists.newArrayList(newUow), fromDb);
 
     }
 
@@ -79,8 +78,6 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
-        UnitOfWorkHistory existing = new UnitOfWorkHistory();
-        existing.add(existingUow);
 
         CommandResults<UUID> results1 = new CommandResults(command1, existingUow);
 
@@ -92,9 +89,11 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         dao.append(results2);
 
-        UnitOfWorkHistory fromDb = dao.getFull(id);
+        List<UnitOfWork> fromDb = dao.getFull(id);
 
-        assertEquals(fromDb.getLastVersion().intValue(), 2);
+        assertEquals(Lists.newArrayList(existingUow, newUow), fromDb);
+
+       // assertEquals(fromDb.getLastVersion().intValue(), 2);
 
 
     }
@@ -108,8 +107,6 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
-        UnitOfWorkHistory existing = new UnitOfWorkHistory();
-        existing.add(existingUow);
         CommandResults<UUID> results1 = new CommandResults(command1, existingUow);
 
         dao.append(results1);

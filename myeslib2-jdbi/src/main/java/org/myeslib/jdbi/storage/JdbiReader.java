@@ -2,18 +2,20 @@ package org.myeslib.jdbi.storage;
 
 import com.google.common.cache.Cache;
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
-import org.myeslib.data.UnitOfWorkHistory;
+import org.myeslib.data.UnitOfWork;
+import org.myeslib.function.ApplyEventsFunction;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
 import org.myeslib.storage.SnapshotReader;
-import org.myeslib.function.SnapshotComputing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -24,18 +26,18 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
     private final Supplier<A> supplier;
     private final UnitOfWorkDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
-    private final SnapshotComputing<A> snapshotComputing;
+    private final ApplyEventsFunction<A> applyEventsFunction;
 
     public JdbiReader(Supplier<A> supplier, UnitOfWorkDao<K> dao,
-                      Cache<K, Snapshot<A>> cache, SnapshotComputing<A> SnapshotComputing) {
+                      Cache<K, Snapshot<A>> cache, ApplyEventsFunction<A> ApplyEventsFunction) {
         checkNotNull(supplier);
         this.supplier = supplier;
         checkNotNull(dao);
         this.dao = dao;
         checkNotNull(cache);
         this.cache = cache;
-        checkNotNull(SnapshotComputing);
-        this.snapshotComputing = SnapshotComputing;
+        checkNotNull(ApplyEventsFunction);
+        this.applyEventsFunction = ApplyEventsFunction;
     }
 
     /*
@@ -51,7 +53,8 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
             lastSnapshot = cache.get(id, () -> {
                 logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
-                return snapshotComputing.applyEventsOn(supplier.get(), dao.getFull(id));
+                List<UnitOfWork> uows = dao.getFull(id);
+                return new Snapshot<>(applyEventsFunction.apply(supplier.get(), unfold(uows)), lastVersion(uows));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
@@ -61,14 +64,27 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
             return lastSnapshot;
         }
         logger.debug("id {} lastSnapshot has version {}. will check if there any version beyond it", id, lastSnapshot.getVersion());
-        final UnitOfWorkHistory partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
+        final List<UnitOfWork> partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
         if (partialTransactionHistory.isEmpty()) {
             return lastSnapshot;
         }
-        logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.getAllEvents().size(), partialTransactionHistory.getLastVersion());
-        final Snapshot<A> latestSnapshot = snapshotComputing.applyEventsOn(lastSnapshot.getAggregateInstance(), partialTransactionHistory);
+        List<Event> partialEvents = unfold(partialTransactionHistory);
+        logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
+        A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), unfold(partialTransactionHistory));
+        final Snapshot<A> latestSnapshot = new Snapshot<>(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }
 
+    List<Event> unfold(List<UnitOfWork> uows) {
+        List<Event> events = new ArrayList<>();
+        for (UnitOfWork uow : uows) {
+            events.addAll(uow.getEvents());
+        }
+        return events;
+    }
+
+    Long lastVersion(List<UnitOfWork> uows) {
+        return uows.isEmpty() ? 0L : uows.get(uows.size()-1).getVersion();
+    }
 }
