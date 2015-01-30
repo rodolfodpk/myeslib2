@@ -8,22 +8,17 @@ import java.util.UUID;
 
 public class CommandResults<K> {
 
-    private final Command<K> command;
     private final UnitOfWork unitOfWork;
     private final List<Command<K>> externalCommands;
 
-    public CommandResults(Command<K> command, UnitOfWork unitOfWork) {
-        this.command = command;
+    public CommandResults(UnitOfWork unitOfWork, List<Command<K>> externalCommands) {
         this.unitOfWork = unitOfWork;
-        this.externalCommands = Collections.emptyList();
+        this.externalCommands = externalCommands;
     }
 
-    public UUID getCommandId() { return command.getCommandId(); }
-
-    public Command<K> getCommand() { return command; }
-
-    public K getTargetId() {
-        return command.getTargetId();
+    public CommandResults(UnitOfWork unitOfWork) {
+        this.unitOfWork = unitOfWork;
+        this.externalCommands = Collections.emptyList();
     }
 
     public UnitOfWork getUnitOfWork() {
@@ -41,7 +36,6 @@ public class CommandResults<K> {
 
         CommandResults that = (CommandResults) o;
 
-        if (command != null ? !command.equals(that.command) : that.command != null) return false;
         if (!externalCommands.equals(that.externalCommands)) return false;
         if (!unitOfWork.equals(that.unitOfWork)) return false;
 
@@ -50,16 +44,15 @@ public class CommandResults<K> {
 
     @Override
     public int hashCode() {
-        int result = command != null ? command.hashCode() : 0;
-        result = 31 * result + unitOfWork.hashCode();
+        int result = unitOfWork.hashCode();
         result = 31 * result + externalCommands.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
+
         return "CommandResults{" +
-                "command=" + command +
                 ", unitOfWork=" + unitOfWork +
                 ", externalCommands=" + externalCommands +
                 '}';

@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.function.test;
+package org.myeslib.test;
 
 import org.myeslib.core.Event;
 

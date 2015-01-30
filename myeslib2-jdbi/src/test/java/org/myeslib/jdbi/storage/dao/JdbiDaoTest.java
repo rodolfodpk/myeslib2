@@ -76,9 +76,7 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
-        CommandResults<UUID> results = new CommandResults(command, newUow);
-
-        dao.append(results);
+        dao.append(command, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
@@ -98,15 +96,11 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
-        CommandResults<UUID> results1 = new CommandResults(command1, existingUow);
-
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        CommandResults<UUID> results2 = new CommandResults(command2, newUow);
+        dao.append(command1, existingUow);
 
-        dao.append(results1);
-
-        dao.append(results2);
+        dao.append(command2, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
@@ -115,7 +109,7 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         assertThat(command1, is(dao.getCommand(command1.getCommandId())));
         assertThat(command2, is(dao.getCommand(command2.getCommandId())));
 
-       // assertEquals(fromDb.getLastVersion().intValue(), 2);
+        assertThat(fromDb.get(fromDb.size()-1).getVersion(), is(2L));
 
 
     }
@@ -129,14 +123,13 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
-        CommandResults<UUID> results1 = new CommandResults(command1, existingUow);
 
-        dao.append(results1);
+        dao.append(command1, existingUow);
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
         CommandResults<UUID> results2 = new CommandResults(command2, newUow);
 
-        dao.append(results2);
+        dao.append(command2, newUow);
 
     }
 

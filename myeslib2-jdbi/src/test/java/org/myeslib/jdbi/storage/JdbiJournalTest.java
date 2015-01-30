@@ -39,13 +39,11 @@ public class JdbiJournalTest {
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
-        CommandResults<UUID> results = new CommandResults(command, newUow);
-
         JdbiJournal store = new JdbiJournal(dao);
 
-        store.append(results);
+        store.append(command, newUow);
 
-        verify(dao).append(results);
+        verify(dao).append(command, newUow);
 
     }
 
@@ -58,23 +56,19 @@ public class JdbiJournalTest {
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        CommandResults<UUID> results1 = new CommandResults(command1, existingUow);
-
         DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        CommandResults<UUID> results2 = new CommandResults(command2, newUow);
-
         JdbiJournal store = new JdbiJournal(dao);
 
-        store.append(results1);
+        store.append(command1, existingUow);
 
-        store.append(results2);
+        store.append(command2, newUow);
 
-        verify(dao).append(results1);
+        verify(dao).append(command1, existingUow);
 
-        verify(dao).append(results2);
+        verify(dao).append(command2, newUow);
 
     }
 

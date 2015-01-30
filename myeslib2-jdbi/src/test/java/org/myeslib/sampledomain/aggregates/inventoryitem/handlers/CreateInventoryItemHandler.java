@@ -1,6 +1,5 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
-import org.myeslib.data.CommandResults;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.CommandHandler;
@@ -25,12 +24,12 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
     }
 
     @Override
-    public CommandResults<UUID> handle(CreateInventoryItem command, Snapshot<InventoryItem> snapshot) {
+    public UnitOfWork handle(CreateInventoryItem command, Snapshot<InventoryItem> snapshot) {
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         aggregateRoot.setService(service);
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.create(command.getTargetId());
-        return new CommandResults<>(command, UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents()));
+        return UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents());
     }
 }

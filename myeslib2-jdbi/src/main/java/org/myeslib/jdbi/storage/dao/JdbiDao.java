@@ -109,13 +109,12 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public void append(final CommandResults<K> commandResults) {
+    public void append(final Command<K> command, final UnitOfWork unitOfWork) {
 
-        checkNotNull(commandResults);
+        checkNotNull(command);
+        checkNotNull(unitOfWork);
 
-        K targetId = commandResults.getTargetId();
-
-        UnitOfWork uow = commandResults.getUnitOfWork();
+        K targetId = command.getTargetId();
 
         String insertUowSql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
         String insertCommandSql = String.format("insert into %s (id, cmd_data) values (:id, :cmd_data)", dbMetadata.commandTable);
@@ -127,12 +126,12 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
         dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> {
                     int result1 = conn.createStatement(insertUowSql)
                             .bind("id", targetId.toString())
-                            .bind("uow_data", uowSer.toStringFunction.apply(uow))
-                            .bind("version", uow.getVersion())
+                            .bind("uow_data", uowSer.toStringFunction.apply(unitOfWork))
+                            .bind("version", unitOfWork.getVersion())
                             .execute() ;
                     int result2 = conn.createStatement(insertCommandSql)
-                            .bind("id", commandResults.getCommandId().toString())
-                            .bind("cmd_data", cmdSer.toStringFunction.apply(commandResults.getCommand()))
+                            .bind("id", command.getCommandId().toString())
+                            .bind("cmd_data", cmdSer.toStringFunction.apply(command))
                             .execute() ;
                     return result1 + result2 == 2;
                 }

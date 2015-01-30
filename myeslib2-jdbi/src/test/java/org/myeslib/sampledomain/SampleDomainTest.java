@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.myeslib.sampledomain.services.SampleDomainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Type;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,9 +66,10 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         functions = new UowSerialization(
                 gson::toJson,
                 (json) -> gson.fromJson(json, UnitOfWork.class));
+        Type type = new TypeToken<Command<UUID>>(){}.getType();
         cmdSer = new CommandSerialization<UUID>(
-                gson::toJson,
-                (json) -> gson.fromJson(json, Command.class));
+                (cmd) -> gson.toJson(cmd, type),
+                (json) -> gson.fromJson(json, type));
         dbMetadata = new DbMetadata("inventory_item");
         dao = new JdbiDao<>(functions, cmdSer, dbMetadata, dbi);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
@@ -86,8 +89,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
 
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getTargetId());
         CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service);
-        CommandResults<UUID> results = handler.handle(command, snapshot);
-        journal.append(results);
+        UnitOfWork unitOfWork = handler.handle(command, snapshot);
+        journal.append(command, unitOfWork);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
@@ -105,8 +108,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         CreateInventoryItem validCommand = new CreateInventoryItem(UUID.randomUUID(), itemId);
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(validCommand.getTargetId());
         CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service);
-        CommandResults<UUID> results = handler.handle(validCommand, snapshot);
-        journal.append(results);
+        UnitOfWork unitOfWork = handler.handle(validCommand, snapshot);
+        journal.append(validCommand, unitOfWork);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
@@ -116,9 +119,9 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
 
         // now increase (will fail since it has targetVersion = 0 instead of 1)
         IncreaseInventory invalidCommand = new IncreaseInventory(UUID.randomUUID(), itemId, 3);
-        CommandResults<UUID> resultsWillFail = new IncreaseHandler().handle(invalidCommand, snapshot);
+        UnitOfWork willFail = new IncreaseHandler().handle(invalidCommand, snapshot);
         // since IncreaseHandler is using the same snapshot we used on first operation, the next line will fail
-        journal.append(resultsWillFail);
+        journal.append(invalidCommand, willFail);
 
     }
 
@@ -131,8 +134,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         CreateInventoryItemThenIncreaseThenDecrease command = new CreateInventoryItemThenIncreaseThenDecrease(UUID.randomUUID(), itemId, 2, 1);
 
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.getTargetId());
-        CommandResults<UUID> results = new CreateThenIncreaseThenDecreaseHandler(service).handle(command, snapshot);
-        journal.append(results);
+        UnitOfWork results = new CreateThenIncreaseThenDecreaseHandler(service).handle(command, snapshot);
+        journal.append(command, results);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);

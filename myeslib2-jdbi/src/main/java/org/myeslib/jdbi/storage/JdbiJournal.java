@@ -1,6 +1,7 @@
 package org.myeslib.jdbi.storage;
 
-import org.myeslib.data.CommandResults;
+import org.myeslib.core.Command;
+import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
 import org.myeslib.storage.UnitOfWorkJournal;
 import org.slf4j.Logger;
@@ -20,8 +21,8 @@ public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
     }
 
     @Override
-    public void append(CommandResults<K> results) {
-        dao.append(results);
+    public void append(Command<K> command, UnitOfWork unitOfWork) {
+        dao.append(command, unitOfWork);
     }
 
 }

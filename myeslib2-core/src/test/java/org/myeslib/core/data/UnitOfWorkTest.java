@@ -1,10 +1,10 @@
-package org.myeslib.jdbi.function;
+package org.myeslib.core.data;
 
 import org.junit.Test;
 import org.myeslib.core.Event;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.jdbi.function.test.CommandJustForTest;
-import org.myeslib.jdbi.function.test.EventJustForTest;
+import org.myeslib.test.CommandJustForTest;
+import org.myeslib.test.EventJustForTest;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +29,6 @@ public class UnitOfWorkTest {
     public void nullEvent() {
         List<Event> events = Arrays.asList(null);
         CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
-        UnitOfWork uow = new UnitOfWork(UUID.randomUUID(), command.getCommandId(), null, events);
+        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), null, events);
     }
 }

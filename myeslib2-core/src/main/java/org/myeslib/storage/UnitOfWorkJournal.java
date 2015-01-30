@@ -1,9 +1,10 @@
 package org.myeslib.storage;
 
-import org.myeslib.data.CommandResults;
+import org.myeslib.core.Command;
+import org.myeslib.data.UnitOfWork;
 
 public interface UnitOfWorkJournal<K> {
 
-    void append(CommandResults<K> commandResults);
+    void append(Command<K> command, UnitOfWork unitOfWork);
 
 }

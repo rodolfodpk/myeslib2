@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -19,7 +20,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     private final List<? extends Event> events;
     private final Long version;
 
-    public UnitOfWork(UUID id, UUID commandId, Long version, List<? extends Event> events) {
+    UnitOfWork(UUID id, UUID commandId, Long version, List<? extends Event> events) {
         requireNonNull(id, "id cannot be null");
         requireNonNull(commandId, "commandId cannot be null");
         versionIsBiggerThanZero(version);
@@ -44,10 +45,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     }
 
     public List<Event> getEvents() {
-        List<Event> result = new LinkedList<>();
-        for (Event e : events) {
-            result.add(e);
-        }
+        List<Event> result = events.stream().collect(Collectors.toCollection(() -> new LinkedList<>()));
         return Collections.unmodifiableList(result);
     }
 
