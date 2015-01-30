@@ -68,9 +68,8 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
         if (partialTransactionHistory.isEmpty()) {
             return lastSnapshot;
         }
-        List<Event> partialEvents = unfold(partialTransactionHistory);
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
-        A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), unfold(partialTransactionHistory));
+        final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), unfold(partialTransactionHistory));
         final Snapshot<A> latestSnapshot = new Snapshot<>(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
