@@ -20,10 +20,6 @@
             <groupId>org.myeslib</groupId>
             <artifactId>myeslib2-core</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.owlike</groupId>-->
-            <!--<artifactId>genson</artifactId>-->
-        <!--</dependency>-->
 
         <!-- Other -->
         <dependency>
