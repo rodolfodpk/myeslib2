@@ -1,9 +1,8 @@
 package org.myeslib.jdbi.storage.dao;
 
 import org.myeslib.core.Command;
-import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.jdbi.storage.dao.config.CommandSerialization;
+import org.myeslib.jdbi.storage.dao.config.CmdSerialization;
 import org.myeslib.jdbi.storage.dao.config.DbMetadata;
 import org.myeslib.jdbi.storage.dao.config.UowSerialization;
 import org.skife.jdbi.v2.DBI;
@@ -14,7 +13,6 @@ import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -22,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -31,11 +30,11 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     static final Logger logger = LoggerFactory.getLogger(JdbiDao.class);
 
     private final UowSerialization uowSer;
-    private final CommandSerialization<K> cmdSer;
+    private final CmdSerialization cmdSer;
     private final DbMetadata dbMetadata;
     private final DBI dbi;
 
-    public JdbiDao(UowSerialization uowSer, CommandSerialization<K> cmdSer, DbMetadata dbMetadata, DBI dbi) {
+    public JdbiDao(UowSerialization uowSer, CmdSerialization cmdSer, DbMetadata dbMetadata, DBI dbi) {
         checkNotNull(uowSer);
         this.uowSer = uowSer;
         checkNotNull(cmdSer);
@@ -109,12 +108,12 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public void append(final Command<K> command, final UnitOfWork unitOfWork) {
+    public void append(final K targetId, final UUID commandId, final Command command, final UnitOfWork unitOfWork) {
 
+        checkNotNull(targetId);
+        checkNotNull(commandId);
         checkNotNull(command);
         checkNotNull(unitOfWork);
-
-        K targetId = command.getTargetId();
 
         String insertUowSql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
         String insertCommandSql = String.format("insert into %s (id, cmd_data) values (:id, :cmd_data)", dbMetadata.commandTable);
@@ -130,7 +129,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
                             .bind("version", unitOfWork.getVersion())
                             .execute() ;
                     int result2 = conn.createStatement(insertCommandSql)
-                            .bind("id", command.getCommandId().toString())
+                            .bind("id", command.commandId().toString())
                             .bind("cmd_data", cmdSer.toStringFunction.apply(command))
                             .execute() ;
                     return result1 + result2 == 2;
@@ -140,17 +139,17 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public Command<K> getCommand(final K commandId) {
+    public Command getCommand(final UUID commandId) {
         return dbi
-                .withHandle(new HandleCallback<Command<K>>() {
+                .withHandle(new HandleCallback<Command>() {
                                 final String sql = String.format("select id, cmd_data " +
                                         "from %s where id = :id ", dbMetadata.commandTable);
-                                public Command<K> withHandle(final Handle h) {
+                                public Command withHandle(final Handle h) {
                                     return h.createQuery(sql)
                                             .bind("id", commandId.toString())
                                             .map((i, r, ctx) -> {
                                                 final String cmdData = new ClobToStringMapper("cmd_data").map(i, r, ctx);
-                                                final Command<K> cmd = cmdSer.fromStringFunction.apply(cmdData);
+                                                final Command cmd = cmdSer.fromStringFunction.apply(cmdData);
                                                 return cmd;
                                             }).first();
                                 }
@@ -159,10 +158,10 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     public static class UowRecord {
-        String id;
-        Long version;
-        String uowData;
-        Long seqNumber;
+        final String id;
+        final Long version;
+        final String uowData;
+        final Long seqNumber;
 
         public UowRecord(String id, Long version, String uowData, Long seqNumber) {
             this.id = id;

@@ -7,6 +7,8 @@ import org.myeslib.storage.UnitOfWorkJournal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
@@ -21,8 +23,8 @@ public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
     }
 
     @Override
-    public void append(Command<K> command, UnitOfWork unitOfWork) {
-        dao.append(command, unitOfWork);
+    public void append(K targetId, UUID commandId, Command command, UnitOfWork unitOfWork) {
+        dao.append(targetId, commandId, command, unitOfWork);
     }
 
 }

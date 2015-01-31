@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.storage.dao.UnitOfWorkDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
@@ -34,16 +33,17 @@ public class JdbiJournalTest {
     public void oneTransaction() {
 
         UUID id = UUID.randomUUID();
+        UUID commandId = UUID.randomUUID();
 
-        CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
+        CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         JdbiJournal store = new JdbiJournal(dao);
 
-        store.append(command, newUow);
+        store.append(id, commandId, command, newUow);
 
-        verify(dao).append(command, newUow);
+        verify(dao).append(id, commandId, command, newUow);
 
     }
 
@@ -52,23 +52,24 @@ public class JdbiJournalTest {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command1 = new IncreaseInventory(UUID.randomUUID(), id, 1);
+        UUID command1Id = UUID.randomUUID();
+        IncreaseInventory command1 = IncreaseInventory.create(command1Id, id, 1);
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
+        DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
         JdbiJournal store = new JdbiJournal(dao);
 
-        store.append(command1, existingUow);
+        store.append(id, command1.commandId(), command1, existingUow);
 
-        store.append(command2, newUow);
+        store.append(id, command2.commandId(), command2, newUow);
 
-        verify(dao).append(command1, existingUow);
+        verify(dao).append(id, command1.commandId(), command1, existingUow);
 
-        verify(dao).append(command2, newUow);
+        verify(dao).append(id, command2.commandId(), command2, newUow);
 
     }
 

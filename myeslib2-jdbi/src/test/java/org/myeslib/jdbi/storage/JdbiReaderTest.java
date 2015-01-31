@@ -81,9 +81,9 @@ public class JdbiReaderTest {
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 1L);
 
-        CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
+        CreateInventoryItem command = CreateInventoryItem.create(UUID.randomUUID(), id);
         
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
         List<Event> expectedEvents = new ArrayList<>(newUow.getEvents());
@@ -112,9 +112,9 @@ public class JdbiReaderTest {
 
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
-        CreateInventoryItem command = new CreateInventoryItem(UUID.randomUUID(), id);
+        CreateInventoryItem command = CreateInventoryItem.create(UUID.randomUUID(), id);
         
-        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
+        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
         List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
@@ -151,9 +151,9 @@ public class JdbiReaderTest {
 
         cache.put(id, currentSnapshot);
 
-        IncreaseInventory command = new IncreaseInventory(UUID.randomUUID(), id, 2);;
+        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 2);;
 
-        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
+        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
 
         List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
         List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());

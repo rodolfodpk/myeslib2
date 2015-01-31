@@ -19,16 +19,16 @@
         <hazelcast.version>3.2.4</hazelcast.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>central</id>
-            <name>bintray</name>
-            <url>http://jcenter.bintray.com</url>
-        </repository>
-    </repositories>
+    <!--<repositories>-->
+        <!--<repository>-->
+            <!--<snapshots>-->
+                <!--<enabled>false</enabled>-->
+            <!--</snapshots>-->
+            <!--<id>central</id>-->
+            <!--<name>bintray</name>-->
+            <!--<url>http://jcenter.bintray.com</url>-->
+        <!--</repository>-->
+    <!--</repositories>-->
 
     <modules>
         <module>myeslib2-core</module>
@@ -68,6 +68,11 @@
                 <artifactId>guava</artifactId>
                 <version>18.0</version>
             </dependency>
+            <!--<dependency>-->
+                <!--<groupId>com.owlike</groupId>-->
+                <!--<artifactId>genson</artifactId>-->
+                <!--<version>1.2</version>-->
+            <!--</dependency>-->
 
             <!-- 			<dependency> -->
             <!-- 				<groupId>com.oracle</groupId> -->

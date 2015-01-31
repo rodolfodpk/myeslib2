@@ -6,12 +6,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class CommandResults<K> {
+public class CommandResults {
 
     private final UnitOfWork unitOfWork;
-    private final List<Command<K>> externalCommands;
+    private final List<Command> externalCommands;
 
-    public CommandResults(UnitOfWork unitOfWork, List<Command<K>> externalCommands) {
+    public CommandResults(UnitOfWork unitOfWork, List<Command> externalCommands) {
         this.unitOfWork = unitOfWork;
         this.externalCommands = externalCommands;
     }
@@ -25,7 +25,7 @@ public class CommandResults<K> {
         return unitOfWork;
     }
 
-    public List<Command<K>> getExternalCommands() {
+    public List<Command> getExternalCommands() {
         return Collections.unmodifiableList(externalCommands);
     }
 

@@ -49,7 +49,7 @@ public class EventBusInteractionContext implements InteractionContext {
     }
 
     @Override
-    public List<Event> getEvents() {
+    public List<Event> getAppliedEvents() {
         bus.unregister(aggregateRoot);
         return Collections.unmodifiableList(events);
     }

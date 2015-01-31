@@ -4,6 +4,7 @@ import org.myeslib.core.Command;
 import org.myeslib.data.UnitOfWork;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface UnitOfWorkDao<K> {
 
@@ -11,7 +12,7 @@ public interface UnitOfWorkDao<K> {
 
     List<UnitOfWork> getPartial(K id, Long biggerThanThisVersion);
 
-    void append(Command<K> command, UnitOfWork unitOfWork);
+    void append(K targetId, UUID commandId, Command command, UnitOfWork unitOfWork);
 
-    Command<K> getCommand(K commandId);
+    Command getCommand(UUID commandId);
 }

@@ -1,17 +1,16 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.commands;
 
-import lombok.NonNull;
-import lombok.Value;
+import com.google.auto.value.AutoValue;
 import org.myeslib.core.Command;
 
 import java.util.UUID;
 
-@Value
-public class DecreaseInventory implements Command<UUID> {
-    @NonNull
-    UUID commandId;
-    @NonNull
-    UUID targetId;
-    @NonNull
-    Integer howMany;
+@AutoValue
+public abstract class DecreaseInventory implements Command {
+    public abstract UUID commandId();
+    public abstract UUID targetId();
+    public abstract Integer howMany();
+    public static DecreaseInventory create(UUID commandId, UUID targetId, Integer howMany) {
+        return new AutoValue_DecreaseInventory(commandId, targetId, howMany) ;
+    }
 }

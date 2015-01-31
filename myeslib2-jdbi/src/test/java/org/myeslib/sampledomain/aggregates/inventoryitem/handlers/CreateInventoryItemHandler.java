@@ -29,7 +29,7 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
         aggregateRoot.setService(service);
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
-        aggregateRoot.create(command.getTargetId());
-        return UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents());
+        aggregateRoot.create(command.targetId());
+        return UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
     }
 }

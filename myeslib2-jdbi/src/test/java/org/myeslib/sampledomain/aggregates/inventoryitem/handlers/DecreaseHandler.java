@@ -16,8 +16,8 @@ public class DecreaseHandler implements CommandHandler<DecreaseInventory, Invent
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
-        aggregateRoot.decrease(command.getHowMany());
-        return UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents());
+        aggregateRoot.decrease(command.howMany());
+        return UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
     }
 
 }

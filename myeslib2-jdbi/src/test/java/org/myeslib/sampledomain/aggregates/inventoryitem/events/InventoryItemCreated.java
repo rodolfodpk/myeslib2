@@ -7,10 +7,9 @@ import java.util.UUID;
 
 @AutoValue
 public abstract class InventoryItemCreated implements Event {
+    InventoryItemCreated() {}
     public abstract UUID id();
     public abstract String description();
-    InventoryItemCreated() {
-    }
     public static InventoryItemCreated create(UUID id, String description) {
         return new AutoValue_InventoryItemCreated(id, description);
     }

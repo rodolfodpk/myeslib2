@@ -2,24 +2,23 @@ package org.myeslib.jdbi.storage.dao;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.Command;
 import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.jdbi.storage.dao.config.CommandSerialization;
+import org.myeslib.jdbi.storage.dao.config.CmdSerialization;
 import org.myeslib.jdbi.storage.dao.config.DbMetadata;
 import org.myeslib.jdbi.storage.dao.config.UowSerialization;
 import org.myeslib.jdbi.storage.helpers.DbAwareBaseTestClass;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.SampleDomainGsonFactory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -29,9 +28,10 @@ import static org.junit.Assert.assertThat;
 
 public class JdbiDaoTest extends DbAwareBaseTestClass {
 
-    Gson gson;
+    Gson uowGson;
     UowSerialization uowSer;
-    CommandSerialization<UUID> cmdSer;
+    Gson cmdGson;
+    CmdSerialization cmdSer;
     DbMetadata dbMetadata;
     JdbiDao<UUID> dao;
 
@@ -42,14 +42,14 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
     @Before
     public void init() throws Exception {
-        gson = new SampleDomainGsonFactory().create();
+        uowGson = new EventsGsonFactory().create();
         uowSer = new UowSerialization(
-                gson::toJson,
-                (json) -> gson.fromJson(json, UnitOfWork.class));
-        Type type = new TypeToken<Command<UUID>>(){}.getType();
-        cmdSer = new CommandSerialization<UUID>(
-                (cmd) -> gson.toJson(cmd, type),
-                (json) -> gson.fromJson(json, type));
+                uowGson::toJson,
+                (json) -> uowGson.fromJson(json, UnitOfWork.class));
+        cmdGson = new CommandsGsonFactory().create();
+        cmdSer = new CmdSerialization(
+                (cmd) -> cmdGson.toJson(cmd, Command.class),
+                (json) -> cmdGson.fromJson(json, Command.class));
         dbMetadata = new DbMetadata("inventory_item");
         dao = new JdbiDao<>(uowSer, cmdSer, dbMetadata, dbi);
     }
@@ -57,14 +57,30 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
     @Test
     public void tesetCmdSer() {
 
-        IncreaseInventory command = new IncreaseInventory(UUID.randomUUID(), UUID.randomUUID(), 1);
+        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), UUID.randomUUID(), 1);
 
         String asString = cmdSer.toStringFunction.apply(command);
 
-        Command<UUID> cmd = cmdSer.fromStringFunction.apply(asString);
+        Command cmd = cmdSer.fromStringFunction.apply(asString);
 
         assertThat(command, is(cmd));
 
+    }
+
+    @Test
+    public void tesetUowSer() {
+
+        UUID id = UUID.randomUUID();
+
+        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 1);
+
+        UnitOfWork unitOfWork = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+
+        String asString = uowSer.toStringFunction.apply(unitOfWork);
+
+        UnitOfWork fromJson = uowSer.fromStringFunction.apply(asString);
+
+        assertThat(unitOfWork, is(fromJson));
     }
 
     @Test
@@ -72,17 +88,17 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command = new IncreaseInventory(UUID.randomUUID(), id, 1);
+        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 1);
         
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
-        dao.append(command, newUow);
+        dao.append(command.targetId(), command.commandId(), command, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
         assertThat(Lists.newArrayList(newUow), is(fromDb));
 
-        assertThat(command, is(dao.getCommand(command.getCommandId())));
+        assertThat(command, is(dao.getCommand(command.commandId())));
 
     }
 
@@ -91,23 +107,23 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command1 = new IncreaseInventory(UUID.randomUUID(), id, 1);
-        DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
+        IncreaseInventory command1 = IncreaseInventory.create(UUID.randomUUID(), id, 1);
+        DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        dao.append(command1, existingUow);
+        dao.append(command1.targetId(), command1.commandId(), command1, existingUow);
 
-        dao.append(command2, newUow);
+        dao.append(command2.targetId(), command2.commandId(), command2, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
         assertThat(Lists.newArrayList(existingUow, newUow), is(fromDb));
 
-        assertThat(command1, is(dao.getCommand(command1.getCommandId())));
-        assertThat(command2, is(dao.getCommand(command2.getCommandId())));
+        assertThat(command1, is(dao.getCommand(command1.commandId())));
+        assertThat(command2, is(dao.getCommand(command2.commandId())));
 
         assertThat(fromDb.get(fromDb.size()-1).getVersion(), is(2L));
 
@@ -119,17 +135,17 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command1 = new IncreaseInventory(UUID.randomUUID(), id, 1);
-        DecreaseInventory command2 = new DecreaseInventory(UUID.randomUUID(), id, 1);
+        IncreaseInventory command1 = IncreaseInventory.create(UUID.randomUUID(), id, 1);
+        DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
 
-        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        dao.append(command1, existingUow);
+        dao.append(command1.targetId(), command1.commandId(), command1, existingUow);
 
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.getCommandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
-        CommandResults<UUID> results2 = new CommandResults(newUow);
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.commandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
+        CommandResults results2 = new CommandResults(newUow);
 
-        dao.append(command2, newUow);
+        dao.append(command2.targetId(), command2.commandId(), command2, newUow);
 
     }
 

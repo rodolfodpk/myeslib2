@@ -1,6 +1,5 @@
 package org.myeslib.data;
 
-import org.myeslib.core.Command;
 import org.myeslib.core.Event;
 
 import java.io.Serializable;
@@ -17,8 +16,8 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
 
     private final UUID id;
     private final UUID commandId;
-    private final List<? extends Event> events;
     private final Long version;
+    private final List<? extends Event> events;
 
     UnitOfWork(UUID id, UUID commandId, Long version, List<? extends Event> events) {
         requireNonNull(id, "id cannot be null");

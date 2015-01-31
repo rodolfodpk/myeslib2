@@ -16,7 +16,7 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory, Invent
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
-        aggregateRoot.increase(command.getHowMany());
-        return UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEvents());
+        aggregateRoot.increase(command.howMany());
+        return UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
     }
 }

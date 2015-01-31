@@ -11,14 +11,11 @@ import org.myeslib.storage.SnapshotReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.Collator;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -56,8 +53,8 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
             lastSnapshot = cache.get(id, () -> {
                 logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
-                List<UnitOfWork> uows = dao.getFull(id);
-                return new Snapshot<>(applyEventsFunction.apply(supplier.get(), unfold(uows)), lastVersion(uows));
+                final List<UnitOfWork> uows = dao.getFull(id);
+                return new Snapshot<>(applyEventsFunction.apply(supplier.get(), flatMap(uows)), lastVersion(uows));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
@@ -72,14 +69,14 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
             return lastSnapshot;
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
-        final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), unfold(partialTransactionHistory));
+        final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
         final Snapshot<A> latestSnapshot = new Snapshot<>(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }
 
-    List<Event> unfold(List<UnitOfWork> uows) {
-        return uows.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
+    List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {
+        return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
     }
 
     Long lastVersion(List<UnitOfWork> uows) {

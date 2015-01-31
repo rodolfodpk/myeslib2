@@ -20,7 +20,7 @@ public class UnitOfWorkTest {
         Long snapshotVersion = 0L;
         List<Event> events = Arrays.asList(new EventJustForTest(UUID.randomUUID(), 1));
         CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
-        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), snapshotVersion, events);
+        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshotVersion, events);
         assertThat(uow.getVersion(), is(1L));
     }
 
@@ -29,6 +29,6 @@ public class UnitOfWorkTest {
     public void nullEvent() {
         List<Event> events = Arrays.asList(null);
         CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());
-        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command.getCommandId(), null, events);
+        UnitOfWork uow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), null, events);
     }
 }

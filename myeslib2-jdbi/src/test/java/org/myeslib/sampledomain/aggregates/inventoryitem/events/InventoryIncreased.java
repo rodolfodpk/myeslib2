@@ -5,8 +5,8 @@ import org.myeslib.core.Event;
 
 @AutoValue
 public abstract class InventoryIncreased implements Event {
-    public abstract Integer howMany();
     InventoryIncreased() {}
+    public abstract Integer howMany();
     public static InventoryIncreased create(Integer howMany) {
         return new AutoValue_InventoryIncreased(howMany);
     }

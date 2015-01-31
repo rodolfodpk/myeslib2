@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@NotThreadSafe
+@NotThreadSafe 
 public class MultiMethodInteractionContext implements InteractionContext {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiMethodInteractionContext.class);
@@ -41,7 +41,7 @@ public class MultiMethodInteractionContext implements InteractionContext {
     }
 
     @Override
-    public List<Event> getEvents() {
+    public List<Event> getAppliedEvents() {
         return Collections.unmodifiableList(events);
     }
 
