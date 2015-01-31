@@ -16,7 +16,7 @@ import static org.junit.Assert.assertThat;
 public class UnitOfWorkTest {
 
     @Test
-    public void versionShouldBeCommandVersionPlusOne() {
+    public void versionShouldBeSnapshotVersionPlusOne() {
         Long snapshotVersion = 0L;
         List<Event> events = Arrays.asList(new EventJustForTest(UUID.randomUUID(), 1));
         CommandJustForTest command = new CommandJustForTest(UUID.randomUUID(), UUID.randomUUID());

@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.core.Command;
-import org.myeslib.data.CommandResults;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.storage.dao.config.CmdSerialization;
 import org.myeslib.jdbi.storage.dao.config.DbMetadata;
@@ -15,9 +14,9 @@ import org.myeslib.jdbi.storage.helpers.DbAwareBaseTestClass;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -143,7 +142,6 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         dao.append(command1.targetId(), command1.commandId(), command1, existingUow);
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.commandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
-        CommandResults results2 = new CommandResults(newUow);
 
         dao.append(command2.targetId(), command2.commandId(), command2, newUow);
 
