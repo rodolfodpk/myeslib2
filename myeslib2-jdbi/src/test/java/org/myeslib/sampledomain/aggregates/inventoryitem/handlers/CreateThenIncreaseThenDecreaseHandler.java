@@ -5,6 +5,8 @@ import org.myeslib.data.UnitOfWork;
 import org.myeslib.function.CommandHandler;
 import org.myeslib.function.InteractionContext;
 import org.myeslib.jdbi.function.multimethod.MultiMethodInteractionContext;
+import org.myeslib.jdbi.storage.JdbiJournal;
+import org.myeslib.jdbi.storage.dao.JdbiDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -18,14 +20,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease, InventoryItem> {
 
     final SampleDomainService service;
+    final JdbiJournal<UUID> journal;
 
-    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service) {
+    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, JdbiJournal<UUID> journal) {
+        checkNotNull(journal);
+        this.journal = journal;
         checkNotNull(service);
         this.service = service;
     }
 
     @Override
-    public UnitOfWork handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
+    public void handle(CreateInventoryItemThenIncreaseThenDecrease command, Snapshot<InventoryItem> snapshot) {
 
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
@@ -37,6 +42,8 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.increase(command.howManyToIncrease());
         aggregateRoot.decrease(command.howManyToDecrease());
 
-        return UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        UnitOfWork unitOfWork = UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+
+        journal.append(command.targetId(), command.commandId(), command, unitOfWork);
     }
 }

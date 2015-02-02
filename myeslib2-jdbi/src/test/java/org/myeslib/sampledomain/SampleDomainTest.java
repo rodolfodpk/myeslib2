@@ -84,9 +84,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         CreateInventoryItem command =  CreateInventoryItem.create(UUID.randomUUID(), itemId);
 
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
-        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service);
-        UnitOfWork unitOfWork = handler.handle(command, snapshot);
-        journal.append(command.targetId(), command.commandId(), command, unitOfWork);
+        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service, journal, snapshotReader);
+        handler.handle(command, snapshot);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
@@ -103,9 +102,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         // create
         CreateInventoryItem validCommand =  CreateInventoryItem.create(UUID.randomUUID(), itemId);
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(validCommand.targetId());
-        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service);
-        UnitOfWork unitOfWork = handler.handle(validCommand, snapshot);
-        journal.append(validCommand.targetId(), validCommand.commandId(), validCommand, unitOfWork);
+        CreateInventoryItemHandler handler = new CreateInventoryItemHandler(service, journal, snapshotReader);
+        handler.handle(validCommand, snapshot);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
@@ -115,10 +113,8 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
 
         // now increase (will fail since it has targetVersion = 0 instead of 1)
         IncreaseInventory invalidCommand = IncreaseInventory.create(UUID.randomUUID(), itemId, 3);
-        UnitOfWork willFail = new IncreaseHandler().handle(invalidCommand, snapshot);
         // since IncreaseHandler is using the same snapshot we used on first operation, the next line will fail
-        journal.append(invalidCommand.targetId(), invalidCommand.commandId(), invalidCommand, willFail);
-
+        new IncreaseHandler(journal, snapshotReader).handle(invalidCommand, snapshot);
     }
 
     @Test
@@ -130,8 +126,7 @@ public class SampleDomainTest extends DbAwareBaseTestClass {
         CreateInventoryItemThenIncreaseThenDecrease command = CreateInventoryItemThenIncreaseThenDecrease.create(UUID.randomUUID(), itemId, 2, 1);
 
         Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
-        UnitOfWork unitOfWork = new CreateThenIncreaseThenDecreaseHandler(service).handle(command, snapshot);
-        journal.append(command.targetId(), command.commandId(), command, unitOfWork);
+        new CreateThenIncreaseThenDecreaseHandler(service, journal).handle(command, snapshot);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
         Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
