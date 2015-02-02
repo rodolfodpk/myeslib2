@@ -2,8 +2,8 @@ package org.myeslib.jdbi.infra;
 
 import org.myeslib.core.Command;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

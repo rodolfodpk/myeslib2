@@ -6,8 +6,8 @@ import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
-import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.myeslib.infra.SnapshotReader;
+import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

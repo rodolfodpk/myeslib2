@@ -1,7 +1,6 @@
 package org.myeslib.jdbi.infra;
 
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.core.Command;
 import org.myeslib.core.Event;
 import org.myeslib.infra.InteractionContext;
 import org.myeslib.jdbi.infra.helpers.MultiMethod;
@@ -20,12 +19,10 @@ public class MultiMethodInteractionContext implements InteractionContext {
     private final AggregateRoot aggregateRoot;
     private final MultiMethod mm ;
     private final List<Event> events;
-    private final List<Command> commands;
 
     public MultiMethodInteractionContext(AggregateRoot aggregateRoot) {
         this.mm = MultiMethod.getMultiMethod(aggregateRoot.getClass(), "on");
         this.events = new ArrayList<>();
-        this.commands = new ArrayList<>();
         checkNotNull(aggregateRoot);
         this.aggregateRoot = aggregateRoot;
     }

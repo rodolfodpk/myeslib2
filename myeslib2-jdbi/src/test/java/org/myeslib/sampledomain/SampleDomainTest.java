@@ -1,29 +1,21 @@
 package org.myeslib.sampledomain;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.Subscribe;
-import com.google.gson.Gson;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.core.Command;
 import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.infra.ApplyEventsFunction;
-import org.myeslib.jdbi.infra.JdbiReader;
-import org.myeslib.jdbi.infra.helpers.DbAwareBaseTestClass;
 import org.myeslib.jdbi.infra.JdbiJournal;
-import org.myeslib.jdbi.infra.MultiMethodApplyEventsFunction;
-import org.myeslib.jdbi.infra.dao.JdbiDao;
-import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
-import org.myeslib.jdbi.infra.dao.config.DbMetadata;
-import org.myeslib.jdbi.infra.dao.config.UowSerialization;
+import org.myeslib.jdbi.infra.JdbiReader;
+import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -35,43 +27,31 @@ import java.util.UUID;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class SampleDomainTest extends DbAwareBaseTestClass {
+public class SampleDomainTest  {
 
     static final Logger logger = LoggerFactory.getLogger(SampleDomainTest.class);
 
-    Gson gson;
-    UowSerialization functions;
-    CmdSerialization cmdSer;
-    DbMetadata dbMetadata;
-    JdbiDao<UUID> dao;
-    Cache<UUID, Snapshot<InventoryItem>> cache;
-    ApplyEventsFunction<InventoryItem> applyEventsFunction;
-    JdbiReader<UUID, InventoryItem> snapshotReader ;
-    JdbiJournal<UUID> journal;
-    SampleDomainService service;
+    static Injector injector;
 
     @BeforeClass
     public static void setup() throws Exception {
-        initDb();
+        injector = Guice.createInjector(new InventoryItemModule());
     }
 
     @Before
     public void init() throws Exception {
-        gson = new EventsGsonFactory().create();
-        functions = new UowSerialization(
-                gson::toJson,
-                (json) -> gson.fromJson(json, UnitOfWork.class));
-        cmdSer = new CmdSerialization(
-                (cmd) -> gson.toJson(cmd, Command.class),
-                (json) -> gson.fromJson(json, Command.class));
-        dbMetadata = new DbMetadata("inventory_item");
-        dao = new JdbiDao<>(functions, cmdSer, dbMetadata, dbi);
-        cache = CacheBuilder.newBuilder().maximumSize(1000).build();
-        applyEventsFunction = new MultiMethodApplyEventsFunction<>();
-        snapshotReader = new JdbiReader<>(() -> InventoryItem.builder().build(), dao, cache, applyEventsFunction);
-        journal = new JdbiJournal<>(dao);
-        service = id -> id.toString();
+        injector.injectMembers(this);
+        databaseHelper.initDb();
     }
+
+    @Inject
+    DatabaseHelper databaseHelper;
+    @Inject
+    JdbiReader<UUID, InventoryItem> snapshotReader ;
+    @Inject
+    JdbiJournal<UUID> journal;
+    @Inject
+    SampleDomainService service;
 
     @Test
     public void testCreateInventoryItemHandler() throws InterruptedException {
