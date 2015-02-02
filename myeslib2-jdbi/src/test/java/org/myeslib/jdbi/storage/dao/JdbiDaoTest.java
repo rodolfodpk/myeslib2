@@ -110,20 +110,16 @@ public class JdbiDaoTest extends DbAwareBaseTestClass {
         DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
 
         UnitOfWork existingUow = UnitOfWork.create(UUID.randomUUID(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
-
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
         dao.append(command1.targetId(), command1.commandId(), command1, existingUow);
-
         dao.append(command2.targetId(), command2.commandId(), command2, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
         assertThat(Lists.newArrayList(existingUow, newUow), is(fromDb));
-
         assertThat(command1, is(dao.getCommand(command1.commandId())));
         assertThat(command2, is(dao.getCommand(command2.commandId())));
-
         assertThat(fromDb.get(fromDb.size()-1).getVersion(), is(2L));
 
 

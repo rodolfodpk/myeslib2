@@ -57,11 +57,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.owlike</groupId>
-            <artifactId>genson</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>test</scope>
