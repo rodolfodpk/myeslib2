@@ -9,4 +9,5 @@ public interface InteractionContext {
     void apply(Event event);
 
     List<Event> getAppliedEvents();
+
 }

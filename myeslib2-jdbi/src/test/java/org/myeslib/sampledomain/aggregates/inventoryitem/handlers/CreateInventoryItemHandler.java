@@ -11,18 +11,19 @@ import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.infra.InteractionContext;
 
+import javax.inject.Inject;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-
 public class CreateInventoryItemHandler implements CommandHandler<CreateInventoryItem> {
 
     final SampleDomainService service;
-    final UnitOfWorkJournal journal;
+    final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
-    public CreateInventoryItemHandler(SampleDomainService service, UnitOfWorkJournal journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    @Inject
+    public CreateInventoryItemHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.snapshotReader = snapshotReader;
         checkNotNull(service);
         this.service = service;

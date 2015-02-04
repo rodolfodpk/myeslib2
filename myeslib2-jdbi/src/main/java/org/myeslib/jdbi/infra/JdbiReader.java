@@ -42,7 +42,7 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
 
     /*
      * (non-Javadoc)
-     * @see org.myeslib.infra.SnapshotReader#getPartial(java.lang.Object)
+     * @see org.myeslib.infra.SnapshotReader#getSnapshot(java.lang.Object)
      */
     public Snapshot<A> getSnapshot(final K id) {
         checkNotNull(id);

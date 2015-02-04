@@ -32,7 +32,7 @@ import static org.junit.Assert.assertThat;
 public class JdbiDaoTest {
 
     @Inject
-    JdbiDao<UUID> dao;
+    UnitOfWorkDao<UUID> dao; // actually a JdbiDao
 
     static Injector injector;
 

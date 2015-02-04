@@ -10,14 +10,16 @@ import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.infra.InteractionContext;
 
+import javax.inject.Inject;
 import java.util.UUID;
 
 public class DecreaseHandler implements CommandHandler<DecreaseInventory> {
 
-    final UnitOfWorkJournal journal;
+    final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
-    public DecreaseHandler(UnitOfWorkJournal journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    @Inject
+    public DecreaseHandler(UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
     }

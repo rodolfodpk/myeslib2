@@ -12,6 +12,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCre
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.infra.InteractionContext;
 
+import javax.inject.Inject;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -82,6 +83,7 @@ public class InventoryItem implements AggregateRoot {
 
     // setters
 
+    @Inject
     public void setService(SampleDomainService service) {
         this.service = service;
     }

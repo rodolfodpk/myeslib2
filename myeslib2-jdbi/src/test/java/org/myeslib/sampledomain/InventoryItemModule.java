@@ -12,6 +12,7 @@ import org.myeslib.core.Command;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
+import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.jdbi.infra.JdbiJournal;
 import org.myeslib.jdbi.infra.JdbiReader;
@@ -25,24 +26,28 @@ import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.skife.jdbi.v2.DBI;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-public class InventoryItemModule extends PrivateModule{
+public class InventoryItemModule extends PrivateModule {
 
     @Provides
     @Exposed
-    public JdbiJournal<UUID> journal(JdbiDao<UUID> dao) {
+    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao) {
         return new JdbiJournal<>(dao);
     }
 
     @Provides
     @Exposed
-    public JdbiReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
-                                                          JdbiDao<UUID> dao,
+    public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
+                                                              UnitOfWorkDao<UUID> dao,
                                                           Cache<UUID, Snapshot<InventoryItem>> cache,
                                                           ApplyEventsFunction<InventoryItem> applyEventsFunction){
         return new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
@@ -50,7 +55,7 @@ public class InventoryItemModule extends PrivateModule{
 
     @Provides
     @Exposed
-    public JdbiDao<UUID> dao(UowSerialization uowSer, CmdSerialization cmdSer,
+    public UnitOfWorkDao<UUID> dao(UowSerialization uowSer, CmdSerialization cmdSer,
                              DbMetadata dbMetadata, DBI dbi) {
         return new JdbiDao<>(uowSer, cmdSer, dbMetadata, dbi);
     }
@@ -79,9 +84,7 @@ public class InventoryItemModule extends PrivateModule{
     }
 
     @Provides
-    public Supplier<InventoryItem> supplier() {
-        return () -> InventoryItem.builder().build();
-    }
+    public Supplier<InventoryItem> supplier() { return () -> InventoryItem.builder().build(); }
 
     @Provides
     public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
@@ -101,7 +104,7 @@ public class InventoryItemModule extends PrivateModule{
     }
 
     @Provides
-    public CmdSerialization cmdSerialization(@Named("commands-json")Gson gson) {
+    public CmdSerialization cmdSerialization(@Named("commands-json") Gson gson) {
         return new CmdSerialization(
                 (cmd) -> gson.toJson(cmd, Command.class),
                 (json) -> gson.fromJson(json, Command.class));
@@ -112,5 +115,13 @@ public class InventoryItemModule extends PrivateModule{
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
         expose(SampleDomainService.class);
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
+        bind(CreateInventoryItemHandler.class);
+        expose(CreateInventoryItemHandler.class);
+        bind(CreateThenIncreaseThenDecreaseHandler.class);
+        expose(CreateThenIncreaseThenDecreaseHandler.class);
+        bind(IncreaseHandler.class);
+        expose(IncreaseHandler.class);
+        bind(DecreaseHandler.class);
+        expose(DecreaseHandler.class);
     }
 }

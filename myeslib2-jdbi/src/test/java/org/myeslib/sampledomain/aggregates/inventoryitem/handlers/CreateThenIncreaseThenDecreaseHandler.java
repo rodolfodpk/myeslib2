@@ -4,6 +4,7 @@ import org.myeslib.core.CommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.SnapshotReader;
+import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.jdbi.infra.JdbiJournal;
 import org.myeslib.jdbi.infra.MultiMethodInteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
@@ -12,6 +13,7 @@ import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.infra.InteractionContext;
 
 import javax.annotation.concurrent.Immutable;
+import javax.inject.Inject;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -20,10 +22,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
 
     final SampleDomainService service;
-    final JdbiJournal<UUID> journal;
+    final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
-    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, JdbiJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    @Inject
+    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         checkNotNull(snapshotReader);
         this.snapshotReader = snapshotReader;
         checkNotNull(journal);
@@ -39,7 +42,7 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
 
-        aggregateRoot.setService(service); // instead, it could be using Guice to inject necessary services
+        aggregateRoot.setService(service); // if aggregateRoot uses many domain services, it could be using Guice to inject necessary services
         aggregateRoot.setInteractionContext(interactionContext);
 
         aggregateRoot.create(command.targetId());
