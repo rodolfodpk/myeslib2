@@ -1,12 +1,15 @@
 package org.myeslib.jdbi.infra;
 
 import com.google.common.eventbus.EventBus;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.infra.exceptions.ConcurrencyException;
+import org.myeslib.infra.exceptions.InfraRuntimeException;
 import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
@@ -18,7 +21,10 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCre
 import java.util.Arrays;
 import java.util.UUID;
 
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JdbiJournalTest {
@@ -39,12 +45,12 @@ public class JdbiJournalTest {
     @Test
     public void oneTransaction() {
 
+        JdbiJournal store = new JdbiJournal(dao);
         UUID id = UUID.randomUUID();
         UUID commandId = UUID.randomUUID();
 
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
-        JdbiJournal store = new JdbiJournal(dao);
 
         store.append(id, commandId, command, newUow);
 
@@ -54,6 +60,8 @@ public class JdbiJournalTest {
 
     @Test
     public void twoTransactions() {
+
+        JdbiJournal store = new JdbiJournal(dao);
 
         UUID id = UUID.randomUUID();
 
@@ -65,8 +73,6 @@ public class JdbiJournalTest {
         DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
-
-        JdbiJournal store = new JdbiJournal(dao);
 
         store.append(id, command1.commandId(), command1, existingUow);
 
@@ -81,22 +87,39 @@ public class JdbiJournalTest {
     @Test
     public void queryModelEventBuses() {
 
+        JdbiJournal store = new JdbiJournal(dao, queryModel1Bus, saga1Bus);
+
         UUID id = UUID.randomUUID();
         UUID commandId = UUID.randomUUID();
-
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
 
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
-        JdbiJournal store = new JdbiJournal(dao, queryModel1Bus, saga1Bus);
-
         store.append(id, commandId, command, newUow);
 
         verify(dao).append(id, commandId, command, newUow);
-
         verify(queryModel1Bus).post(newUow);
-
         verify(saga1Bus).post(newUow);
+
+    }
+
+    @Test
+    public void onDaoExceptionBusesShouldNotReceiveAnyEvent() {
+
+        JdbiJournal store = new JdbiJournal(dao, queryModel1Bus, saga1Bus);
+
+        IncreaseInventory command =  IncreaseInventory.create(UUID.randomUUID(), UUID.randomUUID(), 10);
+        UnitOfWork unitOfWork = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
+        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command.commandId(), command, unitOfWork);
+
+        try {
+            store.append(command.targetId(), command.commandId(), command, unitOfWork);
+        } catch (Exception e) {
+        }
+
+        verify(dao).append(command.targetId(), command.commandId(), command, unitOfWork);
+        verify(queryModel1Bus, times(0)).post(any(UnitOfWork.class));
+        verify(saga1Bus, times(0)).post(any(UnitOfWork.class));
 
     }
 
