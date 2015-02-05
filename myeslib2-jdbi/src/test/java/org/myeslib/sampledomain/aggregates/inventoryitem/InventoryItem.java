@@ -45,7 +45,7 @@ public class InventoryItem implements AggregateRoot {
     public void decrease(int howMany) {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
-        interactionContext.apply(InventoryDecreased.create(howMany));;
+        interactionContext.apply(InventoryDecreased.create(howMany));
     }
 
     // guards

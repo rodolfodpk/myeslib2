@@ -1,14 +1,15 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
+import org.myeslib.core.CommandHandler;
+import org.myeslib.core.StatefulCommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.core.CommandHandler;
+import org.myeslib.infra.InteractionContext;
+import org.myeslib.infra.SnapshotReader;
+import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.jdbi.infra.MultiMethodInteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
-import org.myeslib.infra.SnapshotReader;
-import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.infra.InteractionContext;
 
 import javax.inject.Inject;
 import java.util.UUID;

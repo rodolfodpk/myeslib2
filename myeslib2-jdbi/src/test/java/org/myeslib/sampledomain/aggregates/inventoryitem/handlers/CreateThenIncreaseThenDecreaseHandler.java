@@ -38,7 +38,7 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
     @Override
     public void handle(CreateInventoryItemThenIncreaseThenDecrease command) {
 
-        Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
+        final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
 

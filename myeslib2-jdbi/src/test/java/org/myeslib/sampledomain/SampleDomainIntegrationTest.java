@@ -1,18 +1,16 @@
 package org.myeslib.sampledomain;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
-import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
+import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
@@ -73,7 +71,7 @@ public class SampleDomainIntegrationTest {
 
         // command to create then increase and decrease
 
-        UUID itemId = UUID.randomUUID() ;
+        UUID itemId = UUID.randomUUID();
         CreateInventoryItemThenIncreaseThenDecrease command = CreateInventoryItemThenIncreaseThenDecrease.create(UUID.randomUUID(), itemId, 2, 1);
 
         createThenIncreaseThenDecreaseHandler.handle(command);
@@ -85,17 +83,4 @@ public class SampleDomainIntegrationTest {
 
     }
 
-    class EventsSubscriberToReflectQueryModel {
-
-        @Subscribe
-        public void on(UnitOfWork uow) {
-
-            logger.info("received a UnitOfWork with {} events:" + uow.getEvents().size());
-            for (Event e: uow.getEvents()) {
-                logger.info("  {}", e);
-            }
-
-        }
-
-    }
 }

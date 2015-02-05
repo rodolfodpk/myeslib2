@@ -151,7 +151,7 @@ public class JdbiReaderTest {
 
         cache.put(id, currentSnapshot);
 
-        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 2);;
+        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 2);
 
         UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
 
