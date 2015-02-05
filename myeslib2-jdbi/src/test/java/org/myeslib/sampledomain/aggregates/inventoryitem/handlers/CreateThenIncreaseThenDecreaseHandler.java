@@ -1,5 +1,6 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
+import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Immutable
+@ThreadSafe
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
 
     final SampleDomainService service;

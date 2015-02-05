@@ -131,7 +131,7 @@ public class InventoryItemModule extends PrivateModule {
         expose(CreateThenIncreaseThenDecreaseHandler.class);
         bind(IncreaseHandler.class).asEagerSingleton();
         expose(IncreaseHandler.class);
-        bind(DecreaseHandler.class).asEagerSingleton();
+        bind(DecreaseHandler.class); // DecreaseHandler is stateful, so it's not thread safe
         expose(DecreaseHandler.class);
         bind(InventoryItemCmdSubscriber.class).asEagerSingleton();
         expose(InventoryItemCmdSubscriber.class);

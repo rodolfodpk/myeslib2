@@ -1,5 +1,6 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
+import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.core.StatefulCommandHandler;
 import org.myeslib.data.Snapshot;
@@ -14,6 +15,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInvent
 import javax.inject.Inject;
 import java.util.UUID;
 
+@ThreadSafe
 public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
 
     final UnitOfWorkJournal<UUID> journal;

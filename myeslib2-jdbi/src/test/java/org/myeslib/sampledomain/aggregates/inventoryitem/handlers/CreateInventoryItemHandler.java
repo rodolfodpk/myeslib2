@@ -1,5 +1,6 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
+import net.jcip.annotations.ThreadSafe;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.core.CommandHandler;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@ThreadSafe
 public class CreateInventoryItemHandler implements CommandHandler<CreateInventoryItem> {
 
     final SampleDomainService service;

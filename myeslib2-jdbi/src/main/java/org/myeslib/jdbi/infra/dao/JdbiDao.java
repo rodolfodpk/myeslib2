@@ -167,8 +167,8 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     private InfraRuntimeException convertFrom(Exception e) {
-        String msg = e.getCause() != null ? e.getCause().getMessage() : "unable to append to database";
-        if (msg.contains("does not match the last version")) {
+        final String msg = e.getCause() != null ? e.getCause().getMessage() : "unable to append to database";
+        if (msg !=null && msg.contains("does not match the last version")) {
             return new ConcurrencyException(msg);
         }
         return new InfraRuntimeException(msg);
