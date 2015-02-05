@@ -1,5 +1,6 @@
 package org.myeslib.data;
 
+import net.jcip.annotations.Immutable;
 import org.myeslib.core.Event;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("serial")
+@Immutable
 public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
 
     private final UUID id;

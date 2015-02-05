@@ -1,5 +1,6 @@
 package org.myeslib.data;
 
+import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("serial")
+@Immutable
 public class Snapshot<A extends AggregateRoot> implements Serializable {
 
     static final Logger logger = LoggerFactory.getLogger(Snapshot.class);
