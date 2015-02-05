@@ -43,7 +43,7 @@ public class JdbiJournalTest {
     }
 
     @Test
-    public void oneTransaction() {
+    public void singleCommandShouldWork() {
 
         JdbiJournal store = new JdbiJournal(dao);
         UUID id = UUID.randomUUID();
@@ -59,7 +59,7 @@ public class JdbiJournalTest {
     }
 
     @Test
-    public void twoTransactions() {
+    public void twoCommandsShouldWork() {
 
         JdbiJournal store = new JdbiJournal(dao);
 
@@ -85,7 +85,7 @@ public class JdbiJournalTest {
     }
 
     @Test
-    public void queryModelEventBuses() {
+    public void onSuccessThenEventBusesShouldReceiveEvents() {
 
         JdbiJournal store = new JdbiJournal(dao, queryModel1Bus, saga1Bus);
 
