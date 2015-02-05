@@ -1,7 +1,8 @@
-package org.myeslib.sampledomain;
+package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
 import com.google.inject.Exposed;
 import com.google.inject.PrivateModule;
@@ -23,7 +24,6 @@ import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
 import org.myeslib.jdbi.infra.dao.config.DbMetadata;
 import org.myeslib.jdbi.infra.dao.config.UowSerialization;
 import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
-import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
@@ -37,6 +37,14 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 public class InventoryItemModule extends PrivateModule {
+
+    @Provides
+    @Exposed
+    public EventBus commandBus(InventoryItemCmdSubscriber subscriber) {
+        EventBus eventBus = new EventBus("inventoryItemCommandBus");
+        eventBus.register(subscriber);
+        return eventBus;
+    }
 
     @Provides
     @Exposed
@@ -115,13 +123,17 @@ public class InventoryItemModule extends PrivateModule {
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
         expose(SampleDomainService.class);
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
-        bind(CreateInventoryItemHandler.class);
+
+        // command handlers
+        bind(CreateInventoryItemHandler.class).asEagerSingleton();
         expose(CreateInventoryItemHandler.class);
-        bind(CreateThenIncreaseThenDecreaseHandler.class);
+        bind(CreateThenIncreaseThenDecreaseHandler.class).asEagerSingleton();
         expose(CreateThenIncreaseThenDecreaseHandler.class);
-        bind(IncreaseHandler.class);
+        bind(IncreaseHandler.class).asEagerSingleton();
         expose(IncreaseHandler.class);
-        bind(DecreaseHandler.class);
+        bind(DecreaseHandler.class).asEagerSingleton();
         expose(DecreaseHandler.class);
+        bind(InventoryItemCmdSubscriber.class).asEagerSingleton();
+        expose(InventoryItemCmdSubscriber.class);
     }
 }

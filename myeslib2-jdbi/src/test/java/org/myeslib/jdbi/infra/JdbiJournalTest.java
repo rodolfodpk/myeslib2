@@ -1,5 +1,6 @@
 package org.myeslib.jdbi.infra;
 
+import com.google.common.eventbus.EventBus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +26,12 @@ public class JdbiJournalTest {
     @Mock
     UnitOfWorkDao<UUID> dao;
 
+    @Mock
+    EventBus queryModel1Bus;
+
+    @Mock
+    EventBus saga1Bus;
+
     @Before
     public void init() throws Exception {
     }
@@ -36,9 +43,7 @@ public class JdbiJournalTest {
         UUID commandId = UUID.randomUUID();
 
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
-
         UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
-
         JdbiJournal store = new JdbiJournal(dao);
 
         store.append(id, commandId, command, newUow);
@@ -70,6 +75,28 @@ public class JdbiJournalTest {
         verify(dao).append(id, command1.commandId(), command1, existingUow);
 
         verify(dao).append(id, command2.commandId(), command2, newUow);
+
+    }
+
+    @Test
+    public void queryModelEventBuses() {
+
+        UUID id = UUID.randomUUID();
+        UUID commandId = UUID.randomUUID();
+
+        CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
+
+        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+
+        JdbiJournal store = new JdbiJournal(dao, queryModel1Bus, saga1Bus);
+
+        store.append(id, commandId, command, newUow);
+
+        verify(dao).append(id, commandId, command, newUow);
+
+        verify(queryModel1Bus).post(newUow);
+
+        verify(saga1Bus).post(newUow);
 
     }
 
