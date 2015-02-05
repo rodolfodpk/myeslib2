@@ -2,6 +2,8 @@ package org.myeslib.jdbi.infra.dao;
 
 import org.myeslib.core.Command;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.infra.exceptions.ConcurrencyException;
+import org.myeslib.infra.exceptions.InfraRuntimeException;
 import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
 import org.myeslib.jdbi.infra.dao.config.DbMetadata;
 import org.myeslib.jdbi.infra.dao.config.UowSerialization;
@@ -123,19 +125,25 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
 
         logger.debug("appending uow to {} with id {}", dbMetadata.aggregateRootTable, targetId);
 
-        dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> {
-                    int result1 = conn.createStatement(insertUowSql)
-                            .bind("id", targetId.toString())
-                            .bind("uow_data", uowSer.toStringFunction.apply(unitOfWork))
-                            .bind("version", unitOfWork.getVersion())
-                            .execute() ;
-                    int result2 = conn.createStatement(insertCommandSql)
-                            .bind("id", command.commandId().toString())
-                            .bind("cmd_data", cmdSer.toStringFunction.apply(command))
-                            .execute() ;
-                    return result1 + result2 == 2;
-                }
-        );
+        try {
+            dbi.inTransaction(TransactionIsolationLevel.READ_COMMITTED, (conn, status) -> {
+                        int result1 = conn.createStatement(insertUowSql)
+                                .bind("id", targetId.toString())
+                                .bind("uow_data", uowSer.toStringFunction.apply(unitOfWork))
+                                .bind("version", unitOfWork.getVersion())
+                                .execute() ;
+                        int result2 = conn.createStatement(insertCommandSql)
+                                .bind("id", command.commandId().toString())
+                                .bind("cmd_data", cmdSer.toStringFunction.apply(command))
+                                .execute() ;
+                        return result1 + result2 == 2;
+                    }
+            );
+        } catch (Exception e) {
+            InfraRuntimeException exception = convertFrom(e);
+            logger.error(exception.getMessage());
+            throw exception;
+        }
 
     }
 
@@ -156,6 +164,14 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
                                 }
                             }
                 );
+    }
+
+    private InfraRuntimeException convertFrom(Exception e) {
+        String msg = e.getCause() != null ? e.getCause().getMessage() : "unable to append to database";
+        if (msg.contains("does not match the last version")) {
+            return new ConcurrencyException(msg);
+        }
+        return new InfraRuntimeException(msg);
     }
 
     public static class UowRecord {

@@ -45,7 +45,7 @@ public class MultiMethodInteractionContext implements InteractionContext {
         try {
             mm.invoke(instance, event);
         } catch (Exception e) {
-            throw new RuntimeException("Error when executing with reflection", e.getCause());
+            throw new RuntimeException("Error when applying events via reflection", e.getCause());
         }
     }
 }

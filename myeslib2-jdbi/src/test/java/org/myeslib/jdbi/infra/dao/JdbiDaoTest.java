@@ -1,24 +1,19 @@
 package org.myeslib.jdbi.infra.dao;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.core.Command;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
-import org.myeslib.jdbi.infra.dao.config.DbMetadata;
-import org.myeslib.jdbi.infra.dao.config.UowSerialization;
+import org.myeslib.infra.exceptions.ConcurrencyException;
+import org.myeslib.infra.exceptions.InfraRuntimeException;
 import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
-import org.myeslib.sampledomain.InventoryItemModule;
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 
@@ -122,7 +117,7 @@ public class JdbiDaoTest {
 
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = ConcurrencyException.class)
     public void databaseIsHandlingOptimisticLocking() {
 
         UUID id = UUID.randomUUID();
