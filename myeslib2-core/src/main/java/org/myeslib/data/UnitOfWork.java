@@ -46,8 +46,7 @@ public class UnitOfWork implements Comparable<UnitOfWork>, Serializable {
     }
 
     public List<Event> getEvents() {
-        List<Event> result = events.stream().collect(Collectors.toCollection(() -> new LinkedList<>()));
-        return Collections.unmodifiableList(result);
+        return Collections.unmodifiableList(new LinkedList<>(events));
     }
 
     public int compareTo(UnitOfWork other) {
