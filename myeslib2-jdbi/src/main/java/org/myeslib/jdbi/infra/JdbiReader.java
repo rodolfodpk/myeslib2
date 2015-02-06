@@ -1,12 +1,14 @@
 package org.myeslib.jdbi.infra;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.Event;
-import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.data.Snapshot;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
+import org.myeslib.jdbi.data.JdbiKryoSnapshot;
 import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
     private final UnitOfWorkDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
     private final ApplyEventsFunction<A> applyEventsFunction;
+    private final Kryo kryo = new Kryo();
 
     public JdbiReader(Supplier<A> supplier, UnitOfWorkDao<K> dao,
                       Cache<K, Snapshot<A>> cache, ApplyEventsFunction<A> ApplyEventsFunction) {
@@ -54,7 +57,7 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
                 logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
                 final List<UnitOfWork> uows = dao.getFull(id);
-                return new Snapshot<>(applyEventsFunction.apply(supplier.get(), flatMap(uows)), lastVersion(uows));
+                return new JdbiKryoSnapshot<>(applyEventsFunction.apply(supplier.get(), flatMap(uows)), lastVersion(uows), kryo);
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
@@ -70,13 +73,13 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
         final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
-        final Snapshot<A> latestSnapshot = new Snapshot<>(ar, lastVersion(partialTransactionHistory));
+        final Snapshot<A> latestSnapshot = new JdbiKryoSnapshot<>(ar, lastVersion(partialTransactionHistory), kryo);
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }
 
-    List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {
-        return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
+    List<Event> flatMap(final List<UnitOfWork> UnitOfWorks) {
+        return UnitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
     }
 
     Long lastVersion(List<UnitOfWork> uows) {

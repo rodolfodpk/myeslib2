@@ -2,9 +2,9 @@ package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
 import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
-import org.myeslib.core.StatefulCommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.jdbi.data.JdbiUnitOfWork;
 import org.myeslib.infra.InteractionContext;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
@@ -33,8 +33,8 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.increase(command.howMany());
-        final UnitOfWork unitOfWork = UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
-        journal.append(command.targetId(), command.commandId(), command, unitOfWork);
+        final UnitOfWork UnitOfWork = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        journal.append(command.targetId(), command.commandId(), command, UnitOfWork);
     }
 
 }

@@ -11,7 +11,7 @@ import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.core.Command;
 import org.myeslib.data.Snapshot;
-import org.myeslib.data.UnitOfWork;
+import org.myeslib.jdbi.data.JdbiUnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
@@ -108,7 +108,7 @@ public class InventoryItemModule extends PrivateModule {
     public UowSerialization uowSerialization(@Named("events-json") Gson gson) {
         return new UowSerialization(
                 (uow) -> gson.toJson(uow),
-                (json) -> gson.fromJson(json, UnitOfWork.class));
+                (json) -> gson.fromJson(json, JdbiUnitOfWork.class));
     }
 
     @Provides

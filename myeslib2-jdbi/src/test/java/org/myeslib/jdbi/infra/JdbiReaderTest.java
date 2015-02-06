@@ -1,5 +1,6 @@
 package org.myeslib.jdbi.infra;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -10,14 +11,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.core.Event;
 import org.myeslib.data.Snapshot;
-import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.infra.ApplyEventsFunction;
+import org.myeslib.jdbi.data.JdbiKryoSnapshot;
+import org.myeslib.jdbi.data.JdbiUnitOfWork;
+import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.jdbi.infra.dao.UnitOfWorkDao;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,8 +47,12 @@ public class JdbiReaderTest {
 
     Cache<UUID, Snapshot<InventoryItem>> cache;
 
+    Kryo kryo ;
+
     @Before
     public void init() throws Exception {
+        kryo = new Kryo();
+        kryo.register(InventoryItem.class);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
     }
 
@@ -57,7 +64,7 @@ public class JdbiReaderTest {
         JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
 
         InventoryItem instance = InventoryItem.builder().build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(instance, 0L);
+        Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(instance, 0L, kryo);
         List<UnitOfWork> expectedHistory = new ArrayList<>();
         List<Event> expectedEvents = new ArrayList<>();
 
@@ -79,11 +86,11 @@ public class JdbiReaderTest {
         UUID id = UUID.randomUUID();
 
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, 1L);
+        Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(expectedInstance, 1L, kryo);
 
         CreateInventoryItem command = CreateInventoryItem.create(UUID.randomUUID(), id);
         
-        UnitOfWork newUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
         List<Event> expectedEvents = new ArrayList<>(newUow.getEvents());
@@ -114,12 +121,12 @@ public class JdbiReaderTest {
 
         CreateInventoryItem command = CreateInventoryItem.create(UUID.randomUUID(), id);
         
-        UnitOfWork currentUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
+        UnitOfWork currentUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
         List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
 
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
+        Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(expectedInstance, expectedVersion, kryo);
 
         cache.put(id, expectedSnapshot);
 
@@ -147,13 +154,13 @@ public class JdbiReaderTest {
 
         InventoryItem currentInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
-        Snapshot<InventoryItem> currentSnapshot = new Snapshot<>(currentInstance, currentVersion);
+        Snapshot<InventoryItem> currentSnapshot = new JdbiKryoSnapshot<>(currentInstance, currentVersion, kryo);
 
         cache.put(id, currentSnapshot);
 
         IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 2);
 
-        UnitOfWork partialUow = UnitOfWork.create(UUID.randomUUID(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
+        UnitOfWork partialUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
 
         List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
         List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());
@@ -161,7 +168,7 @@ public class JdbiReaderTest {
         Long expectedVersion = 2L;
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(2).build();
 
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expectedInstance, expectedVersion);
+        Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(expectedInstance, expectedVersion, kryo);
 
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
         when(applyEventsFunction.apply(currentInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());

@@ -23,6 +23,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class InventoryItem implements AggregateRoot {
 
     private UUID id;
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setAvailable(Integer available) {
+        this.available = available;
+    }
+
     private String description;
     private Integer available = 0;
 

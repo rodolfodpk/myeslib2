@@ -4,16 +4,15 @@ import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.jdbi.data.JdbiUnitOfWork;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.jdbi.infra.JdbiJournal;
 import org.myeslib.jdbi.infra.MultiMethodInteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.infra.InteractionContext;
 
-import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 import java.util.UUID;
 
@@ -50,8 +49,8 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.increase(command.howManyToIncrease());
         aggregateRoot.decrease(command.howManyToDecrease());
 
-        final UnitOfWork unitOfWork = UnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        final UnitOfWork UnitOfWork = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
 
-        journal.append(command.targetId(), command.commandId(), command, unitOfWork);
+        journal.append(command.targetId(), command.commandId(), command, UnitOfWork);
     }
 }

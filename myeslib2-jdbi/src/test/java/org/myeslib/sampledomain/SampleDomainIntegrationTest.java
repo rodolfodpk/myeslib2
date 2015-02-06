@@ -1,5 +1,6 @@
 package org.myeslib.sampledomain;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -8,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.SnapshotReader;
+import org.myeslib.jdbi.data.JdbiKryoSnapshot;
 import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
@@ -60,7 +62,7 @@ public class SampleDomainIntegrationTest {
         createInventoryItemHandler.handle(command);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(0).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
+        Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(expected, 1L, new Kryo());
 
         assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
 
@@ -77,7 +79,7 @@ public class SampleDomainIntegrationTest {
         createThenIncreaseThenDecreaseHandler.handle(command);
 
         InventoryItem expected = InventoryItem.builder().id(itemId).description(itemId.toString()).available(1).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Snapshot<>(expected, 1L);
+        Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(expected, 1L, new Kryo());
 
         assertThat(snapshotReader.getSnapshot(itemId), is(expectedSnapshot));
 
