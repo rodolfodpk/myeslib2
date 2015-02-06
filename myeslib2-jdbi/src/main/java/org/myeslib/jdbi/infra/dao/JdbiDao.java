@@ -2,11 +2,11 @@ package org.myeslib.jdbi.infra.dao;
 
 import org.myeslib.core.Command;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.infra.exceptions.ConcurrencyException;
-import org.myeslib.infra.exceptions.InfraRuntimeException;
 import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
 import org.myeslib.jdbi.infra.dao.config.DbMetadata;
 import org.myeslib.jdbi.infra.dao.config.UowSerialization;
+import org.myeslib.jdbi.infra.exceptions.ConcurrencyException;
+import org.myeslib.jdbi.infra.exceptions.InfraRuntimeException;
 import org.myeslib.jdbi.infra.helpers.ClobToStringMapper;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;

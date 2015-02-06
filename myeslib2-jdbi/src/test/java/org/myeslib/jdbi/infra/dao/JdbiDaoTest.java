@@ -34,7 +34,7 @@ public class JdbiDaoTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        injector = Guice.createInjector(new InventoryItemModuleKryo());
+        injector = Guice.createInjector(new InventoryItemModule());
     }
 
     @Before
