@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class JdbiKryoSnapshot1Test {
+public class JdbiKryoSnapshotTest {
 
     Kryo kryo ;
 
@@ -41,7 +41,7 @@ public class JdbiKryoSnapshot1Test {
     public void equals() throws Exception {
         InventoryItem item = InventoryItem.builder().id(UUID.randomUUID()).description("item4test").available(0).build();
         Snapshot<InventoryItem> snapshot = new JdbiKryoSnapshot<>(item, 1L, kryo);
-        assertThat(snapshot, is(new JdbiKryoSnapshot<>(item, 1L, kryo)));
+        assertThat(snapshot.equals(new JdbiKryoSnapshot<>(item, 1L, kryo)), is(true));
     }
 
     @Test
