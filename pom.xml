@@ -18,16 +18,16 @@
         <guice.version>4.0-beta5</guice.version>
     </properties>
 
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<snapshots>-->
-                <!--<enabled>false</enabled>-->
-            <!--</snapshots>-->
-            <!--<id>central</id>-->
-            <!--<name>bintray</name>-->
-            <!--<url>http://jcenter.bintray.com</url>-->
-        <!--</repository>-->
-    <!--</repositories>-->
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>bintray</name>
+            <url>http://jcenter.bintray.com</url>
+        </repository>
+    </repositories>
 
     <modules>
         <module>myeslib2-core</module>
