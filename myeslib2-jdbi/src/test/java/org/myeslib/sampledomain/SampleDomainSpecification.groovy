@@ -41,8 +41,7 @@ class SampleDomainSpecification extends spock.lang.Specification {
         given: "an previously created item"
             def pastCmd = CreateInventoryItem.create(UUID.randomUUID(), UUID.randomUUID())
                 withEvents(pastCmd.targetId(), pastCmd, [InventoryItemCreated.create(pastCmd.targetId(), "item1")])
-        and:
-        given: "an increaseInventory command to increase 10 units"
+        and: "an increaseInventory command to increase 10 units"
             def newCmd = IncreaseInventory.create(UUID.randomUUID(), pastCmd.targetId(), 10)
         when: "I call the respective command handler"
             increaseHandler.handle(newCmd)
