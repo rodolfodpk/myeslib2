@@ -37,7 +37,7 @@ class SampleDomainSpecification extends spock.lang.Specification {
     @Inject
     SnapshotReader<UUID, InventoryItem> snapshotReader ;
 
-    def "user history 1..."() {
+    def "user story 1..."() {
         given: "a previously created item"
             def pastCmd = CreateInventoryItem.create(UUID.randomUUID(), UUID.randomUUID())
                 withEvents(pastCmd.targetId(), pastCmd, [InventoryItemCreated.create(pastCmd.targetId(), "item1")])
