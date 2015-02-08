@@ -1,6 +1,7 @@
 package org.myeslib.jdbi.infra.dao;
 
 import org.myeslib.core.Command;
+import org.myeslib.core.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
 import org.myeslib.jdbi.infra.dao.config.DbMetadata;
@@ -111,7 +112,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public void append(final K targetId, final UUID commandId, final Command command, final UnitOfWork unitOfWork) {
+    public void append(final K targetId, final CommandId commandId, final Command command, final UnitOfWork unitOfWork) {
 
         checkNotNull(targetId);
         checkNotNull(commandId);
@@ -148,7 +149,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public Command getCommand(final UUID commandId) {
+    public Command getCommand(final CommandId commandId) {
         return dbi
                 .withHandle(new HandleCallback<Command>() {
                                 final String sql = String.format("select id, cmd_data " +

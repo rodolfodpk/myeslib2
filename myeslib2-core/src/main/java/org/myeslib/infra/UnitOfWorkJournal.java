@@ -1,12 +1,11 @@
 package org.myeslib.infra;
 
 import org.myeslib.core.Command;
+import org.myeslib.core.CommandId;
 import org.myeslib.data.UnitOfWork;
-
-import java.util.UUID;
 
 public interface UnitOfWorkJournal<K> {
 
-    void append(K targetId, UUID commandId, Command command, UnitOfWork unitOfWork);
+    void append(K targetId, CommandId commandId, Command command, UnitOfWork unitOfWork);
 
 }

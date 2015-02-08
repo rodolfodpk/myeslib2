@@ -1,5 +1,6 @@
 package org.myeslib.data;
 
+import org.myeslib.core.CommandId;
 import org.myeslib.core.Event;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ public interface UnitOfWork extends Serializable, Comparable<UnitOfWork> {
 
     UUID getId();
 
-    UUID getCommandId();
+    CommandId getCommandId();
 
     Long getVersion();
 

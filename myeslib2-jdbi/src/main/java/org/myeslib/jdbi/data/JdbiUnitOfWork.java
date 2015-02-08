@@ -1,6 +1,8 @@
 package org.myeslib.jdbi.data;
 
 import net.jcip.annotations.Immutable;
+import org.myeslib.core.Command;
+import org.myeslib.core.CommandId;
 import org.myeslib.core.Event;
 import org.myeslib.data.UnitOfWork;
 
@@ -16,11 +18,11 @@ import static java.util.Objects.requireNonNull;
 public class JdbiUnitOfWork implements UnitOfWork {
 
     private final UUID id;
-    private final UUID commandId;
+    private final CommandId commandId;
     private final Long version;
     private final List<? extends Event> events;
 
-    JdbiUnitOfWork(UUID id, UUID commandId, Long version, List<? extends Event> events) {
+    JdbiUnitOfWork(UUID id, CommandId commandId, Long version, List<? extends Event> events) {
         this.id = id;
         this.commandId = commandId;
         this.version = version;
@@ -33,7 +35,7 @@ public class JdbiUnitOfWork implements UnitOfWork {
         }
     }
 
-    public static UnitOfWork create(UUID id, UUID commandId, Long snapshotVersion, List<? extends Event> newEvents) {
+    public static UnitOfWork create(UUID id, CommandId commandId, Long snapshotVersion, List<? extends Event> newEvents) {
         requireNonNull(id, "id cannot be null");
         requireNonNull(commandId, "commandId cannot be null");
         versionIsZeroOrPositive(snapshotVersion);
@@ -64,7 +66,7 @@ public class JdbiUnitOfWork implements UnitOfWork {
     }
 
     @Override
-    public UUID getCommandId() {
+    public CommandId getCommandId() {
         return commandId;
     }
 

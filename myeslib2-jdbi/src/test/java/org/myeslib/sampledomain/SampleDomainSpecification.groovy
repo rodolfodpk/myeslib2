@@ -38,19 +38,22 @@ class SampleDomainSpecification extends spock.lang.Specification {
     SnapshotReader<UUID, InventoryItem> snapshotReader ;
 
     def "user history 1..."() {
-        given: "an previously created item"
+        given: "a previously created item"
             def pastCmd = CreateInventoryItem.create(UUID.randomUUID(), UUID.randomUUID())
                 withEvents(pastCmd.targetId(), pastCmd, [InventoryItemCreated.create(pastCmd.targetId(), "item1")])
+        // TODO experiment to use snapshot<A> as a test fixture instead of cmd+events
         and: "an increaseInventory command to increase 10 units"
             def newCmd = IncreaseInventory.create(UUID.randomUUID(), pastCmd.targetId(), 10)
         when: "I call the respective command handler"
             increaseHandler.handle(newCmd)
         then: "I haven that item with 1 specific item available"
             snapshotReader.getSnapshot(pastCmd.targetId()).aggregateInstance == new InventoryItem(pastCmd.targetId(), "item1", 10, null, null)
+        and: "eventBuses are notified"
+            // TODO
     }
 
     def protected List<Event> withEvents(UUID targetId, Command pastCmd, List<Event> events) {
-        UnitOfWork pastUow = JdbiUnitOfWork.create(pastCmd.commandId(), pastCmd.commandId(), 0L, events)
+        UnitOfWork pastUow = JdbiUnitOfWork.create(pastCmd.commandId(), targetId, 0L, events)
         journal.append(targetId, pastCmd.commandId(), pastCmd, pastUow)
     }
 }

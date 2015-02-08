@@ -7,6 +7,7 @@ import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.myeslib.core.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.data.JdbiUnitOfWork;
 import org.myeslib.jdbi.infra.exceptions.ConcurrencyException;
@@ -49,7 +50,7 @@ public class JdbiDaoTest {
 //    @Test
 //    public void tesetCmdSer() {
 //
-//        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), UUID.randomUUID(), 1);
+//        IncreaseInventory command = IncreaseInventory.create(new CommandId(UUID.randomUUID()), new CommandId(UUID.randomUUID()), 1);
 //
 //        String asString = cmdSer.toStringFunction.apply(command);
 //
@@ -64,9 +65,9 @@ public class JdbiDaoTest {
 //
 //        UUID id = UUID.randomUUID();
 //
-//        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 1);
+//        IncreaseInventory command = IncreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
 //
-//        UnitOfWork unitOfWork = UnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+//        UnitOfWork unitOfWork = UnitOfWork.create(new CommandId(UUID.randomUUID()), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 //
 //        String asString = uowSer.toStringFunction.apply(unitOfWork);
 //
@@ -80,8 +81,8 @@ public class JdbiDaoTest {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command = IncreaseInventory.create(UUID.randomUUID(), id, 1);
-        
+        IncreaseInventory command = IncreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
+
         UnitOfWork newUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
         dao.append(command.targetId(), command.commandId(), command, newUow);
@@ -99,8 +100,8 @@ public class JdbiDaoTest {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command1 = IncreaseInventory.create(UUID.randomUUID(), id, 1);
-        DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
+        IncreaseInventory command1 = IncreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
+        DecreaseInventory command2 = DecreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
 
         UnitOfWork existingUow = JdbiUnitOfWork.create(UUID.randomUUID(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
         UnitOfWork newUow = JdbiUnitOfWork.create(UUID.randomUUID(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
@@ -123,14 +124,14 @@ public class JdbiDaoTest {
 
         UUID id = UUID.randomUUID();
 
-        IncreaseInventory command1 = IncreaseInventory.create(UUID.randomUUID(), id, 1);
-        DecreaseInventory command2 = DecreaseInventory.create(UUID.randomUUID(), id, 1);
+        IncreaseInventory command1 = IncreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
+        DecreaseInventory command2 = DecreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
 
         UnitOfWork existingUow = JdbiUnitOfWork.create(UUID.randomUUID(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        dao.append(command1.targetId(), command1.commandId(), command1, existingUow);
+        dao.append(id, command1.commandId(), command1, existingUow);
 
-        UnitOfWork newUow = JdbiUnitOfWork.create(UUID.randomUUID(), command2.commandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = JdbiUnitOfWork.create(id, command2.commandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
 
         dao.append(command2.targetId(), command2.commandId(), command2, newUow);
 
