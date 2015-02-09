@@ -52,7 +52,7 @@ public class SampleDomainSpec extends spock.lang.Specification {
     @Inject
     EventBus[] eventsSubscribers;
 
-    def "user story 1..."() {
+    def "not really an user story 1 but..."() {
         given: "a previously processed create inventory item command"
             def pastCmd = CreateInventoryItem.create(Stack1CommandId.create(), UUID.randomUUID())
         and: "its respective unitOfWork appended to journal"
@@ -62,13 +62,13 @@ public class SampleDomainSpec extends spock.lang.Specification {
             def newCmd = IncreaseInventory.create(Stack1CommandId.create(), pastCmd.targetId(), 10)
         when: "I send the command to the bus"
             commandBus.post(newCmd)
-        then: "I expected a new snapshot with version = 2 and that item with 10 available"
+        then: "I expect a new snapshot with version = 2 and that item with 10 available"
             def expectedSnapshot = snapshotFactory.create(InventoryItem.builder().id(pastCmd.targetId()).description("item1").available(10).build(), 2L)
         and: "the snapshotReader returns the expected snapshot"
             snapshotReader.getSnapshot(pastCmd.targetId()).equals(expectedSnapshot)
-        and: "an expected UnitOfWork"
+        and: "I expect a new UnitOfWork"
             def expectedUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), newCmd.commandId(), 1L, [InventoryIncreased.create(10)])
-        and: "a new List[UnitOfWork] from dao"
+        and: "the expected UnitOfWork is now appended to List[UnitOfWork] from dao"
             unitOfWorkDao.getFull(pastCmd.targetId()) == [pastUow, expectedUow]
         and: "eventBuses are notified"
             for (EventBus eventBus : eventsSubscribers) {
