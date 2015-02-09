@@ -31,7 +31,7 @@
 
     <modules>
         <module>myeslib2-core</module>
-        <module>myeslib2-jdbi</module>
+        <module>myeslib2-stack1</module>
     </modules>
 
     <dependencyManagement>
@@ -47,7 +47,7 @@
             <!-- Implementations -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-jdbi</artifactId>
+                <artifactId>myeslib2-stack1</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
