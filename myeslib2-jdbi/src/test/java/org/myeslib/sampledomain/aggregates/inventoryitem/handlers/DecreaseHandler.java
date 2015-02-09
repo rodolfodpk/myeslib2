@@ -2,6 +2,7 @@ package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.myeslib.core.StatefulCommandHandler;
+import org.myeslib.jdbi.data.JdbiUnitOfWorkId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.data.JdbiUnitOfWork;
@@ -36,7 +37,7 @@ public class DecreaseHandler implements CommandHandler<DecreaseInventory>, State
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.decrease(command.howMany());
-        this.unitOfWork = Optional.of(JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents()));
+        this.unitOfWork = Optional.of(JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents()));
         journal.append(command.targetId(), command.commandId(), command, unitOfWork.get());
     }
 

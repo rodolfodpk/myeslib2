@@ -1,6 +1,7 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
 import net.jcip.annotations.ThreadSafe;
+import org.myeslib.jdbi.data.JdbiUnitOfWorkId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.data.JdbiUnitOfWork;
@@ -42,7 +43,7 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.create(command.targetId());
-        final UnitOfWork UnitOfWork = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        final UnitOfWork UnitOfWork = JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
         journal.append(command.targetId(), command.commandId(), command, UnitOfWork);
     }
 }

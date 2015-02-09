@@ -9,8 +9,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.core.CommandId;
 import org.myeslib.core.Event;
+import org.myeslib.jdbi.data.JdbiUnitOfWorkId;
+import org.myeslib.jdbi.core.JdbiCommandId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
@@ -89,9 +90,9 @@ public class JdbiReaderTest {
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(expectedInstance, 1L, kryo);
 
-        CreateInventoryItem command = CreateInventoryItem.create(new CommandId(UUID.randomUUID()), id);
+        CreateInventoryItem command = CreateInventoryItem.create(JdbiCommandId.create(), id);
         
-        UnitOfWork newUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
         List<Event> expectedEvents = new ArrayList<>(newUow.getEvents());
@@ -120,9 +121,9 @@ public class JdbiReaderTest {
 
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
-        CreateInventoryItem command = CreateInventoryItem.create(new CommandId(UUID.randomUUID()), id);
+        CreateInventoryItem command = CreateInventoryItem.create(JdbiCommandId.create(), id);
         
-        UnitOfWork currentUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
+        UnitOfWork currentUow = JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
         List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
@@ -159,9 +160,9 @@ public class JdbiReaderTest {
 
         cache.put(id, currentSnapshot);
 
-        IncreaseInventory command = IncreaseInventory.create(new CommandId(UUID.randomUUID()), id, 2);
+        IncreaseInventory command = IncreaseInventory.create(JdbiCommandId.create(), id, 2);
 
-        UnitOfWork partialUow = JdbiUnitOfWork.create(UUID.randomUUID(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
+        UnitOfWork partialUow = JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
 
         List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
         List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());

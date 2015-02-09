@@ -7,7 +7,7 @@ import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.core.CommandId;
+import org.myeslib.jdbi.core.JdbiCommandId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.jdbi.data.JdbiKryoSnapshot;
@@ -58,7 +58,7 @@ public class SampleDomainIntegrationTest {
         // create
 
         UUID itemId = UUID.randomUUID() ;
-        CreateInventoryItem command =  CreateInventoryItem.create(new CommandId(UUID.randomUUID()), itemId);
+        CreateInventoryItem command =  CreateInventoryItem.create(JdbiCommandId.create(), itemId);
 
         createInventoryItemHandler.handle(command);
 
@@ -75,7 +75,7 @@ public class SampleDomainIntegrationTest {
         // command to create then increase and decrease
 
         UUID itemId = UUID.randomUUID();
-        CreateInventoryItemThenIncreaseThenDecrease command = CreateInventoryItemThenIncreaseThenDecrease.create(new CommandId(UUID.randomUUID()), itemId, 2, 1);
+        CreateInventoryItemThenIncreaseThenDecrease command = CreateInventoryItemThenIncreaseThenDecrease.create(JdbiCommandId.create(), itemId, 2, 1);
 
         createThenIncreaseThenDecreaseHandler.handle(command);
 

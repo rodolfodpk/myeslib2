@@ -18,11 +18,11 @@ public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
     private final UnitOfWorkDao<K> dao;
     private final EventBus[] queryModelBuses;
 
-    public JdbiJournal(UnitOfWorkDao<K> dao, EventBus... queryModelBuses) {
+    public JdbiJournal(UnitOfWorkDao<K> dao, EventBus... eventSubscribers) {
         checkNotNull(dao);
         this.dao = dao;
-        checkNotNull(queryModelBuses);
-        this.queryModelBuses = queryModelBuses;
+        checkNotNull(eventSubscribers);
+        this.queryModelBuses = eventSubscribers;
     }
 
     public JdbiJournal(UnitOfWorkDao<K> dao) {
@@ -36,6 +36,7 @@ public class JdbiJournal<K> implements UnitOfWorkJournal<K> {
         try {
             dao.append(targetId, commandId, command, unitOfWork);
             for (EventBus bus : queryModelBuses) {
+                logger.debug("bus.post {}", unitOfWork);
                 bus.post(unitOfWork);
             }
         } catch (Exception e) {

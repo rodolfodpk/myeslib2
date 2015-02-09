@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface UnitOfWork extends Serializable, Comparable<UnitOfWork> {
 
-    UUID getId();
+    UnitOfWorkId getId();
 
     CommandId getCommandId();
 

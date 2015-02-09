@@ -2,6 +2,7 @@ package org.myeslib.jdbi.infra.dao;
 
 import org.myeslib.core.Command;
 import org.myeslib.core.CommandId;
+import org.myeslib.jdbi.core.JdbiCommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
 import org.myeslib.jdbi.infra.dao.config.DbMetadata;
@@ -24,7 +25,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -149,7 +149,7 @@ public class JdbiDao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public Command getCommand(final CommandId commandId) {
+    public Command getCommand(final JdbiCommandId commandId) {
         return dbi
                 .withHandle(new HandleCallback<Command>() {
                                 final String sql = String.format("select id, cmd_data " +

@@ -7,10 +7,14 @@ import com.google.gson.Gson;
 import com.google.inject.Exposed;
 import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.core.Command;
+import org.myeslib.core.CommandId;
 import org.myeslib.data.Snapshot;
+import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.jdbi.core.JdbiCommandId;
 import org.myeslib.jdbi.data.JdbiUnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
@@ -40,6 +44,8 @@ public class InventoryItemModule extends PrivateModule {
 
     @Provides
     @Exposed
+    @Singleton
+    @Named("inventory-item-cmd-bus")
     public EventBus commandBus(InventoryItemCmdSubscriber subscriber) {
         EventBus eventBus = new EventBus("inventoryItemCommandBus");
         eventBus.register(subscriber);
@@ -48,12 +54,21 @@ public class InventoryItemModule extends PrivateModule {
 
     @Provides
     @Exposed
-    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao) {
-        return new JdbiJournal<>(dao);
+    @Singleton
+    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao, EventBus[] eventSubscribers) {
+        return new JdbiJournal<UUID>(dao, eventSubscribers);
     }
 
     @Provides
     @Exposed
+    @Singleton
+    public EventBus[] eventSubscribers() {
+        return new EventBus[] { new EventBus("query-model-bus"), new EventBus("saga1-process-bus")};
+    }
+
+    @Provides
+    @Exposed
+    @Singleton
     public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
                                                               UnitOfWorkDao<UUID> dao,
                                                           Cache<UUID, Snapshot<InventoryItem>> cache,
@@ -63,6 +78,7 @@ public class InventoryItemModule extends PrivateModule {
 
     @Provides
     @Exposed
+    @Singleton
     public UnitOfWorkDao<UUID> dao(UowSerialization uowSer, CmdSerialization cmdSer,
                              DbMetadata dbMetadata, DBI dbi) {
         return new JdbiDao<>(uowSer, cmdSer, dbMetadata, dbi);
@@ -70,41 +86,63 @@ public class InventoryItemModule extends PrivateModule {
 
     @Provides
     @Exposed
+    @Singleton
     public DatabaseHelper databaseHelper(DBI dbi){
         return new DatabaseHelper(dbi, "database/V1__Create_inventory_item_tables.sql");
     }
 
     @Provides
+    @Exposed
+    @Singleton
+    public Supplier<UnitOfWorkId> supplierUowId() {
+        return () -> null ; //JdbiUnitOfWork.create(UUID.randomUUID());
+    }
+
+    @Provides
+    @Exposed
+    @Singleton
+    public Supplier<CommandId> supplierCmdId() {
+        return () -> JdbiCommandId.create(UUID.randomUUID());
+    }
+
+    @Provides
     @Named("events-json")
+    @Singleton
     public Gson gsonEvents() {
         return new EventsGsonFactory().create();
     }
 
     @Provides
     @Named("commands-json")
+    @Singleton
     public Gson gsonCommands() {
         return new CommandsGsonFactory().create();
     }
 
     @Provides
+    @Singleton
     Cache<UUID, Snapshot<InventoryItem>> cache(){
         return CacheBuilder.newBuilder().maximumSize(1000).build();
     }
 
     @Provides
+    @Singleton
     public Supplier<InventoryItem> supplier() { return () -> InventoryItem.builder().build(); }
 
     @Provides
+    @Singleton
     public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
         return new MultiMethodApplyEventsFunction<>();
     }
 
     @Provides
+    @Singleton
     public DBI dbi() {
         return new DBI(JdbcConnectionPool.create("jdbc:h2:mem:test;MODE=Oracle", "scott", "tiger"));
     }
 
     @Provides
+    @Singleton
     public UowSerialization uowSerialization(@Named("events-json") Gson gson) {
         return new UowSerialization(
                 (uow) -> gson.toJson(uow),
@@ -112,6 +150,7 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
+    @Singleton
     public CmdSerialization cmdSerialization(@Named("commands-json") Gson gson) {
         return new CmdSerialization(
                 (cmd) -> gson.toJson(cmd, Command.class),
