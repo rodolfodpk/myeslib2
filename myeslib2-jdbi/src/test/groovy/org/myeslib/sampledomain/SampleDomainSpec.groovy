@@ -63,9 +63,9 @@ public class SampleDomainSpec extends spock.lang.Specification {
             def newCmd = IncreaseInventory.create(JdbiCommandId.create(), pastCmd.targetId(), 10)
         when: "I send the command to the bus"
             commandBus.post(newCmd)
-        then: "I have the snapshot with version = 2 and that item with 10 available"
+        then: "I expected a new snapshot with version = 2 and that item with 10 available"
             def expectedSnapshot = snapshotFactory.create(InventoryItem.builder().id(pastCmd.targetId()).description("item1").available(10).build(), 2L)
-        then: "I have that item with 10 available"
+        and: "the snapshotReader returns the expected snapshot"
             snapshotReader.getSnapshot(pastCmd.targetId()).equals(expectedSnapshot)
         and: "an expected UnitOfWork"
             def expectedUow = JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), newCmd.commandId(), 1L, [InventoryIncreased.create(10)])
