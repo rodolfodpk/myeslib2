@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.infra.helpers.gson.jake;
+package org.myeslib.jdbi.infra.helpers.gson.autovalue;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

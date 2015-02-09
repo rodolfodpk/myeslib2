@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.infra.helpers.gson;
+package org.myeslib.jdbi.infra.helpers.gson.polymorphic;
 
 /*
  * Copyright (C) 2011 Google Inc.

@@ -1,4 +1,4 @@
-package org.myeslib.jdbi.infra.helpers.gson.jake;
+package org.myeslib.jdbi.infra.helpers.gson.autovalue;
 
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
