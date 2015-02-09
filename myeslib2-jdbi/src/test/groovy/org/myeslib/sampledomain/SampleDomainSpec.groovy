@@ -25,22 +25,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 
-class SampleDomainSpec extends spock.lang.Specification {
+public class SampleDomainSpec extends spock.lang.Specification {
 
     static Injector injector;
 
     def setupSpec() {
-        injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new PrivateModule() {
-            @Provides
-            @Exposed
-            @Singleton
-            public EventBus[] eventSubscribers() {
-                return [Mockito.mock(EventBus.class), Mockito.mock(EventBus.class)] as EventBus[]
-            }
-            @Override
-            protected void configure() {
-            }
-        }));
+        injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new InventoryItemModule4Test()));
         injector.getInstance(DatabaseHelper.class).initDb();
     }
 
@@ -87,4 +77,16 @@ class SampleDomainSpec extends spock.lang.Specification {
             }
     }
 
+}
+
+class InventoryItemModule4Test extends PrivateModule {
+    @Provides
+    @Exposed
+    @Singleton
+    public EventBus[] eventSubscribers() {
+        return [Mockito.mock(EventBus.class), Mockito.mock(EventBus.class)] as EventBus[]
+    }
+    @Override
+    protected void configure() {
+    }
 }
