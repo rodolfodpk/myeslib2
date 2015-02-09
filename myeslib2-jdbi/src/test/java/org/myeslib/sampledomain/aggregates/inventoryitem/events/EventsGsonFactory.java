@@ -3,8 +3,8 @@ package org.myeslib.sampledomain.aggregates.inventoryitem.events;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.myeslib.core.Event;
-import org.myeslib.jdbi.infra.helpers.gson.RuntimeTypeAdapterFactory;
-import org.myeslib.jdbi.infra.helpers.gson.jake.AutoValueTypeAdapterFactory;
+import org.myeslib.jdbi.infra.helpers.gson.polymorphic.RuntimeTypeAdapterFactory;
+import org.myeslib.jdbi.infra.helpers.gson.autovalue.AutoValueTypeAdapterFactory;
 
 import java.lang.reflect.Modifier;
 

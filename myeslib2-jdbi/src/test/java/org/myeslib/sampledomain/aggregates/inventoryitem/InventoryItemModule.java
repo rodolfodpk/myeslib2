@@ -1,5 +1,6 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
@@ -8,6 +9,7 @@ import com.google.inject.Exposed;
 import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.core.Command;
@@ -15,6 +17,7 @@ import org.myeslib.core.CommandId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.jdbi.core.JdbiCommandId;
+import org.myeslib.jdbi.data.JdbiKryoSnapshot;
 import org.myeslib.jdbi.data.JdbiUnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
@@ -28,6 +31,7 @@ import org.myeslib.jdbi.infra.dao.config.CmdSerialization;
 import org.myeslib.jdbi.infra.dao.config.DbMetadata;
 import org.myeslib.jdbi.infra.dao.config.UowSerialization;
 import org.myeslib.jdbi.infra.helpers.DatabaseHelper;
+import org.myeslib.jdbi.infra.helpers.factories.InventoryItemSnapshotFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
@@ -106,6 +110,13 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
+    @Exposed
+    @Singleton
+    public Kryo kryo() {
+        return new Kryo();
+    }
+
+    @Provides
     @Named("events-json")
     @Singleton
     public Gson gsonEvents() {
@@ -162,6 +173,13 @@ public class InventoryItemModule extends PrivateModule {
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
         expose(SampleDomainService.class);
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
+
+        // factories
+        install(new FactoryModuleBuilder()
+                .implement(Snapshot.class, JdbiKryoSnapshot.class)
+                .build(InventoryItemSnapshotFactory.class));
+
+        expose(InventoryItemSnapshotFactory.class);
 
         // command handlers
         bind(CreateInventoryItemHandler.class).asEagerSingleton();

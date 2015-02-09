@@ -2,7 +2,7 @@ package org.myeslib.jdbi.data;
 
 import com.google.auto.value.AutoValue;
 import org.myeslib.data.UnitOfWorkId;
-import org.myeslib.jdbi.infra.helpers.gson.jake.AutoGson;
+import org.myeslib.jdbi.infra.helpers.gson.autovalue.AutoGson;
 
 import java.util.UUID;
 

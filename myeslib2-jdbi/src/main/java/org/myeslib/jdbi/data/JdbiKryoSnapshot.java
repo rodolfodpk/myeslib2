@@ -1,6 +1,8 @@
 package org.myeslib.jdbi.data;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
 import org.slf4j.Logger;
@@ -16,9 +18,10 @@ public class JdbiKryoSnapshot<A extends AggregateRoot> implements org.myeslib.da
 
     final A aggregateInstance;
     final Long version;
-    final Kryo kryo;
+    final transient Kryo kryo;
 
-    public JdbiKryoSnapshot(A aggregateInstance, Long version, Kryo kryo) {
+    @Inject
+    public JdbiKryoSnapshot(@Assisted A aggregateInstance, @Assisted Long version,  Kryo kryo) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);

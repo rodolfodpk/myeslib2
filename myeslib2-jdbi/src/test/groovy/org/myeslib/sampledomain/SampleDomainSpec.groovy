@@ -14,6 +14,7 @@ import org.myeslib.infra.UnitOfWorkJournal
 import org.myeslib.jdbi.data.JdbiUnitOfWork
 import org.myeslib.jdbi.infra.dao.UnitOfWorkDao
 import org.myeslib.jdbi.infra.helpers.DatabaseHelper
+import org.myeslib.jdbi.infra.helpers.factories.InventoryItemSnapshotFactory
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
@@ -48,6 +49,8 @@ public class SampleDomainSpec extends spock.lang.Specification {
     @Inject
     UnitOfWorkDao<UUID> unitOfWorkDao;
     @Inject
+    InventoryItemSnapshotFactory snapshotFactory;
+    @Inject
     EventBus[] eventsSubscribers;
 
     def "user story 1..."() {
@@ -60,8 +63,10 @@ public class SampleDomainSpec extends spock.lang.Specification {
             def newCmd = IncreaseInventory.create(JdbiCommandId.create(), pastCmd.targetId(), 10)
         when: "I send the command to the bus"
             commandBus.post(newCmd)
+        then: "I have the snapshot with version = 2 and that item with 10 available"
+            def expectedSnapshot = snapshotFactory.create(InventoryItem.builder().id(pastCmd.targetId()).description("item1").available(10).build(), 2L)
         then: "I have that item with 10 available"
-            snapshotReader.getSnapshot(pastCmd.targetId()).aggregateInstance == InventoryItem.builder().id(pastCmd.targetId()).description("item1").available(10).build()
+            snapshotReader.getSnapshot(pastCmd.targetId()).equals(expectedSnapshot)
         and: "an expected UnitOfWork"
             def expectedUow = JdbiUnitOfWork.create(JdbiUnitOfWorkId.create(), newCmd.commandId(), 1L, [InventoryIncreased.create(10)])
         and: "a new List[UnitOfWork] from dao"

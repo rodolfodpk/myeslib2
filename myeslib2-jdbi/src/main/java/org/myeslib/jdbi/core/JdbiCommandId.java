@@ -2,7 +2,7 @@ package org.myeslib.jdbi.core;
 
 import com.google.auto.value.AutoValue;
 import org.myeslib.core.CommandId;
-import org.myeslib.jdbi.infra.helpers.gson.jake.AutoGson;
+import org.myeslib.jdbi.infra.helpers.gson.autovalue.AutoGson;
 
 import java.util.UUID;
 
