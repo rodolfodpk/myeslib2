@@ -63,7 +63,7 @@ public class JdbiReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction, kryo);
 
         InventoryItem instance = InventoryItem.builder().build();
         Snapshot<InventoryItem> expectedSnapshot = new JdbiKryoSnapshot<>(instance, 0L, kryo);
@@ -101,7 +101,7 @@ public class JdbiReaderTest {
         when(dao.getFull(id)).thenReturn(expectedHistory);
         when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction, kryo);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
@@ -135,7 +135,7 @@ public class JdbiReaderTest {
         when(dao.getPartial(id, expectedVersion)).thenReturn(expectedHistory);
         when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<UUID, InventoryItem>(supplier, dao, cache, applyEventsFunction);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<UUID, InventoryItem>(supplier, dao, cache, applyEventsFunction, kryo);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
@@ -175,7 +175,7 @@ public class JdbiReaderTest {
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
         when(applyEventsFunction.apply(currentInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
+        JdbiReader<UUID, InventoryItem> reader = new JdbiReader<>(supplier, dao, cache, applyEventsFunction, kryo);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 

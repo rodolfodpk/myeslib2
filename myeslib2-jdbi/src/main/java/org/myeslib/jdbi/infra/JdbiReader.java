@@ -29,10 +29,11 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
     private final UnitOfWorkDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
     private final ApplyEventsFunction<A> applyEventsFunction;
-    private final Kryo kryo = new Kryo();
+    private final Kryo kryo ;
 
     public JdbiReader(Supplier<A> supplier, UnitOfWorkDao<K> dao,
-                      Cache<K, Snapshot<A>> cache, ApplyEventsFunction<A> ApplyEventsFunction) {
+                      Cache<K, Snapshot<A>> cache, ApplyEventsFunction<A> ApplyEventsFunction,
+                      Kryo kryo) {
         checkNotNull(supplier);
         this.supplier = supplier;
         checkNotNull(dao);
@@ -41,6 +42,8 @@ public class JdbiReader<K, A extends AggregateRoot> implements SnapshotReader<K,
         this.cache = cache;
         checkNotNull(ApplyEventsFunction);
         this.applyEventsFunction = ApplyEventsFunction;
+        checkNotNull(kryo);
+        this.kryo = kryo;
     }
 
     /*

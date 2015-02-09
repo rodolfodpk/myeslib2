@@ -76,8 +76,9 @@ public class InventoryItemModule extends PrivateModule {
     public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
                                                               UnitOfWorkDao<UUID> dao,
                                                           Cache<UUID, Snapshot<InventoryItem>> cache,
-                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction){
-        return new JdbiReader<>(supplier, dao, cache, applyEventsFunction);
+                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction,
+                                                          Kryo kryo ) {
+        return new JdbiReader<>(supplier, dao, cache, applyEventsFunction, kryo);
     }
 
     @Provides
