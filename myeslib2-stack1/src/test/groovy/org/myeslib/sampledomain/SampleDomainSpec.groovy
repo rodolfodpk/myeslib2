@@ -40,7 +40,6 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
     }
 
     def setup() {
-        super.setup()
         // set the mocks
         when(uowIdSupplier.get()).thenReturn(UnitOfWorkId.create(), expUowId)
     }
