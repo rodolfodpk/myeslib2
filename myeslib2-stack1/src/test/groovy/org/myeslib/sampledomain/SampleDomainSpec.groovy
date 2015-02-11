@@ -4,28 +4,21 @@ import com.google.common.eventbus.EventBus
 import com.google.inject.*
 import com.google.inject.name.Named
 import com.google.inject.util.Modules
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
-import org.myeslib.data.UnitOfWork
-import org.myeslib.infra.SnapshotReader
-import org.myeslib.infra.UnitOfWorkJournal
-import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem
+import org.myeslib.core.CommandId
+import org.myeslib.data.UnitOfWorkId
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated
-import org.myeslib.stack1.core.Stack1CommandId
-import org.myeslib.stack1.data.Stack1UnitOfWork
-import org.myeslib.stack1.data.Stack1UnitOfWorkId
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
-import org.myeslib.stack1.infra.helpers.factories.InventoryItemSnapshotFactory
 
-import static org.mockito.Mockito.times
-import static org.mockito.Mockito.verify
+import java.util.function.Supplier
 
-public class SampleDomainSpec extends spock.lang.Specification {
+import static org.mockito.Mockito.when
+
+public class SampleDomainSpec extends Stack1BaseSpec {
 
     static Injector injector;
 
@@ -34,63 +27,41 @@ public class SampleDomainSpec extends spock.lang.Specification {
         injector.getInstance(DatabaseHelper.class).initDb();
     }
 
-    def setup() {
-        injector.injectMembers(this);
-    }
-
-    @Inject
-    UnitOfWorkJournal<UUID> journal;
     @Inject
     @Named("inventory-item-cmd-bus")
     EventBus commandBus;
     @Inject
-    SnapshotReader<UUID, InventoryItem> snapshotReader ;
-    @Inject
     UnitOfWorkDao<UUID> unitOfWorkDao;
     @Inject
-    InventoryItemSnapshotFactory snapshotFactory;
-    @Inject
-    EventBus[] eventsSubscribers;
+    Supplier<UnitOfWorkId> uowIdSupplier;
 
-    def "not really an user story 1 but..."() {
-        given: "a previously processed create inventory item command"
-            def pastCmd = CreateInventoryItem.create(Stack1CommandId.create(), UUID.randomUUID())
-        and: "its respective unitOfWork appended to journal"
-            def pastUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), pastCmd.getCommandId(), 0L, [InventoryItemCreated.create(pastCmd.targetId(), "item1")])
-            journal.append(pastCmd.targetId(), pastCmd.getCommandId(), pastCmd, pastUow)
-        and: "a new increaseInventory command to increase 10 units"
-            def newCmd = IncreaseInventory.create(Stack1CommandId.create(), pastCmd.targetId(), 10)
-        when: "I send the command to the bus"
-            commandBus.post(newCmd)
-        then: "I expect a new snapshot with version = 2 and that item with 10 available"
-            def expectedSnapshot = snapshotFactory.create(InventoryItem.builder().id(pastCmd.targetId()).description("item1").available(10).build(), 2L)
-        and: "the snapshotReader returns the expected snapshot"
-            snapshotReader.getSnapshot(pastCmd.targetId()).equals(expectedSnapshot)
-        and: "I expect a new UnitOfWork"
-            def expectedUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), newCmd.getCommandId(), 1L, [InventoryIncreased.create(10)])
-        and: "the expected UnitOfWork is now appended to List[UnitOfWork] from dao"
-            unitOfWorkDao.getFull(pastCmd.targetId()) == [pastUow, expectedUow]
-        and: "eventBuses are notified"
-            for (EventBus eventBus : eventsSubscribers) {
-                ArgumentCaptor<UnitOfWork> captor = ArgumentCaptor.forClass(UnitOfWork.class);
-                verify(eventBus, times(2)).post(captor.capture())
-                UnitOfWork captured = captor.value
-                captured.commandId == expectedUow.commandId
-                captured.version == expectedUow.version
-                captured.events == expectedUow.events
-            }
+    def setup() {
+        injector.injectMembers(this);
+        when(uowIdSupplier.get()).thenReturn(UnitOfWorkId.create(), expUowId)
     }
 
-}
+    final UUID itemId = UUID.randomUUID();
+    final CommandId newCmdId = CommandId.create();
+    final UnitOfWorkId expUowId = UnitOfWorkId.create();
 
-class InventoryItemModule4Test extends PrivateModule {
-    @Provides
-    @Exposed
-    @Singleton
-    public EventBus[] eventSubscribers() {
-        return [Mockito.mock(EventBus.class), Mockito.mock(EventBus.class)] as EventBus[]
+    def "a little more focused on domain..."() {
+        given:
+            command(CreateInventoryItem.create(CommandId.create(), itemId))
+         when:
+            command(IncreaseInventory.create(newCmdId, itemId, 10))
+         then:
+            lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
     }
-    @Override
-    protected void configure() {
+
+    static class InventoryItemModule4Test extends PrivateModule {
+        @Provides
+        @Exposed
+        @Singleton
+        public Supplier<UnitOfWorkId> supplierUowId() {
+            return Mockito.mock(Supplier.class)
+        }
+        @Override
+        protected void configure() {
+        }
     }
 }
