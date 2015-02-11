@@ -7,7 +7,7 @@ import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.stack1.core.Stack1CommandId;
+import org.myeslib.core.CommandId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;
@@ -58,7 +58,7 @@ public class SampleDomainIntegrationTest {
         // create
 
         UUID itemId = UUID.randomUUID() ;
-        CreateInventoryItem command =  CreateInventoryItem.create(Stack1CommandId.create(), itemId);
+        CreateInventoryItem command =  CreateInventoryItem.create(CommandId.create(), itemId);
 
         createInventoryItemHandler.handle(command);
 
@@ -75,7 +75,7 @@ public class SampleDomainIntegrationTest {
         // command to create then increase and decrease
 
         UUID itemId = UUID.randomUUID();
-        CreateInventoryItemThenIncreaseThenDecrease command = CreateInventoryItemThenIncreaseThenDecrease.create(Stack1CommandId.create(), itemId, 2, 1);
+        CreateInventoryItemThenIncreaseThenDecrease command = CreateInventoryItemThenIncreaseThenDecrease.create(CommandId.create(), itemId, 2, 1);
 
         createThenIncreaseThenDecreaseHandler.handle(command);
 

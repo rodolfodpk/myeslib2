@@ -18,10 +18,10 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventor
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.stack1.core.Stack1CommandId;
+import org.myeslib.core.CommandId;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;
-import org.myeslib.stack1.data.Stack1UnitOfWork;
-import org.myeslib.stack1.data.Stack1UnitOfWorkId;
+import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 
 import java.util.ArrayList;
@@ -90,9 +90,9 @@ public class Stack1ReaderTest {
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
         Snapshot<InventoryItem> expectedSnapshot = new Stack1KryoSnapshot<>(expectedInstance, 1L, kryo);
 
-        CreateInventoryItem command = CreateInventoryItem.create(Stack1CommandId.create(), id);
+        CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), id);
         
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
         List<Event> expectedEvents = new ArrayList<>(newUow.getEvents());
@@ -121,9 +121,9 @@ public class Stack1ReaderTest {
 
         InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
 
-        CreateInventoryItem command = CreateInventoryItem.create(Stack1CommandId.create(), id);
+        CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), id);
         
-        UnitOfWork currentUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
+        UnitOfWork currentUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
         List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
@@ -160,9 +160,9 @@ public class Stack1ReaderTest {
 
         cache.put(id, currentSnapshot);
 
-        IncreaseInventory command = IncreaseInventory.create(Stack1CommandId.create(), id, 2);
+        IncreaseInventory command = IncreaseInventory.create(CommandId.create(), id, 2);
 
-        UnitOfWork partialUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
+        UnitOfWork partialUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
 
         List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
         List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());

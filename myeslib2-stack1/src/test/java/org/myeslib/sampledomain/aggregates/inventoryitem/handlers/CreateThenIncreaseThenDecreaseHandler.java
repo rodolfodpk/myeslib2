@@ -2,22 +2,20 @@ package org.myeslib.sampledomain.aggregates.inventoryitem.handlers;
 
 import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
-import org.myeslib.stack1.data.Stack1UnitOfWorkId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.stack1.data.Stack1UnitOfWork;
+import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.infra.InteractionContext;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
-import org.myeslib.infra.InteractionContext;
+import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 
 import javax.inject.Inject;
 import java.util.UUID;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.function.Supplier;
 
 @ThreadSafe
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
@@ -25,12 +23,14 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
     final SampleDomainService service;
     final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
+    final Supplier<UnitOfWorkId> uowIdSupplier;
 
     @Inject
-    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader, Supplier<UnitOfWorkId> uowIdSupplier) {
         this.snapshotReader = snapshotReader;
         this.journal = journal;
         this.service = service;
+        this.uowIdSupplier = uowIdSupplier;
     }
 
     @Override
@@ -47,8 +47,8 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.increase(command.howManyToIncrease());
         aggregateRoot.decrease(command.howManyToDecrease());
 
-        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        final UnitOfWork unitOfWork = UnitOfWork.create(uowIdSupplier.get(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
 
-        journal.append(command.targetId(), command.getCommandId(), command, UnitOfWork);
+        journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
     }
 }

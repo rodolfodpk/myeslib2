@@ -3,7 +3,6 @@ package org.myeslib.stack1.infra.dao;
 import org.myeslib.core.Command;
 import org.myeslib.core.CommandId;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.stack1.core.Stack1CommandId;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.config.UowSerialization;
@@ -149,7 +148,7 @@ public class Stack1Dao<K> implements UnitOfWorkDao<K> {
     }
 
     @Override
-    public Command getCommand(final Stack1CommandId commandId) {
+    public Command getCommand(final CommandId commandId) {
         return dbi
                 .withHandle(new HandleCallback<Command>() {
                                 final String sql = String.format("select id, cmd_data " +

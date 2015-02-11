@@ -15,23 +15,11 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.core.Command;
 import org.myeslib.core.CommandId;
 import org.myeslib.data.Snapshot;
+import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
-import org.myeslib.stack1.core.Stack1CommandId;
-import org.myeslib.stack1.data.Stack1KryoSnapshot;
-import org.myeslib.stack1.data.Stack1UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.stack1.infra.Stack1Journal;
-import org.myeslib.stack1.infra.Stack1Reader;
-import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
-import org.myeslib.stack1.infra.dao.Stack1Dao;
-import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
-import org.myeslib.stack1.infra.dao.config.CmdSerialization;
-import org.myeslib.stack1.infra.dao.config.DbMetadata;
-import org.myeslib.stack1.infra.dao.config.UowSerialization;
-import org.myeslib.stack1.infra.helpers.DatabaseHelper;
-import org.myeslib.stack1.infra.helpers.factories.InventoryItemSnapshotFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
@@ -39,6 +27,17 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncr
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
+import org.myeslib.stack1.data.Stack1KryoSnapshot;
+import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
+import org.myeslib.stack1.infra.Stack1Journal;
+import org.myeslib.stack1.infra.Stack1Reader;
+import org.myeslib.stack1.infra.dao.Stack1Dao;
+import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
+import org.myeslib.stack1.infra.dao.config.CmdSerialization;
+import org.myeslib.stack1.infra.dao.config.DbMetadata;
+import org.myeslib.stack1.infra.dao.config.UowSerialization;
+import org.myeslib.stack1.infra.helpers.DatabaseHelper;
+import org.myeslib.stack1.infra.helpers.factories.InventoryItemSnapshotFactory;
 import org.skife.jdbi.v2.DBI;
 
 import java.util.UUID;
@@ -100,14 +99,14 @@ public class InventoryItemModule extends PrivateModule {
     @Exposed
     @Singleton
     public Supplier<UnitOfWorkId> supplierUowId() {
-        return () -> null ; //JdbiUnitOfWork.create(UUID.randomUUID());
+        return () -> UnitOfWorkId.create(UUID.randomUUID());
     }
 
     @Provides
     @Exposed
     @Singleton
     public Supplier<CommandId> supplierCmdId() {
-        return () -> Stack1CommandId.create(UUID.randomUUID());
+        return () -> CommandId.create(UUID.randomUUID());
     }
 
     @Provides
@@ -158,7 +157,7 @@ public class InventoryItemModule extends PrivateModule {
     public UowSerialization uowSerialization(@Named("events-json") Gson gson) {
         return new UowSerialization(
                 (uow) -> gson.toJson(uow),
-                (json) -> gson.fromJson(json, Stack1UnitOfWork.class));
+                (json) -> gson.fromJson(json, UnitOfWork.class));
     }
 
     @Provides

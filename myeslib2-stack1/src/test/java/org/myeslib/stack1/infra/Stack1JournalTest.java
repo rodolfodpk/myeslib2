@@ -6,16 +6,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.myeslib.core.CommandId;
 import org.myeslib.data.UnitOfWork;
+import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.stack1.core.Stack1CommandId;
-import org.myeslib.stack1.data.Stack1UnitOfWork;
-import org.myeslib.stack1.data.Stack1UnitOfWorkId;
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 import org.myeslib.stack1.infra.exceptions.InfraRuntimeException;
 
@@ -45,10 +44,10 @@ public class Stack1JournalTest {
 
         Stack1Journal store = new Stack1Journal(dao);
         UUID id = UUID.randomUUID();
-        Stack1CommandId commandId = Stack1CommandId.create();
+        CommandId commandId = CommandId.create();
 
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         store.append(id, commandId, command, newUow);
 
@@ -63,14 +62,14 @@ public class Stack1JournalTest {
 
         UUID id = UUID.randomUUID();
 
-        Stack1CommandId command1Id = Stack1CommandId.create();
+        CommandId command1Id = CommandId.create();
         IncreaseInventory command1 = IncreaseInventory.create(command1Id, id, 1);
 
-        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = UnitOfWork.create(UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        DecreaseInventory command2 = DecreaseInventory.create(Stack1CommandId.create(), id, 1);
+        DecreaseInventory command2 = DecreaseInventory.create(CommandId.create(), id, 1);
 
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
         store.append(id, command1.getCommandId(), command1, existingUow);
 
@@ -88,10 +87,10 @@ public class Stack1JournalTest {
         Stack1Journal store = new Stack1Journal(dao, queryModel1Bus, saga1Bus);
 
         UUID id = UUID.randomUUID();
-        Stack1CommandId commandId = Stack1CommandId.create();
+        CommandId commandId = CommandId.create();
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
 
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         store.append(id, commandId, command, newUow);
 
@@ -106,18 +105,18 @@ public class Stack1JournalTest {
 
         Stack1Journal store = new Stack1Journal(dao, queryModel1Bus, saga1Bus);
 
-        IncreaseInventory command =  IncreaseInventory.create(Stack1CommandId.create(), UUID.randomUUID(), 10);
-        UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
-        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command.getCommandId(), command, UnitOfWork);
+        IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
+        UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
+        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command.getCommandId(), command, unitOfWork);
 
         try {
-            store.append(command.targetId(), command.getCommandId(), command, UnitOfWork);
+            store.append(command.targetId(), command.getCommandId(), command, unitOfWork);
         } catch (Exception e) {
         }
 
-        verify(dao).append(command.targetId(), command.getCommandId(), command, UnitOfWork);
-        verify(queryModel1Bus, times(0)).post(any(Stack1UnitOfWork.class));
-        verify(saga1Bus, times(0)).post(any(Stack1UnitOfWork.class));
+        verify(dao).append(command.targetId(), command.getCommandId(), command, unitOfWork);
+        verify(queryModel1Bus, times(0)).post(any(UnitOfWork.class));
+        verify(saga1Bus, times(0)).post(any(UnitOfWork.class));
 
     }
 
