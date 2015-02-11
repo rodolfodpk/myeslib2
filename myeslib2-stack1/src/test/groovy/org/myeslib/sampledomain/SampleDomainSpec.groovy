@@ -14,9 +14,9 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreas
 
 import java.util.function.Supplier
 
-public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
+import static org.mockito.Mockito.when
 
-    static Injector injector;
+public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
 
     def setupSpec() {
         injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new InventoryItemModule4Test()));
@@ -37,6 +37,12 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
             command(IncreaseInventory.create(newCmdId, itemId, 10))
          then:
             lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
+    }
+
+    def setup() {
+        super.setup()
+        // set the mocks
+        when(uowIdSupplier.get()).thenReturn(UnitOfWorkId.create(), expUowId)
     }
 
     @Override
