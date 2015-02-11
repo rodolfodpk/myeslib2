@@ -66,19 +66,19 @@ public class Stack1JournalTest {
         Stack1CommandId command1Id = Stack1CommandId.create();
         IncreaseInventory command1 = IncreaseInventory.create(command1Id, id, 1);
 
-        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
         DecreaseInventory command2 = DecreaseInventory.create(Stack1CommandId.create(), id, 1);
 
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        store.append(id, command1.commandId(), command1, existingUow);
+        store.append(id, command1.getCommandId(), command1, existingUow);
 
-        store.append(id, command2.commandId(), command2, newUow);
+        store.append(id, command2.getCommandId(), command2, newUow);
 
-        verify(dao).append(id, command1.commandId(), command1, existingUow);
+        verify(dao).append(id, command1.getCommandId(), command1, existingUow);
 
-        verify(dao).append(id, command2.commandId(), command2, newUow);
+        verify(dao).append(id, command2.getCommandId(), command2, newUow);
 
     }
 
@@ -107,15 +107,15 @@ public class Stack1JournalTest {
         Stack1Journal store = new Stack1Journal(dao, queryModel1Bus, saga1Bus);
 
         IncreaseInventory command =  IncreaseInventory.create(Stack1CommandId.create(), UUID.randomUUID(), 10);
-        UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
-        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command.commandId(), command, UnitOfWork);
+        UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
+        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command.getCommandId(), command, UnitOfWork);
 
         try {
-            store.append(command.targetId(), command.commandId(), command, UnitOfWork);
+            store.append(command.targetId(), command.getCommandId(), command, UnitOfWork);
         } catch (Exception e) {
         }
 
-        verify(dao).append(command.targetId(), command.commandId(), command, UnitOfWork);
+        verify(dao).append(command.targetId(), command.getCommandId(), command, UnitOfWork);
         verify(queryModel1Bus, times(0)).post(any(Stack1UnitOfWork.class));
         verify(saga1Bus, times(0)).post(any(Stack1UnitOfWork.class));
 

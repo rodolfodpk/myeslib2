@@ -134,7 +134,7 @@ public class Stack1Dao<K> implements UnitOfWorkDao<K> {
                                 .bind("version", unitOfWork.getVersion())
                                 .execute() ;
                         int result2 = conn.createStatement(insertCommandSql)
-                                .bind("id", command.commandId().toString())
+                                .bind("id", command.getCommandId().toString())
                                 .bind("cmd_data", cmdSer.toStringFunction.apply(command))
                                 .execute() ;
                         return result1 + result2 == 2;

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @AutoValue
 public abstract class DecreaseInventory implements Command {
-    public abstract Stack1CommandId commandId();
+    public abstract Stack1CommandId getCommandId();
     public abstract UUID targetId();
     public abstract Integer howMany();
     public static DecreaseInventory create(Stack1CommandId commandId, UUID targetId, Integer howMany) {

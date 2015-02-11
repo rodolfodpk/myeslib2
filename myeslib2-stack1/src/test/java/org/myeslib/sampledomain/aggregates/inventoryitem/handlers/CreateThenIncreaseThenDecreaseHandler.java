@@ -28,11 +28,8 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
 
     @Inject
     public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
-        checkNotNull(snapshotReader);
         this.snapshotReader = snapshotReader;
-        checkNotNull(journal);
         this.journal = journal;
-        checkNotNull(service);
         this.service = service;
     }
 
@@ -50,8 +47,8 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.increase(command.howManyToIncrease());
         aggregateRoot.decrease(command.howManyToDecrease());
 
-        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
 
-        journal.append(command.targetId(), command.commandId(), command, UnitOfWork);
+        journal.append(command.targetId(), command.getCommandId(), command, UnitOfWork);
     }
 }

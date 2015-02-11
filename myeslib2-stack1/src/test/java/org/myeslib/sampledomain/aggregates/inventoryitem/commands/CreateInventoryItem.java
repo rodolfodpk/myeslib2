@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @AutoValue
 public abstract class CreateInventoryItem implements Command {
-    public abstract Stack1CommandId commandId();
+    public abstract Stack1CommandId getCommandId();
     public abstract UUID targetId();
     public static CreateInventoryItem create(Stack1CommandId commandId, UUID targetId) {
         return new AutoValue_CreateInventoryItem(commandId, targetId);

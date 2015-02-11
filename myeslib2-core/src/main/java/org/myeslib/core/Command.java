@@ -7,6 +7,6 @@ import java.io.Serializable;
 @Immutable
 public interface Command extends Serializable {
 
-    CommandId commandId();
+    CommandId getCommandId();
 
 }

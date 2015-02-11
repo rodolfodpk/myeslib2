@@ -29,9 +29,7 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
     @Inject
     public CreateInventoryItemHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.snapshotReader = snapshotReader;
-        checkNotNull(service);
         this.service = service;
-        checkNotNull(journal);
         this.journal = journal;
     }
 
@@ -43,7 +41,7 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.create(command.targetId());
-        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
-        journal.append(command.targetId(), command.commandId(), command, UnitOfWork);
+        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        journal.append(command.targetId(), command.getCommandId(), command, UnitOfWork);
     }
 }

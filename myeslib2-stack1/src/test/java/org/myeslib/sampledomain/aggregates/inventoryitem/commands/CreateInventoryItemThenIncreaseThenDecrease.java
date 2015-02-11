@@ -10,7 +10,7 @@ import java.util.UUID;
 @AutoValue
 public abstract class CreateInventoryItemThenIncreaseThenDecrease implements Command {
 
-    public abstract Stack1CommandId commandId();
+    public abstract Stack1CommandId getCommandId();
     public abstract UUID targetId();
     public abstract Integer howManyToIncrease();
     public abstract Integer howManyToDecrease();

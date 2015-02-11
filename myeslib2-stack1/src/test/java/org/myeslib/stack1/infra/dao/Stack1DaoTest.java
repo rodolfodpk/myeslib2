@@ -67,7 +67,7 @@ public class Stack1DaoTest {
 //
 //        IncreaseInventory command = IncreaseInventory.create(new CommandId(UUID.randomUUID()), id, 1);
 //
-//        UnitOfWork unitOfWork = UnitOfWork.create(new CommandId(UUID.randomUUID()), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+//        UnitOfWork unitOfWork = UnitOfWork.create(new CommandId(UUID.randomUUID()), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 //
 //        String asString = uowSer.toStringFunction.apply(unitOfWork);
 //
@@ -83,15 +83,15 @@ public class Stack1DaoTest {
 
         IncreaseInventory command = IncreaseInventory.create(Stack1CommandId.create(), id, 1);
 
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
-        dao.append(command.targetId(), command.commandId(), command, newUow);
+        dao.append(command.targetId(), command.getCommandId(), command, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
         assertThat(Lists.newArrayList(newUow), is(fromDb));
 
-        assertThat(command, is(dao.getCommand(command.commandId())));
+        assertThat(command, is(dao.getCommand(command.getCommandId())));
 
     }
 
@@ -103,17 +103,17 @@ public class Stack1DaoTest {
         IncreaseInventory command1 = IncreaseInventory.create(Stack1CommandId.create(), id, 1);
         DecreaseInventory command2 = DecreaseInventory.create(Stack1CommandId.create(), id, 1);
 
-        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.commandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
+        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        dao.append(command1.targetId(), command1.commandId(), command1, existingUow);
-        dao.append(command2.targetId(), command2.commandId(), command2, newUow);
+        dao.append(command1.targetId(), command1.getCommandId(), command1, existingUow);
+        dao.append(command2.targetId(), command2.getCommandId(), command2, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
         assertThat(Lists.newArrayList(existingUow, newUow), is(fromDb));
-        assertThat(command1, is(dao.getCommand(command1.commandId())));
-        assertThat(command2, is(dao.getCommand(command2.commandId())));
+        assertThat(command1, is(dao.getCommand(command1.getCommandId())));
+        assertThat(command2, is(dao.getCommand(command2.getCommandId())));
         assertThat(fromDb.get(fromDb.size()-1).getVersion(), is(2L));
 
 
@@ -127,13 +127,13 @@ public class Stack1DaoTest {
         IncreaseInventory command1 = IncreaseInventory.create(Stack1CommandId.create(), id, 1);
         DecreaseInventory command2 = DecreaseInventory.create(Stack1CommandId.create(), id, 1);
 
-        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.commandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
+        UnitOfWork existingUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        dao.append(id, command1.commandId(), command1, existingUow);
+        dao.append(id, command1.getCommandId(), command1, existingUow);
 
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.commandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
+        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command2.getCommandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
 
-        dao.append(command2.targetId(), command2.commandId(), command2, newUow);
+        dao.append(command2.targetId(), command2.getCommandId(), command2, newUow);
 
     }
 

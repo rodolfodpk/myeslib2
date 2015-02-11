@@ -34,8 +34,8 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.increase(command.howMany());
-        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
-        journal.append(command.targetId(), command.commandId(), command, UnitOfWork);
+        final UnitOfWork UnitOfWork = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        journal.append(command.targetId(), command.getCommandId(), command, UnitOfWork);
     }
 
 }

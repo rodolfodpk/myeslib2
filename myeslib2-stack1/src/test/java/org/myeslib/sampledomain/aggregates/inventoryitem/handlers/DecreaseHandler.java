@@ -37,8 +37,8 @@ public class DecreaseHandler implements CommandHandler<DecreaseInventory>, State
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.decrease(command.howMany());
-        this.unitOfWork = Optional.of(Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), snapshot.getVersion(), interactionContext.getAppliedEvents()));
-        journal.append(command.targetId(), command.commandId(), command, unitOfWork.get());
+        this.unitOfWork = Optional.of(Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents()));
+        journal.append(command.targetId(), command.getCommandId(), command, unitOfWork.get());
     }
 
     @Override

@@ -92,7 +92,7 @@ public class Stack1ReaderTest {
 
         CreateInventoryItem command = CreateInventoryItem.create(Stack1CommandId.create(), id);
         
-        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
         List<Event> expectedEvents = new ArrayList<>(newUow.getEvents());
@@ -123,7 +123,7 @@ public class Stack1ReaderTest {
 
         CreateInventoryItem command = CreateInventoryItem.create(Stack1CommandId.create(), id);
         
-        UnitOfWork currentUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
+        UnitOfWork currentUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
         List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
@@ -162,7 +162,7 @@ public class Stack1ReaderTest {
 
         IncreaseInventory command = IncreaseInventory.create(Stack1CommandId.create(), id, 2);
 
-        UnitOfWork partialUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.commandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
+        UnitOfWork partialUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
 
         List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
         List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());

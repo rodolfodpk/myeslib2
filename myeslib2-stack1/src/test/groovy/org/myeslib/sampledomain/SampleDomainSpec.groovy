@@ -56,8 +56,8 @@ public class SampleDomainSpec extends spock.lang.Specification {
         given: "a previously processed create inventory item command"
             def pastCmd = CreateInventoryItem.create(Stack1CommandId.create(), UUID.randomUUID())
         and: "its respective unitOfWork appended to journal"
-            def pastUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), pastCmd.commandId(), 0L, [InventoryItemCreated.create(pastCmd.targetId(), "item1")])
-            journal.append(pastCmd.targetId(), pastCmd.commandId(), pastCmd, pastUow)
+            def pastUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), pastCmd.getCommandId(), 0L, [InventoryItemCreated.create(pastCmd.targetId(), "item1")])
+            journal.append(pastCmd.targetId(), pastCmd.getCommandId(), pastCmd, pastUow)
         and: "a new increaseInventory command to increase 10 units"
             def newCmd = IncreaseInventory.create(Stack1CommandId.create(), pastCmd.targetId(), 10)
         when: "I send the command to the bus"
@@ -67,7 +67,7 @@ public class SampleDomainSpec extends spock.lang.Specification {
         and: "the snapshotReader returns the expected snapshot"
             snapshotReader.getSnapshot(pastCmd.targetId()).equals(expectedSnapshot)
         and: "I expect a new UnitOfWork"
-            def expectedUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), newCmd.commandId(), 1L, [InventoryIncreased.create(10)])
+            def expectedUow = Stack1UnitOfWork.create(Stack1UnitOfWorkId.create(), newCmd.getCommandId(), 1L, [InventoryIncreased.create(10)])
         and: "the expected UnitOfWork is now appended to List[UnitOfWork] from dao"
             unitOfWorkDao.getFull(pastCmd.targetId()) == [pastUow, expectedUow]
         and: "eventBuses are notified"
