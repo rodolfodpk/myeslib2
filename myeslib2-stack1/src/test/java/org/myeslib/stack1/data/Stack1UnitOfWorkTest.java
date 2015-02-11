@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class UnitOfWorkTest {
+public class Stack1UnitOfWorkTest {
 
     @Test
     public void versionShouldBeSnapshotVersionPlusOne() {
