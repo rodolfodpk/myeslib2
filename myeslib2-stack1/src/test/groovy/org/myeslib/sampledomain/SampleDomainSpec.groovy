@@ -11,34 +11,20 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased
-import org.myeslib.stack1.infra.dao.UnitOfWorkDao
-import org.myeslib.stack1.infra.helpers.DatabaseHelper
 
 import java.util.function.Supplier
 
-import static org.mockito.Mockito.when
-
-public class SampleDomainSpec extends Stack1BaseSpec {
+public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
 
     static Injector injector;
 
     def setupSpec() {
         injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new InventoryItemModule4Test()));
-        injector.getInstance(DatabaseHelper.class).initDb();
     }
 
     @Inject
     @Named("inventory-item-cmd-bus")
     EventBus commandBus;
-    @Inject
-    UnitOfWorkDao<UUID> unitOfWorkDao;
-    @Inject
-    Supplier<UnitOfWorkId> uowIdSupplier;
-
-    def setup() {
-        injector.injectMembers(this);
-        when(uowIdSupplier.get()).thenReturn(UnitOfWorkId.create(), expUowId)
-    }
 
     final UUID itemId = UUID.randomUUID();
     final CommandId newCmdId = CommandId.create();
@@ -51,6 +37,11 @@ public class SampleDomainSpec extends Stack1BaseSpec {
             command(IncreaseInventory.create(newCmdId, itemId, 10))
          then:
             lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
+    }
+
+    @Override
+    protected commandBus() {
+        return commandBus
     }
 
     static class InventoryItemModule4Test extends PrivateModule {
