@@ -170,7 +170,7 @@ public class InventoryItemModule extends PrivateModule {
 
     @Override
     protected void configure() {
-        bind(SampleDomainService.class).toInstance((id) -> "item ${id}");
+        bind(SampleDomainService.class).toInstance((id) -> id.toString());
         expose(SampleDomainService.class);
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
 
