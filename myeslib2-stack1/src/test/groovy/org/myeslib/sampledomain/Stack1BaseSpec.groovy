@@ -3,12 +3,9 @@ package org.myeslib.sampledomain
 import com.google.inject.Inject
 import com.google.inject.Injector
 import org.myeslib.core.Event
-import org.myeslib.data.UnitOfWorkId
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import spock.lang.Specification
-
-import java.util.function.Supplier
 
 abstract class Stack1BaseSpec<K>  extends Specification {
 
@@ -16,8 +13,6 @@ abstract class Stack1BaseSpec<K>  extends Specification {
 
     @Inject
     UnitOfWorkDao<K> unitOfWorkDao;
-    @Inject
-    Supplier<UnitOfWorkId> uowIdSupplier;
 
     protected abstract commandBus()
 
