@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
@@ -18,9 +18,8 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventor
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.CommandId;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;
-import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 

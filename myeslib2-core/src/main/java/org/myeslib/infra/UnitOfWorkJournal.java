@@ -1,7 +1,7 @@
 package org.myeslib.infra;
 
-import org.myeslib.core.Command;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.Command;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 
 public interface UnitOfWorkJournal<K> {

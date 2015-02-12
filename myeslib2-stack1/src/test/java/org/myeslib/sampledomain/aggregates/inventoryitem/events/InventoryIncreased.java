@@ -1,7 +1,7 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.events;
 
 import com.google.auto.value.AutoValue;
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 
 @AutoValue
 public abstract class InventoryIncreased implements Event {

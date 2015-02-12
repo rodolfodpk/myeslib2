@@ -2,7 +2,7 @@ package org.myeslib.stack1.infra;
 
 import com.google.common.eventbus.EventBus;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 import org.myeslib.infra.InteractionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

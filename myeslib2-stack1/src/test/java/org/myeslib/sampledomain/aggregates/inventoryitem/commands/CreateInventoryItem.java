@@ -1,8 +1,8 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem.commands;
 
 import com.google.auto.value.AutoValue;
-import org.myeslib.core.Command;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.Command;
+import org.myeslib.data.CommandId;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package org.myeslib.core;
+package org.myeslib.data;
 
 import net.jcip.annotations.Immutable;
 

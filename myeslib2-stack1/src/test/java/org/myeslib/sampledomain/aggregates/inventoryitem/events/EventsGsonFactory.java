@@ -2,7 +2,7 @@ package org.myeslib.sampledomain.aggregates.inventoryitem.events;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 import org.myeslib.stack1.infra.helpers.gson.polymorphic.RuntimeTypeAdapterFactory;
 import org.myeslib.stack1.infra.helpers.gson.autovalue.AutoValueTypeAdapterFactory;
 

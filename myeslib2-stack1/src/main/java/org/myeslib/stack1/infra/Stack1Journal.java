@@ -1,8 +1,8 @@
 package org.myeslib.stack1.infra;
 
 import com.google.common.eventbus.EventBus;
-import org.myeslib.core.Command;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.Command;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao;

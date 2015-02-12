@@ -1,7 +1,7 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.stack1.infra.helpers.MultiMethod;
 

@@ -6,8 +6,8 @@ import com.google.inject.name.Named
 import com.google.inject.util.Modules
 import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
-import org.myeslib.core.CommandId
-import org.myeslib.core.Event
+import org.myeslib.data.CommandId
+import org.myeslib.data.Event
 import org.myeslib.data.UnitOfWork
 import org.myeslib.data.UnitOfWorkId
 import org.myeslib.infra.SnapshotReader
@@ -24,8 +24,6 @@ import org.myeslib.stack1.infra.helpers.factories.InventoryItemSnapshotFactory
 
 import static org.mockito.Mockito.times
 import static org.mockito.Mockito.verify
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class LowLevelSpec extends spock.lang.Specification {
 

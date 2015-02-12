@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;

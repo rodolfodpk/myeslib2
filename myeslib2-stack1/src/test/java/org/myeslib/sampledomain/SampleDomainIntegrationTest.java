@@ -7,7 +7,7 @@ import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;

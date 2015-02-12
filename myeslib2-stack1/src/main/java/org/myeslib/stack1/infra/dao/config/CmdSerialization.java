@@ -1,6 +1,6 @@
 package org.myeslib.stack1.infra.dao.config;
 
-import org.myeslib.core.Command;
+import org.myeslib.data.Command;
 
 import java.util.function.Function;
 

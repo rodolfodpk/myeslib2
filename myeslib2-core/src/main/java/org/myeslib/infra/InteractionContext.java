@@ -1,6 +1,6 @@
 package org.myeslib.infra;
 
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 
 import java.util.List;
 

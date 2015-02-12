@@ -7,7 +7,7 @@ import com.google.inject.Injector;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
@@ -15,7 +15,6 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInvent
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
-import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.stack1.infra.exceptions.ConcurrencyException;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 

@@ -1,7 +1,7 @@
 package org.myeslib.stack1.infra.dao;
 
-import org.myeslib.core.Command;
-import org.myeslib.core.CommandId;
+import org.myeslib.data.Command;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;

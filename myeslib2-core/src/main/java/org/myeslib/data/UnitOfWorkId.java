@@ -1,7 +1,10 @@
 package org.myeslib.data;
 
+import net.jcip.annotations.Immutable;
+
 import java.util.UUID;
 
+@Immutable
 public class UnitOfWorkId {
 
     private final UUID uuid;

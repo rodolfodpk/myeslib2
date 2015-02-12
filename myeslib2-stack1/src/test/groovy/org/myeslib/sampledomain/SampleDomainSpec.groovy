@@ -7,7 +7,7 @@ import com.google.inject.PrivateModule
 import com.google.inject.name.Named
 import com.google.inject.util.Modules
 import org.mockito.Mockito
-import org.myeslib.core.CommandId
+import org.myeslib.data.CommandId
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory

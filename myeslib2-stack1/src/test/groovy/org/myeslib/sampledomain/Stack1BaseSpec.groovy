@@ -2,7 +2,7 @@ package org.myeslib.sampledomain
 
 import com.google.inject.Inject
 import com.google.inject.Injector
-import org.myeslib.core.Event
+import org.myeslib.data.Event
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import spock.lang.Specification

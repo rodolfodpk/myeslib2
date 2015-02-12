@@ -3,7 +3,7 @@ package org.myeslib.stack1.infra;
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.core.Event;
+import org.myeslib.data.Event;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.ApplyEventsFunction;
