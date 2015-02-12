@@ -1,19 +1,14 @@
 package org.myeslib.sampledomain
 
-import com.google.inject.Guice
 import com.google.inject.Inject
 import com.google.inject.Injector
-import com.google.inject.util.Modules
 import org.myeslib.core.Event
 import org.myeslib.data.UnitOfWorkId
-import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import spock.lang.Specification
 
 import java.util.function.Supplier
-
-import static org.mockito.Mockito.when
 
 abstract class Stack1BaseSpec<K>  extends Specification {
 
@@ -38,6 +33,5 @@ abstract class Stack1BaseSpec<K>  extends Specification {
     def setup() {
         injector.injectMembers(this);
         injector.getInstance(DatabaseHelper.class).initDb();
-        when(uowIdSupplier.get()).thenReturn(UnitOfWorkId.create(), expUowId)
     }
 }
