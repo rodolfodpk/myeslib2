@@ -22,7 +22,7 @@ abstract class Stack1BaseSpec<K>  extends Specification {
     }
 
     protected List<Event> lastCmdEvents(K id) {
-        unitOfWorkDao.getFull(id).get(1).events
+        unitOfWorkDao.getFull(id).last().events
     }
 
     def setup() {
