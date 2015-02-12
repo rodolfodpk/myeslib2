@@ -10,7 +10,9 @@ import org.mockito.Mockito
 import org.myeslib.core.CommandId
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated
 import org.myeslib.sampledomain.services.SampleDomainService
@@ -48,9 +50,31 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
     def "increase"() {
         given:
             command(CreateInventoryItem.create(CommandId.create(), itemId))
-         when:
+        when:
             command(IncreaseInventory.create(CommandId.create(), itemId, 10))
-         then:
+        then:
+            lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
+    }
+
+    def "decrease"() {
+        given:
+            command(CreateInventoryItem.create(CommandId.create(), itemId))
+        and:
+            command(IncreaseInventory.create(CommandId.create(), itemId, 10))
+        when:
+            command(DecreaseInventory.create(CommandId.create(), itemId, 7))
+        then:
+            lastCmdEvents(itemId) == [InventoryDecreased.create(7)]
+    }
+
+    def "decrease an unavailable item"() {
+        given:
+            command(CreateInventoryItem.create(CommandId.create(), itemId))
+        and:
+            command(IncreaseInventory.create(CommandId.create(), itemId, 10))
+        when:
+            command(DecreaseInventory.create(CommandId.create(), itemId, 11))
+        then:
             lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
     }
 
