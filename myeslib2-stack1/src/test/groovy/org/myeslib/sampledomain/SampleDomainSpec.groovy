@@ -8,6 +8,7 @@ import com.google.inject.name.Named
 import com.google.inject.util.Modules
 import org.mockito.Mockito
 import org.myeslib.data.CommandId
+import org.myeslib.data.Event
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
@@ -65,6 +66,9 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
             command(DecreaseInventory.create(CommandId.create(), itemId, 7))
         then:
             lastCmdEvents(itemId) == [InventoryDecreased.create(7)]
+        and: "can check all events too"
+            allEvents(itemId) == [InventoryItemCreated.create(itemId, itemDescription), InventoryIncreased.create(10), InventoryDecreased.create(7)] as List<Event>
+
     }
 
     def "decrease an unavailable item"() {
@@ -78,6 +82,11 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
             lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
     }
 
+    @Override
+    protected commandBus() {
+        return commandBus
+    }
+
     static class MockedDomainServicesModule extends PrivateModule {
 
         @Override
@@ -85,11 +94,6 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
             bind(SampleDomainService.class).toInstance(Mockito.mock(SampleDomainService.class));
             expose(SampleDomainService.class);
         }
-    }
-
-    @Override
-    protected commandBus() {
-        return commandBus
     }
 
 }
