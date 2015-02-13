@@ -1,5 +1,6 @@
 package org.myeslib.stack1.infra.dao;
 
+import com.google.common.collect.Lists;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
@@ -87,17 +88,18 @@ public class Stack1Dao<K> implements UnitOfWorkDao<K> {
                                 }
                     );
 
-            if (unitsOfWork != null) {
-                logger.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
-                for (UowRecord r : unitsOfWork) {
-                    logger.debug("converting to uow from {}", r.uowData);
-                    Function<String, UnitOfWork> f = uowSer.fromStringFunction;
-                    UnitOfWork uow = f.apply(r.uowData);
-                    logger.debug(uow.toString());
-                    arh.add(uow);
-                }
-            } else {
+            if (unitsOfWork == null) {
                 logger.debug("found none unit of work for id {} and version > {} on {}", id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
+                return Lists.newArrayList();
+            }
+
+            logger.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
+            for (UowRecord r : unitsOfWork) {
+                logger.debug("converting to uow from {}", r.uowData);
+                Function<String, UnitOfWork> f = uowSer.fromStringFunction;
+                UnitOfWork uow = f.apply(r.uowData);
+                logger.debug(uow.toString());
+                arh.add(uow);
             }
 
         } catch (Exception e) {
