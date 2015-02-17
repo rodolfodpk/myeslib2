@@ -81,8 +81,8 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
         return latestSnapshot;
     }
 
-    List<Event> flatMap(final List<UnitOfWork> UnitOfWorks) {
-        return UnitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
+    List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {
+        return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
     }
 
     Long lastVersion(List<UnitOfWork> uows) {
