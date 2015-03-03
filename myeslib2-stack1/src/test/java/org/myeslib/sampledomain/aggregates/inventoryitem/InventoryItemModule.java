@@ -12,11 +12,7 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.myeslib.data.Command;
-import org.myeslib.data.CommandId;
-import org.myeslib.data.Snapshot;
-import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.data.*;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
@@ -41,6 +37,7 @@ import org.myeslib.stack1.infra.helpers.factories.InventoryItemSnapshotFactory;
 import org.skife.jdbi.v2.DBI;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class InventoryItemModule extends PrivateModule {
@@ -58,15 +55,30 @@ public class InventoryItemModule extends PrivateModule {
     @Provides
     @Exposed
     @Singleton
-    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao, EventBus[] eventSubscribers) {
-        return new Stack1Journal<UUID>(dao, eventSubscribers);
+    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao,
+                                           @Named("saga-events-consumer") Consumer<EventMessage> sagaConsumer,
+                                           @Named("query-model-events-consumer") Consumer<EventMessage> queryModelConsumer) {
+        return new Stack1Journal<UUID>(dao, sagaConsumer, queryModelConsumer);
     }
 
     @Provides
     @Exposed
     @Singleton
-    public EventBus[] eventSubscribers() {
-        return new EventBus[] { new EventBus("query-model-bus"), new EventBus("saga1-process-bus")};
+    @Named("query-model-events-consumer")
+    public Consumer<EventMessage> queryModelConsumer() {
+        return uuidUnitOfWorkMessage -> {
+            System.out.println("query-model-events-consumer received "+ uuidUnitOfWorkMessage);
+        };
+    }
+
+    @Provides
+    @Exposed
+    @Singleton
+    @Named("saga-events-consumer")
+    public Consumer<EventMessage> sagaConsumer() {
+        return uuidUnitOfWorkMessage -> {
+            System.out.println("saga-events-consumer received "+ uuidUnitOfWorkMessage);
+        };
     }
 
     @Provides

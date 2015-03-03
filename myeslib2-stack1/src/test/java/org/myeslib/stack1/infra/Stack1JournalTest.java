@@ -1,14 +1,12 @@
 package org.myeslib.stack1.infra;
 
-import com.google.common.eventbus.EventBus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.myeslib.data.CommandId;
-import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.data.*;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -20,7 +18,10 @@ import org.myeslib.stack1.infra.exceptions.InfraRuntimeException;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.function.Consumer;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,10 +31,10 @@ public class Stack1JournalTest {
     UnitOfWorkDao<UUID> dao;
 
     @Mock
-    EventBus queryModel1Bus;
+    Consumer<EventMessage> queryModelConsumer;
 
     @Mock
-    EventBus saga1Bus;
+    Consumer<EventMessage> sagaConsumer;
 
     @Before
     public void init() throws Exception {
@@ -82,28 +83,34 @@ public class Stack1JournalTest {
     }
 
     @Test
-    public void onSuccessThenEventBusesShouldReceiveEvents() {
+    public void onSuccessThenEventConsumersShouldReceiveEvents() {
 
-        Stack1Journal store = new Stack1Journal(dao, queryModel1Bus, saga1Bus);
+        Stack1Journal store = new Stack1Journal(dao, queryModelConsumer, sagaConsumer);
 
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
+        Event event = InventoryItemCreated.create(id, "item1");
 
-        UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
+        UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), commandId, 0L, Arrays.asList(event));
 
         store.append(id, commandId, command, newUow);
 
         verify(dao).append(id, commandId, command, newUow);
-        verify(queryModel1Bus).post(newUow);
-        verify(saga1Bus).post(newUow);
+
+        ArgumentCaptor<EventMessage> msgCaptor = ArgumentCaptor.forClass(EventMessage.class);
+
+        verify(queryModelConsumer).accept(msgCaptor.capture());
+        verify(sagaConsumer).accept(msgCaptor.capture());
+
+        assertThat(msgCaptor.getValue().getEvent(), is(event));
 
     }
 
     @Test
-    public void onDaoExceptionBusesShouldNotReceiveAnyEvent() {
+    public void onDaoExceptionConsumersShouldNotReceiveAnyEvent() {
 
-        Stack1Journal store = new Stack1Journal(dao, queryModel1Bus, saga1Bus);
+        Stack1Journal store = new Stack1Journal(dao, queryModelConsumer, sagaConsumer);
 
         IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
         UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
@@ -115,8 +122,9 @@ public class Stack1JournalTest {
         }
 
         verify(dao).append(command.targetId(), command.getCommandId(), command, unitOfWork);
-        verify(queryModel1Bus, times(0)).post(any(UnitOfWork.class));
-        verify(saga1Bus, times(0)).post(any(UnitOfWork.class));
+
+        verify(queryModelConsumer, times(0)).accept(any());
+        verify(sagaConsumer, times(0)).accept(any());
 
     }
 
