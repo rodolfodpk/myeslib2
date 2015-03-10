@@ -5,10 +5,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
-import com.google.inject.Exposed;
-import com.google.inject.PrivateModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -33,17 +30,15 @@ import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.config.UowSerialization;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
-import org.myeslib.stack1.infra.helpers.factories.InventoryItemSnapshotFactory;
 import org.skife.jdbi.v2.DBI;
 
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class InventoryItemModule extends PrivateModule {
+public class InventoryItemModule extends AbstractModule {
 
     @Provides
-    @Exposed
     @Singleton
     @Named("inventory-item-cmd-bus")
     public EventBus commandBus(InventoryItemCmdSubscriber subscriber) {
@@ -53,7 +48,6 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
-    @Exposed
     @Singleton
     public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao,
                                            @Named("saga-events-consumer") Consumer<EventMessage> sagaConsumer,
@@ -62,7 +56,6 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
-    @Exposed
     @Singleton
     @Named("query-model-events-consumer")
     public Consumer<EventMessage> queryModelConsumer() {
@@ -72,7 +65,6 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
-    @Exposed
     @Singleton
     @Named("saga-events-consumer")
     public Consumer<EventMessage> sagaConsumer() {
@@ -82,7 +74,6 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
-    @Exposed
     @Singleton
     public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
                                                               UnitOfWorkDao<UUID> dao,
@@ -93,7 +84,6 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
-    @Exposed
     @Singleton
     public UnitOfWorkDao<UUID> dao(UowSerialization uowSer, CmdSerialization cmdSer,
                              DbMetadata dbMetadata, DBI dbi) {
@@ -101,28 +91,24 @@ public class InventoryItemModule extends PrivateModule {
     }
 
     @Provides
-    @Exposed
     @Singleton
     public DatabaseHelper databaseHelper(DBI dbi){
         return new DatabaseHelper(dbi, "database/V1__Create_inventory_item_tables.sql");
     }
 
     @Provides
-    @Exposed
     @Singleton
     public Supplier<UnitOfWorkId> supplierUowId() {
         return () -> UnitOfWorkId.create(UUID.randomUUID());
     }
 
     @Provides
-    @Exposed
     @Singleton
     public Supplier<CommandId> supplierCmdId() {
         return () -> CommandId.create(UUID.randomUUID());
     }
 
     @Provides
-    @Exposed
     @Singleton
     public Kryo kryo() {
         return new Kryo();
@@ -183,26 +169,13 @@ public class InventoryItemModule extends PrivateModule {
     @Override
     protected void configure() {
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
-        expose(SampleDomainService.class);
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
-
-        // factories
-        install(new FactoryModuleBuilder()
-                .implement(Snapshot.class, Stack1KryoSnapshot.class)
-                .build(InventoryItemSnapshotFactory.class));
-
-        expose(InventoryItemSnapshotFactory.class);
 
         // command handlers
         bind(CreateInventoryItemHandler.class).asEagerSingleton();
-        expose(CreateInventoryItemHandler.class);
         bind(CreateThenIncreaseThenDecreaseHandler.class).asEagerSingleton();
-        expose(CreateThenIncreaseThenDecreaseHandler.class);
         bind(IncreaseHandler.class).asEagerSingleton();
-        expose(IncreaseHandler.class);
         bind(DecreaseHandler.class); // DecreaseHandler is stateful, so it's not thread safe
-        expose(DecreaseHandler.class);
         bind(InventoryItemCmdSubscriber.class).asEagerSingleton();
-        expose(InventoryItemCmdSubscriber.class);
     }
 }

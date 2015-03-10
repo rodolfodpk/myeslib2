@@ -59,8 +59,8 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
             lastSnapshot = cache.get(id, () -> {
                 logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
-                final List<UnitOfWork> uows = dao.getFull(id);
-                return new Stack1KryoSnapshot<>(applyEventsFunction.apply(supplier.get(), flatMap(uows)), lastVersion(uows), kryo);
+                final List<UnitOfWork> unitOfWorkList = dao.getFull(id);
+                return new Stack1KryoSnapshot<>(applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList)), lastVersion(unitOfWorkList), kryo);
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
@@ -85,7 +85,7 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
         return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
     }
 
-    Long lastVersion(List<UnitOfWork> uows) {
-        return uows.isEmpty() ? 0L : uows.get(uows.size()-1).getVersion();
+    Long lastVersion(List<UnitOfWork> unitOfWorks) {
+        return unitOfWorks.isEmpty() ? 0L : unitOfWorks.get(unitOfWorks.size()-1).getVersion();
     }
 }

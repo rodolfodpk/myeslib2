@@ -1,10 +1,9 @@
 package org.myeslib.stack1.data;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.data.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
-public class Stack1KryoSnapshot<A extends AggregateRoot> implements org.myeslib.data.Snapshot {
+public class Stack1KryoSnapshot<A extends AggregateRoot> implements Snapshot<A> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1KryoSnapshot.class);
 
@@ -20,8 +19,7 @@ public class Stack1KryoSnapshot<A extends AggregateRoot> implements org.myeslib.
     final Long version;
     final transient Kryo kryo;
 
-    @Inject
-    public Stack1KryoSnapshot(@Assisted A aggregateInstance, @Assisted Long version, Kryo kryo) {
+    public Stack1KryoSnapshot(A aggregateInstance, Long version, Kryo kryo) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);

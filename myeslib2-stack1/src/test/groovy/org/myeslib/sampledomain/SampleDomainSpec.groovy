@@ -1,9 +1,12 @@
 package org.myeslib.sampledomain
 
 import com.google.common.eventbus.EventBus
+import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Inject
 import com.google.inject.PrivateModule
+import com.google.inject.Provides
+import com.google.inject.Singleton
 import com.google.inject.name.Named
 import com.google.inject.util.Modules
 import org.mockito.Mockito
@@ -17,6 +20,9 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreas
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated
 import org.myeslib.sampledomain.services.SampleDomainService
+import org.myeslib.stack1.infra.dao.UnitOfWorkDao
+import org.myeslib.stack1.infra.helpers.DatabaseHelper
+import org.skife.jdbi.v2.DBI
 
 import static org.mockito.Mockito.any
 import static org.mockito.Mockito.when
@@ -28,8 +34,13 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
     }
 
     def setup() {
+        injector.injectMembers(this);
+        dbHelper.initDb()
         when(sampleDomainService.generateItemDescription(any(UUID.class))).thenReturn(itemDescription)
     }
+
+    @Inject
+    DatabaseHelper dbHelper;
 
     @Inject
     @Named("inventory-item-cmd-bus")
@@ -37,6 +48,19 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
 
     @Inject
     SampleDomainService sampleDomainService
+
+    @Inject
+    UnitOfWorkDao<UUID> unitOfWorkDao;
+
+    @Override
+    protected EventBus commandBus() {
+        return commandBus
+    }
+
+    @Override
+    protected UnitOfWorkDao<String> unitOfWorkDao() {
+        return unitOfWorkDao
+    }
 
     final UUID itemId = UUID.randomUUID();
     final String itemDescription = "hammer"
@@ -65,13 +89,13 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
         when:
             command(DecreaseInventory.create(CommandId.create(), itemId, 7))
         then:
-            lastCmdEvents(itemId) == [InventoryDecreased.create(7)]
+            lastCmdEvents(itemId) == [InventoryDecreased.create(7)] as List<Event>
         and: "can check all events too"
             allEvents(itemId) == [InventoryItemCreated.create(itemId, itemDescription), InventoryIncreased.create(10), InventoryDecreased.create(7)] as List<Event>
 
     }
 
-    def "decrease an unavailable item"() {
+    def "decrease an unavailable item (will log an error)"() {
         given:
             command(CreateInventoryItem.create(CommandId.create(), itemId))
         and:
@@ -82,17 +106,11 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
             lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
     }
 
-    @Override
-    protected commandBus() {
-        return commandBus
-    }
-
-    static class MockedDomainServicesModule extends PrivateModule {
+    static class MockedDomainServicesModule extends AbstractModule {
 
         @Override
         protected void configure() {
             bind(SampleDomainService.class).toInstance(Mockito.mock(SampleDomainService.class));
-            expose(SampleDomainService.class);
         }
     }
 
