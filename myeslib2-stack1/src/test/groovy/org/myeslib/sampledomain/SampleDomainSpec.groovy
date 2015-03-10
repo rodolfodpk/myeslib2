@@ -95,7 +95,7 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
 
     }
 
-    def "decrease an unavailable item (will log an error)"() {
+    def "decrease an unavailable item *will log an error*"() {
         given:
             command(CreateInventoryItem.create(CommandId.create(), itemId))
         and:
