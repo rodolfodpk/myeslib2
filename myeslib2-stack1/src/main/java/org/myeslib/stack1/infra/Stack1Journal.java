@@ -6,6 +6,8 @@ import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -15,9 +17,9 @@ public class Stack1Journal<K> implements UnitOfWorkJournal<K> {
     static final Logger logger = LoggerFactory.getLogger(Stack1Journal.class);
 
     private final UnitOfWorkDao<K> dao;
-    private final Consumer<EventMessage>[] consumers;
+    private final List<Consumer<EventMessage>> consumers;
 
-    public Stack1Journal(UnitOfWorkDao<K> dao, Consumer<EventMessage>... consumers) {
+    public Stack1Journal(UnitOfWorkDao<K> dao, List<Consumer<EventMessage>> consumers) {
         checkNotNull(dao);
         this.dao = dao;
         checkNotNull(consumers);
@@ -27,7 +29,7 @@ public class Stack1Journal<K> implements UnitOfWorkJournal<K> {
     public Stack1Journal(UnitOfWorkDao<K> dao) {
         checkNotNull(dao);
         this.dao = dao;
-        this.consumers = new Consumer[]{};
+        this.consumers = new ArrayList<>();
     }
 
     @Override

@@ -1,13 +1,15 @@
 package org.myeslib.sampledomain;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
+import com.google.common.collect.Lists;
+import com.google.inject.*;
+import com.google.inject.util.Modules;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.myeslib.data.CommandId;
+import org.myeslib.data.EventMessage;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;
@@ -21,7 +23,9 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncr
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -34,7 +38,14 @@ public class SampleDomainIntegrationTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        injector = Guice.createInjector(new InventoryItemModule());
+        final Consumer<EventMessage> mockConsumer = Mockito.mock(Consumer.class);
+        List<Consumer<EventMessage>> consumerList = Lists.newArrayList(mockConsumer);
+        injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance(consumerList);
+            }
+        }));
     }
 
     @Before

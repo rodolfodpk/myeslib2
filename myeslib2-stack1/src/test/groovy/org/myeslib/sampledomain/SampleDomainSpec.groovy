@@ -7,11 +7,13 @@ import com.google.inject.Inject
 import com.google.inject.PrivateModule
 import com.google.inject.Provides
 import com.google.inject.Singleton
+import com.google.inject.TypeLiteral
 import com.google.inject.name.Named
 import com.google.inject.util.Modules
 import org.mockito.Mockito
 import org.myeslib.data.CommandId
 import org.myeslib.data.Event
+import org.myeslib.data.EventMessage
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
@@ -24,43 +26,29 @@ import org.myeslib.stack1.infra.dao.UnitOfWorkDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import org.skife.jdbi.v2.DBI
 
+import java.util.function.Consumer
+
 import static org.mockito.Mockito.any
 import static org.mockito.Mockito.when
 
 public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
 
-    def setupSpec() {
-        injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new MockedDomainServicesModule()));
-    }
-
-    def setup() {
-        injector.injectMembers(this);
-        dbHelper.initDb()
-        when(sampleDomainService.generateItemDescription(any(UUID.class))).thenReturn(itemDescription)
-    }
-
     @Inject
-    DatabaseHelper dbHelper;
-
-    @Inject
-    @Named("inventory-item-cmd-bus")
     EventBus commandBus
-
-    @Inject
-    SampleDomainService sampleDomainService
 
     @Inject
     UnitOfWorkDao<UUID> unitOfWorkDao;
 
-    @Override
-    protected EventBus commandBus() {
-        return commandBus
+    def setup() {
+        def Consumer<EventMessage> eventsConsumer = Mock(Consumer)
+        def sampleDomainService = Mockito.mock(SampleDomainService.class)
+        when(sampleDomainService.generateItemDescription(any(UUID.class))).thenReturn(itemDescription)
+        def injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new MockedDomainServicesModule(sampleDomainService: sampleDomainService, eventsConsumer: eventsConsumer)))
+        injector.injectMembers(this);
+        injector.getInstance(DatabaseHelper.class).initDb();
     }
 
-    @Override
-    protected UnitOfWorkDao<String> unitOfWorkDao() {
-        return unitOfWorkDao
-    }
+    // fixture
 
     final UUID itemId = UUID.randomUUID();
     final String itemDescription = "hammer"
@@ -108,9 +96,13 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
 
     static class MockedDomainServicesModule extends AbstractModule {
 
+        def SampleDomainService sampleDomainService
+        def Consumer<EventMessage> eventsConsumer
+
         @Override
         protected void configure() {
-            bind(SampleDomainService.class).toInstance(Mockito.mock(SampleDomainService.class));
+            bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance([eventsConsumer])
+            bind(SampleDomainService.class).toInstance(sampleDomainService);
         }
     }
 

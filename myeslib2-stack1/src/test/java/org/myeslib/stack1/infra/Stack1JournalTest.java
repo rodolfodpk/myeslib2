@@ -16,7 +16,9 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCre
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 import org.myeslib.stack1.infra.exceptions.InfraRuntimeException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -36,14 +38,19 @@ public class Stack1JournalTest {
     @Mock
     Consumer<EventMessage> sagaConsumer;
 
+    List<Consumer<EventMessage>> consumerList ;
+
     @Before
     public void init() throws Exception {
+        consumerList = new ArrayList<>();
+        consumerList.add(queryModelConsumer);
+        consumerList.add(sagaConsumer);
     }
 
     @Test
     public void singleCommandShouldWork() {
 
-        Stack1Journal store = new Stack1Journal(dao);
+        Stack1Journal<UUID> store = new Stack1Journal<>(dao);
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
 
@@ -59,7 +66,7 @@ public class Stack1JournalTest {
     @Test
     public void twoCommandsShouldWork() {
 
-        Stack1Journal store = new Stack1Journal(dao);
+        Stack1Journal<UUID> store = new Stack1Journal<>(dao);
 
         UUID id = UUID.randomUUID();
 
@@ -85,7 +92,7 @@ public class Stack1JournalTest {
     @Test
     public void onSuccessThenEventConsumersShouldReceiveEvents() {
 
-        Stack1Journal store = new Stack1Journal(dao, queryModelConsumer, sagaConsumer);
+        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
 
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
@@ -110,7 +117,7 @@ public class Stack1JournalTest {
     @Test
     public void onDaoExceptionConsumersShouldNotReceiveAnyEvent() {
 
-        Stack1Journal store = new Stack1Journal(dao, queryModelConsumer, sagaConsumer);
+        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
 
         IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
         UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));

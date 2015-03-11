@@ -32,6 +32,7 @@ import org.myeslib.stack1.infra.dao.config.UowSerialization;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 import org.skife.jdbi.v2.DBI;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -40,7 +41,6 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    @Named("inventory-item-cmd-bus")
     public EventBus commandBus(InventoryItemCmdSubscriber subscriber) {
         EventBus eventBus = new EventBus("inventoryItemCommandBus");
         eventBus.register(subscriber);
@@ -49,28 +49,8 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao,
-                                           @Named("saga-events-consumer") Consumer<EventMessage> sagaConsumer,
-                                           @Named("query-model-events-consumer") Consumer<EventMessage> queryModelConsumer) {
-        return new Stack1Journal<UUID>(dao, sagaConsumer, queryModelConsumer);
-    }
-
-    @Provides
-    @Singleton
-    @Named("query-model-events-consumer")
-    public Consumer<EventMessage> queryModelConsumer() {
-        return uuidUnitOfWorkMessage -> {
-            System.out.println("query-model-events-consumer received "+ uuidUnitOfWorkMessage);
-        };
-    }
-
-    @Provides
-    @Singleton
-    @Named("saga-events-consumer")
-    public Consumer<EventMessage> sagaConsumer() {
-        return uuidUnitOfWorkMessage -> {
-            System.out.println("saga-events-consumer received "+ uuidUnitOfWorkMessage);
-        };
+    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao, List<Consumer<EventMessage>> sagaConsumer) {
+        return new Stack1Journal<>(dao, sagaConsumer);
     }
 
     @Provides

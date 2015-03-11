@@ -1,13 +1,14 @@
 package org.myeslib.stack1.infra.dao;
 
 import com.google.common.collect.Lists;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
+import com.google.inject.*;
+import com.google.inject.util.Modules;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.myeslib.data.CommandId;
+import org.myeslib.data.EventMessage;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
@@ -21,6 +22,7 @@ import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -34,7 +36,14 @@ public class Stack1DaoTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        injector = Guice.createInjector(new InventoryItemModule());
+        final Consumer<EventMessage> mockConsumer = Mockito.mock(Consumer.class);
+        List<Consumer<EventMessage>> consumerList = Lists.newArrayList(mockConsumer);
+        injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance(consumerList);
+            }
+        }));
     }
 
     @Before
