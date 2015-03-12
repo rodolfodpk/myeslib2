@@ -5,20 +5,18 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.myeslib.data.*;
+import org.myeslib.data.Command;
+import org.myeslib.data.EventMessage;
+import org.myeslib.data.Snapshot;
+import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
-import sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
-import sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
-import sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
-import sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
-import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
-import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
-import sampledomain.services.SampleDomainService;
 import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1Reader;
@@ -29,6 +27,13 @@ import org.myeslib.stack1.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.config.UowSerialization;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 import org.skife.jdbi.v2.DBI;
+import sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
+import sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
+import sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
+import sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
+import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
+import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
+import sampledomain.services.SampleDomainService;
 
 import java.util.List;
 import java.util.UUID;
@@ -72,18 +77,6 @@ public class InventoryItemModule extends AbstractModule {
     @Singleton
     public DatabaseHelper databaseHelper(DBI dbi){
         return new DatabaseHelper(dbi, "database/V1__Create_inventory_item_tables.sql");
-    }
-
-    @Provides
-    @Singleton
-    public Supplier<UnitOfWorkId> supplierUowId() {
-        return () -> UnitOfWorkId.create(UUID.randomUUID());
-    }
-
-    @Provides
-    @Singleton
-    public Supplier<CommandId> supplierCmdId() {
-        return () -> CommandId.create(UUID.randomUUID());
     }
 
     @Provides

@@ -8,26 +8,23 @@ import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.InteractionContext;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 
 import javax.inject.Inject;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 @ThreadSafe
 public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
 
     final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
-    final Supplier<UnitOfWorkId> uowIdSupplier;
 
     @Inject
-    public IncreaseHandler(UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader, Supplier<UnitOfWorkId> uowIdSupplier) {
+    public IncreaseHandler(UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
-        this.uowIdSupplier = uowIdSupplier;
     }
 
     public void handle(IncreaseInventory command) {
@@ -36,7 +33,7 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.increase(command.howMany());
-        final UnitOfWork unitOfWork = UnitOfWork.create(uowIdSupplier.get(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
         journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
     }
 

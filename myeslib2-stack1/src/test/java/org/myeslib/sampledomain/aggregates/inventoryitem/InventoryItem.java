@@ -26,6 +26,7 @@ public class InventoryItem implements AggregateRoot {
     private UUID id;
     private String description;
     private Integer available = 0;
+
     private transient SampleDomainService service;
     private transient InteractionContext interactionContext;
 
@@ -62,7 +63,7 @@ public class InventoryItem implements AggregateRoot {
         checkArgument(id != null, "This item is not created and no operations can be executed on it");
     }
 
-    // events handlers (reflect the state)
+    // events handlers
 
     @Subscribe
     public void on(InventoryItemCreated event) {

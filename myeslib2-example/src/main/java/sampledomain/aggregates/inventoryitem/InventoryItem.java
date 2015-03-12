@@ -26,6 +26,7 @@ public class InventoryItem implements AggregateRoot {
     private UUID id;
     private String description;
     private Integer available = 0;
+
     private transient SampleDomainService service;
     private transient InteractionContext interactionContext;
 
