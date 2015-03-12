@@ -3,6 +3,7 @@ package org.myeslib.sampledomain.aggregates.inventoryitem;
 import com.google.common.eventbus.Subscribe;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
@@ -18,27 +19,13 @@ import java.util.UUID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder @Getter
+@Builder @Getter @Setter
 @EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
     private UUID id;
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setAvailable(Integer available) {
-        this.available = available;
-    }
-
     private String description;
     private Integer available = 0;
-
     private transient SampleDomainService service;
     private transient InteractionContext interactionContext;
 
@@ -93,22 +80,5 @@ public class InventoryItem implements AggregateRoot {
     public void on(InventoryDecreased event) {
         this.available = this.available - event.howMany();
     }
-
-    // setters
-
-    @Inject
-    public void setService(SampleDomainService service) {
-        this.service = service;
-    }
-
-    public void setInteractionContext(InteractionContext interactionContext) {
-        this.interactionContext = interactionContext;
-    }
-
-    // static factories
-
-//        public static InventoryItem create(UUID id, String description, Integer available) {
-//            return
-//        }
 
 }

@@ -19,19 +19,14 @@ import java.util.UUID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder @Getter
+@Builder @Getter @Setter
 @EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
-    @Setter
     private UUID id;
-    @Setter
     private String description;
-    @Setter
     private Integer available = 0;
-    @Setter
     private transient SampleDomainService service;
-    @Setter
     private transient InteractionContext interactionContext;
 
     // domain behaviour
