@@ -7,8 +7,8 @@ import lombok.ToString;
 import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.infra.InteractionContext;
 

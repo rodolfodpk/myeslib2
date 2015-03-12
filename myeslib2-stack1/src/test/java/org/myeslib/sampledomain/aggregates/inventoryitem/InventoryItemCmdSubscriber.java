@@ -4,11 +4,11 @@ import com.google.common.eventbus.Subscribe;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 
 import javax.inject.Inject;
 

@@ -4,34 +4,29 @@ import com.google.common.eventbus.EventBus
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Inject
-import com.google.inject.PrivateModule
-import com.google.inject.Provides
-import com.google.inject.Singleton
 import com.google.inject.TypeLiteral
-import com.google.inject.name.Named
 import com.google.inject.util.Modules
 import org.mockito.Mockito
 import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
-import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated
-import org.myeslib.sampledomain.services.SampleDomainService
 import org.myeslib.stack1.infra.dao.UnitOfWorkDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
-import org.skife.jdbi.v2.DBI
+import sampledomain.aggregates.inventoryitem.InventoryItemModule
+import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
+import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
+import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory
+import sampledomain.aggregates.inventoryitem.events.InventoryDecreased
+import sampledomain.aggregates.inventoryitem.events.InventoryIncreased
+import sampledomain.aggregates.inventoryitem.events.InventoryItemCreated
+import sampledomain.services.SampleDomainService
 
 import java.util.function.Consumer
 
 import static org.mockito.Mockito.any
 import static org.mockito.Mockito.when
 
-public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
+public class InventoryItemTest extends Stack1BaseSpec<UUID> {
 
     @Inject
     EventBus commandBus
@@ -40,7 +35,7 @@ public class SampleDomainSpec extends Stack1BaseSpec<UUID> {
     UnitOfWorkDao<UUID> unitOfWorkDao;
 
     def setup() {
-        def Consumer<EventMessage> eventsConsumer = Mock(Consumer)
+        def Consumer<EventMessage> eventsConsumer = Mockito.mock(Consumer.class)
         def sampleDomainService = Mockito.mock(SampleDomainService.class)
         when(sampleDomainService.generateItemDescription(any(UUID.class))).thenReturn(itemDescription)
         def injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new MockedDomainServicesModule(sampleDomainService: sampleDomainService, eventsConsumer: eventsConsumer)))

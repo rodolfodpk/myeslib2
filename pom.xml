@@ -10,12 +10,24 @@
     <packaging>pom</packaging>
 
     <properties>
-        <!-- default maven settings -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-        <build.date>${maven.build.timestamp}</build.date>
+
         <java.version>1.8</java.version>
         <guice.version>4.0-beta5</guice.version>
+        <cobertura.plugin.version>2.5.1</cobertura.plugin.version>
+        <groovy.version>2.0.5</groovy.version>
+        <junit.version>4.10</junit.version>
+        <lombok.version>1.14.0</lombok.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spock.version>0.7-groovy-2.0</spock.version>
+        <jmh.version>1.5</jmh.version>
+
+        <!-- default maven settings -->
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <build.date>${maven.build.timestamp}</build.date>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+
     </properties>
 
     <repositories>
@@ -32,6 +44,7 @@
     <modules>
         <module>myeslib2-core</module>
         <module>myeslib2-stack1</module>
+        <module>myeslib2-example</module>
     </modules>
 
     <dependencyManagement>
@@ -46,6 +59,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>myeslib2-stack1</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>myeslib2-example</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -75,6 +93,47 @@
                 <artifactId>guava</artifactId>
                 <version>18.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>1.7.8</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>2.2.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.4.178</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.3.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.auto.value</groupId>
+                <artifactId>auto-value</artifactId>
+                <version>1.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-assistedinject</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
 
             <!-- Test -->
             <dependency>
@@ -95,58 +154,6 @@
                 <version>1.9.5</version>
                 <scope>test</scope>
             </dependency>
-
-
-            <!-- Used in tests-->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>1.7.8</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.zaxxer</groupId>
-                <artifactId>HikariCP</artifactId>
-                <version>2.2.5</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>1.4.178</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.14.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.code.gson</groupId>
-                <artifactId>gson</artifactId>
-                <version>2.3.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.auto.value</groupId>
-                <artifactId>auto-value</artifactId>
-                <version>1.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject</groupId>
-                <artifactId>guice</artifactId>
-                <version>${guice.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.inject.extensions</groupId>
-                <artifactId>guice-assistedinject</artifactId>
-                <version>${guice.version}</version>
-                <scope>test</scope>
-            </dependency>
-
 
         </dependencies>
     </dependencyManagement>

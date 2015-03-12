@@ -8,8 +8,8 @@ import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.InteractionContext;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
+import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 

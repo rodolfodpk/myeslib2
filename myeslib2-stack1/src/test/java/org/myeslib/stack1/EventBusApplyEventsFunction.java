@@ -1,4 +1,4 @@
-package org.myeslib.stack1.infra;
+package org.myeslib.stack1;
 
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.data.Event;

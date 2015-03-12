@@ -1,4 +1,4 @@
-package org.myeslib.stack1.infra;
+package org.myeslib.stack1;
 
 import com.google.common.eventbus.EventBus;
 import org.myeslib.core.AggregateRoot;

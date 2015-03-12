@@ -12,7 +12,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @SuppressWarnings("serial")
 @Immutable
 @Deprecated
-public class Stack1GsonSnapshot<A extends AggregateRoot> implements Snapshot {
+public class Stack1GsonSnapshot<A extends AggregateRoot> implements Snapshot<A> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1GsonSnapshot.class);
 
