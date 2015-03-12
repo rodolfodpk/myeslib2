@@ -90,16 +90,6 @@
         </plugins>
     </build>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>${cobertura.plugin.version}</version>
-            </plugin>
-        </plugins>
-    </reporting>
-
     <dependencies>
 
         <!-- Own libs -->
