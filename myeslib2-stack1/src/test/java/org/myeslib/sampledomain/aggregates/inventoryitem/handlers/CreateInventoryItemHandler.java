@@ -15,7 +15,6 @@ import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 
 import javax.inject.Inject;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 @ThreadSafe
 public class CreateInventoryItemHandler implements CommandHandler<CreateInventoryItem> {
@@ -23,14 +22,12 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
     final SampleDomainService service;
     final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
-    final Supplier<UnitOfWorkId> uowIdSupplier;
 
     @Inject
-    public CreateInventoryItemHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader, Supplier<UnitOfWorkId> uowIdSupplier) {
+    public CreateInventoryItemHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.snapshotReader = snapshotReader;
         this.service = service;
         this.journal = journal;
-        this.uowIdSupplier = uowIdSupplier;
     }
 
     @Override
@@ -41,7 +38,7 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
         final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.create(command.targetId());
-        final UnitOfWork unitOfWork = UnitOfWork.create(uowIdSupplier.get(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+        final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
         journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
     }
 }

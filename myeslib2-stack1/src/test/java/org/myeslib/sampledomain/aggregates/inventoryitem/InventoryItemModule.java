@@ -76,18 +76,6 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public Supplier<UnitOfWorkId> supplierUowId() {
-        return () -> UnitOfWorkId.create(UUID.randomUUID());
-    }
-
-    @Provides
-    @Singleton
-    public Supplier<CommandId> supplierCmdId() {
-        return () -> CommandId.create(UUID.randomUUID());
-    }
-
-    @Provides
-    @Singleton
     public Kryo kryo() {
         return new Kryo();
     }
