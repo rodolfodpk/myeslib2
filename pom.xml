@@ -44,7 +44,8 @@
     <modules>
         <module>myeslib2-core</module>
         <module>myeslib2-stack1</module>
-        <module>myeslib2-example</module>
+        <module>myeslib2-example-api</module>
+        <module>myeslib2-example-client</module>
     </modules>
 
     <dependencyManagement>
@@ -63,11 +64,21 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-example</artifactId>
+                <artifactId>myeslib2-example-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>myeslib2-example-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <!-- Others -->
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>
+            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
