@@ -4,7 +4,7 @@
 
 This project is a work in progress so until any published release you may use https://jitpack.io
 
-1) Create a maven project for you first API then add this to your pom.xml. You may have myeslib-example-api as template.
+1) Create a maven project for you first API then add this to your pom.xml. You may have myeslib-example-api as template. Mandatory dependency:
 ```    
 <dependency>
     <groupId>com.github.rodolfodpk</groupId>
@@ -12,9 +12,9 @@ This project is a work in progress so until any published release you may use ht
     <version>${myeslib2.version}</version>
 </dependency>
 ```
-On this project you will create you aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses only slf4, lombok, autoValue (TODO: decide between these 2), javax.inject and guava only because https://code.google.com/p/guava-libraries/wiki/PreconditionsExplained
+On this project you will create you aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses only slf4, lombok, autoValue (TODO: decide between these 2), javax.inject and guava only because its preconditions API.
 
-2) Then create another project for you API client.  You may have myeslib-example-client as template.
+2) Then create another project for you API client.  You may have myeslib-example-client as template. Mandatory dependencies: you api project and also: 
 ```
 <dependency>
     <groupId>com.github.rodolfodpk</groupId>
