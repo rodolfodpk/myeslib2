@@ -12,7 +12,7 @@ This project is a work in progress so until any published release you may use ht
     <version>${myeslib2.version}</version>
 </dependency>
 ```
-On this project you will create you aggregate root and the respectives commands and command handlers. Try to minimize the dependencies here. The example uses only slf4, lombok, autoValue (TODO: decide between these 2), javax.inject and guava only because https://code.google.com/p/guava-libraries/wiki/PreconditionsExplained
+On this project you will create you aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses only slf4, lombok, autoValue (TODO: decide between these 2), javax.inject and guava only because https://code.google.com/p/guava-libraries/wiki/PreconditionsExplained
 
 2) Then create another project for you API client.  You may have myeslib-example-client as template.
 ```
