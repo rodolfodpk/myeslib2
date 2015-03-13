@@ -11,6 +11,7 @@ import org.myeslib.data.CommandId;
 import org.myeslib.data.EventMessage;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.infra.UnitOfWorkDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;

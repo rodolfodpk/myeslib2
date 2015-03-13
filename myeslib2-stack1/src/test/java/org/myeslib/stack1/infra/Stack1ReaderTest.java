@@ -13,6 +13,7 @@ import org.myeslib.data.Event;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
+import org.myeslib.infra.UnitOfWorkDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -21,7 +22,6 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCre
 import org.myeslib.data.CommandId;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;
 import org.myeslib.data.UnitOfWorkId;
-import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 
 import java.util.ArrayList;
 import java.util.Arrays;

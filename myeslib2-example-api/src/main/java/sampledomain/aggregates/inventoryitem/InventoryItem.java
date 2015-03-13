@@ -1,6 +1,5 @@
 package sampledomain.aggregates.inventoryitem;
 
-import com.google.common.eventbus.Subscribe;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -64,19 +63,16 @@ public class InventoryItem implements AggregateRoot {
 
     // events handlers (reflect the state)
 
-    @Subscribe
     public void on(InventoryItemCreated event) {
         this.id = event.id();
         this.description = event.description();
         this.available = 0;
     }
 
-    @Subscribe
     public void on(InventoryIncreased event) {
         this.available = this.available + event.howMany();
     }
 
-    @Subscribe
     public void on(InventoryDecreased event) {
         this.available = this.available - event.howMany();
     }

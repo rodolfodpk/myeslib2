@@ -1,4 +1,4 @@
-package org.myeslib.stack1.infra.dao;
+package org.myeslib.infra;
 
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;

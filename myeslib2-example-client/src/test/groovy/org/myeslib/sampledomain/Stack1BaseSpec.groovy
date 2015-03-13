@@ -3,7 +3,7 @@ package org.myeslib.sampledomain
 import com.google.common.eventbus.EventBus
 import org.myeslib.data.Event
 import org.myeslib.data.UnitOfWork
-import org.myeslib.stack1.infra.dao.UnitOfWorkDao
+import org.myeslib.infra.UnitOfWorkDao
 import spock.lang.Specification
 
 abstract class Stack1BaseSpec<K>  extends Specification {

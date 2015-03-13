@@ -6,9 +6,9 @@ import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.InteractionContext;
+import org.myeslib.infra.InteractionContextFactory;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import sampledomain.services.SampleDomainService;
@@ -19,12 +19,14 @@ import java.util.UUID;
 @ThreadSafe
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
 
+    final InteractionContextFactory<InventoryItem> interactionContextFactory;
     final SampleDomainService service;
     final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
     @Inject
-    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public CreateThenIncreaseThenDecreaseHandler(InteractionContextFactory<InventoryItem> interactionContextFactory, SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+        this.interactionContextFactory = interactionContextFactory;
         this.snapshotReader = snapshotReader;
         this.journal = journal;
         this.service = service;
@@ -35,7 +37,7 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
 
         final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
+        final InteractionContext interactionContext = interactionContextFactory.apply(aggregateRoot);
 
         aggregateRoot.setService(service); // if aggregateRoot uses many domain services, it could be using Guice to inject necessary services
         aggregateRoot.setInteractionContext(interactionContext);

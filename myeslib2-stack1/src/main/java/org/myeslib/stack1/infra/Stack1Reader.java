@@ -8,8 +8,8 @@ import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.Snapshot;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
+import org.myeslib.infra.UnitOfWorkDao;
 import org.myeslib.stack1.data.Stack1KryoSnapshot;
-import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,8 +1,8 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.data.*;
+import org.myeslib.infra.UnitOfWorkDao;
 import org.myeslib.infra.UnitOfWorkJournal;
-import org.myeslib.stack1.infra.dao.UnitOfWorkDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
