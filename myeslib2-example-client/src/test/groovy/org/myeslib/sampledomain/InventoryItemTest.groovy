@@ -10,10 +10,9 @@ import org.mockito.Mockito
 import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
-import org.myeslib.infra.InteractionContext
 import org.myeslib.infra.InteractionContextFactory
 import org.myeslib.infra.UnitOfWorkDao
-import org.myeslib.stack1.infra.MultiMethodInteractionContext
+import org.myeslib.stack1.infra.Stack1InteractionContextFactory
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import sampledomain.aggregates.inventoryitem.InventoryItem
 import sampledomain.aggregates.inventoryitem.InventoryItemModule
@@ -101,13 +100,9 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
         @Override
         protected void configure() {
             bind(new TypeLiteral<InteractionContextFactory<InventoryItem>>() {})
-                    .toInstance(new InteractionContextFactory<InventoryItem>() {
-                @Override
-                InteractionContext apply(InventoryItem inventoryItem) {
-                    return new MultiMethodInteractionContext(inventoryItem)
-                }
-            })
-            bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance([eventsConsumer])
+                    .toInstance(new Stack1InteractionContextFactory<InventoryItem>())
+            bind(new TypeLiteral<List<Consumer<EventMessage>>>() {})
+                    .toInstance([eventsConsumer])
             bind(SampleDomainService.class).toInstance(sampleDomainService);
         }
     }
