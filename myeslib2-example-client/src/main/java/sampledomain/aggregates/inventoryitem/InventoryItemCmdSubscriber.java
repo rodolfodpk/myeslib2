@@ -29,7 +29,11 @@ public class InventoryItemCmdSubscriber {
 
     @Subscribe
     public void on(CreateInventoryItem command) {
-        createInventoryItemHandler.handle(command);
+        try {
+            createInventoryItemHandler.handle(command);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Subscribe

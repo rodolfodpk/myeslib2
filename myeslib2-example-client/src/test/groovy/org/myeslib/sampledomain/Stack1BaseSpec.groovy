@@ -6,7 +6,8 @@ import org.myeslib.data.UnitOfWork
 import org.myeslib.infra.UnitOfWorkDao
 import spock.lang.Specification
 
-abstract class Stack1BaseSpec<K>  extends Specification {
+
+public abstract class Stack1BaseSpec<K> extends Specification {
 
     protected abstract EventBus getCommandBus()
 

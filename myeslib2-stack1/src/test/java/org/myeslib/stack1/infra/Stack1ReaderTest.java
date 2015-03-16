@@ -20,7 +20,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInvent
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 import org.myeslib.data.CommandId;
-import org.myeslib.stack1.data.Stack1KryoSnapshot;
+import org.myeslib.stack1.data.Stack1SpringBeanSnapshot;
 import org.myeslib.data.UnitOfWorkId;
 
 import java.util.ArrayList;
@@ -62,10 +62,10 @@ public class Stack1ReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, kryo);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction);
 
-        InventoryItem instance = InventoryItem.builder().build();
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1KryoSnapshot<>(instance, 0L, kryo);
+        InventoryItem instance =  new InventoryItem(id, "item1", 0, null, null);
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1SpringBeanSnapshot<>(instance, 0L);
         List<UnitOfWork> expectedHistory = new ArrayList<>();
         List<Event> expectedEvents = new ArrayList<>();
 
@@ -86,8 +86,8 @@ public class Stack1ReaderTest {
 
         UUID id = UUID.randomUUID();
 
-        InventoryItem expectedInstance = InventoryItem.builder().id(id).description("item1").available(0).build();
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1KryoSnapshot<>(expectedInstance, 1L, kryo);
+        InventoryItem expectedInstance = new InventoryItem(id, "item1", 0, null, null);
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1SpringBeanSnapshot<>(expectedInstance, 1L);
 
         CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), id);
         
@@ -100,7 +100,7 @@ public class Stack1ReaderTest {
         when(dao.getFull(id)).thenReturn(expectedHistory);
         when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, kryo);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
@@ -118,7 +118,7 @@ public class Stack1ReaderTest {
         Long expectedVersion = 1L;
         String expectedDescription = "item1";
 
-        InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
+        InventoryItem expectedInstance = new InventoryItem(id, expectedDescription, 0, null, null);
 
         CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), id);
         
@@ -127,14 +127,14 @@ public class Stack1ReaderTest {
         List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
         List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
 
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1KryoSnapshot<>(expectedInstance, expectedVersion, kryo);
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1SpringBeanSnapshot<>(expectedInstance, expectedVersion);
 
         cache.put(id, expectedSnapshot);
 
         when(dao.getPartial(id, expectedVersion)).thenReturn(expectedHistory);
         when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<UUID, InventoryItem>(supplier, dao, cache, applyEventsFunction, kryo);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<UUID, InventoryItem>(supplier, dao, cache, applyEventsFunction);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
@@ -153,9 +153,9 @@ public class Stack1ReaderTest {
         Long currentVersion = 1L;
         String expectedDescription = "item1";
 
-        InventoryItem currentInstance = InventoryItem.builder().id(id).description(expectedDescription).available(0).build();
+        InventoryItem currentInstance = new InventoryItem(id, expectedDescription, 0, null, null);
 
-        Snapshot<InventoryItem> currentSnapshot = new Stack1KryoSnapshot<>(currentInstance, currentVersion, kryo);
+        Snapshot<InventoryItem> currentSnapshot = new Stack1SpringBeanSnapshot<>(currentInstance, currentVersion);
 
         cache.put(id, currentSnapshot);
 
@@ -167,14 +167,14 @@ public class Stack1ReaderTest {
         List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());
 
         Long expectedVersion = 2L;
-        InventoryItem expectedInstance = InventoryItem.builder().id(id).description(expectedDescription).available(2).build();
+        InventoryItem expectedInstance = new InventoryItem(id, expectedDescription, 2, null, null);
 
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1KryoSnapshot<>(expectedInstance, expectedVersion, kryo);
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1SpringBeanSnapshot<>(expectedInstance, expectedVersion);
 
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
         when(applyEventsFunction.apply(currentInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, kryo);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 

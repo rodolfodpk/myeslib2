@@ -10,11 +10,8 @@ import org.mockito.Mockito
 import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
-import org.myeslib.infra.InteractionContextFactory
 import org.myeslib.infra.UnitOfWorkDao
-import org.myeslib.stack1.infra.Stack1InteractionContextFactory
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
-import sampledomain.aggregates.inventoryitem.InventoryItem
 import sampledomain.aggregates.inventoryitem.InventoryItemModule
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
@@ -64,7 +61,7 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
         when:
             command(IncreaseInventory.create(CommandId.create(), itemId, 10))
         then:
-            lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
+        allEvents(itemId) == [InventoryItemCreated.create(itemId, itemDescription), InventoryIncreased.create(10)]
     }
 
     def "decrease"() {
@@ -99,8 +96,6 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
 
         @Override
         protected void configure() {
-            bind(new TypeLiteral<InteractionContextFactory<InventoryItem>>() {})
-                    .toInstance(new Stack1InteractionContextFactory<InventoryItem>())
             bind(new TypeLiteral<List<Consumer<EventMessage>>>() {})
                     .toInstance([eventsConsumer])
             bind(SampleDomainService.class).toInstance(sampleDomainService);
@@ -108,3 +103,6 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
     }
 
 }
+
+
+

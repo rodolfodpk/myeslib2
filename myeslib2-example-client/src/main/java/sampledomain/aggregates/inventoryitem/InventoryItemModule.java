@@ -1,6 +1,5 @@
 package sampledomain.aggregates.inventoryitem;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
@@ -8,16 +7,17 @@ import com.google.gson.Gson;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.data.Command;
 import org.myeslib.data.EventMessage;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.infra.*;
+import org.myeslib.infra.ApplyEventsFunction;
+import org.myeslib.infra.SnapshotReader;
+import org.myeslib.infra.UnitOfWorkDao;
+import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1Reader;
 import org.myeslib.stack1.infra.dao.Stack1Dao;
@@ -37,7 +37,6 @@ import sampledomain.services.SampleDomainService;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class InventoryItemModule extends AbstractModule {
@@ -61,9 +60,8 @@ public class InventoryItemModule extends AbstractModule {
     public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
                                                               UnitOfWorkDao<UUID> dao,
                                                           Cache<UUID, Snapshot<InventoryItem>> cache,
-                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction,
-                                                          Kryo kryo ) {
-        return new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, kryo);
+                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction) {
+        return new Stack1Reader<>(supplier, dao, cache, applyEventsFunction);
     }
 
     @Provides
@@ -77,12 +75,6 @@ public class InventoryItemModule extends AbstractModule {
     @Singleton
     public DatabaseHelper databaseHelper(DBI dbi){
         return new DatabaseHelper(dbi, "database/V1__Create_inventory_item_tables.sql");
-    }
-
-    @Provides
-    @Singleton
-    public Kryo kryo() {
-        return new Kryo();
     }
 
     @Provides
@@ -106,8 +98,11 @@ public class InventoryItemModule extends AbstractModule {
     }
 
     @Provides
-    @Singleton
-    public Supplier<InventoryItem> supplier() { return () -> InventoryItem.builder().build(); }
+    public Supplier<InventoryItem> supplier(SampleDomainService sampleDomainService) {
+        final InventoryItem item = new InventoryItem();
+        item.setService(sampleDomainService);
+        return () -> item;
+    }
 
     @Provides
     @Singleton

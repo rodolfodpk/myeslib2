@@ -1,36 +1,42 @@
 package org.myeslib.stack1.data;
 
-import com.esotericsoftware.kryo.Kryo;
 import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.data.Snapshot;
+import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
-public class Stack1KryoSnapshot<A extends AggregateRoot> implements Snapshot<A> {
+public class Stack1SpringBeanSnapshot<A extends AggregateRoot> implements Snapshot<A> {
 
-    static final Logger logger = LoggerFactory.getLogger(Stack1KryoSnapshot.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1SpringBeanSnapshot.class);
 
     final A aggregateInstance;
     final Long version;
-    final transient Kryo kryo;
 
-    public Stack1KryoSnapshot(A aggregateInstance, Long version, Kryo kryo) {
+    public Stack1SpringBeanSnapshot(A aggregateInstance, Long version) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);
         this.version = version;
-        checkNotNull(kryo);
-        this.kryo = kryo;
     }
 
     @Override
     public A getAggregateInstance() {
-        return kryo.copy(aggregateInstance);
+        final A newInstance;
+        try {
+            newInstance = (A) aggregateInstance.getClass().newInstance();
+            BeanUtils.copyProperties(aggregateInstance, newInstance);
+            newInstance.setInteractionContext(new MultiMethodInteractionContext(newInstance));
+        } catch (Exception e) {
+            throw new RuntimeException(e.getCause());
+        }
+        return newInstance;
     }
 
     @Override
@@ -43,7 +49,7 @@ public class Stack1KryoSnapshot<A extends AggregateRoot> implements Snapshot<A> 
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Stack1KryoSnapshot snapshot = (Stack1KryoSnapshot) o;
+        Stack1SpringBeanSnapshot snapshot = (Stack1SpringBeanSnapshot) o;
 
         if (!aggregateInstance.equals(snapshot.aggregateInstance)) return false;
         if (!version.equals(snapshot.version)) return false;

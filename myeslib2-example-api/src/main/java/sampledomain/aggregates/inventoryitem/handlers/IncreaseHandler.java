@@ -5,8 +5,6 @@ import org.myeslib.core.CommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
-import org.myeslib.infra.InteractionContext;
-import org.myeslib.infra.InteractionContextFactory;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
@@ -18,13 +16,11 @@ import java.util.UUID;
 @ThreadSafe
 public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
 
-    final InteractionContextFactory<InventoryItem> interactionContextFactory;
     final UnitOfWorkJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
     @Inject
-    public IncreaseHandler(InteractionContextFactory<InventoryItem> interactionContextFactory, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
-        this.interactionContextFactory = interactionContextFactory;
+    public IncreaseHandler(UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
     }
@@ -32,10 +28,10 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
     public void handle(IncreaseInventory command) {
         final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final InteractionContext interactionContext = interactionContextFactory.apply(aggregateRoot);
-        aggregateRoot.setInteractionContext(interactionContext);
+
         aggregateRoot.increase(command.howMany());
-        final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());
+
+        final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getAppliedEvents());
         journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
     }
 

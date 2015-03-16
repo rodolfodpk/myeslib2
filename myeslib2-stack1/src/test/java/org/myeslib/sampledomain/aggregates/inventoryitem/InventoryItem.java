@@ -1,25 +1,20 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import com.google.common.eventbus.Subscribe;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Builder;
+import lombok.*;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
-import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.infra.InteractionContext;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
+import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
+import org.myeslib.sampledomain.services.SampleDomainService;
 
-import javax.inject.Inject;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder @Getter @Setter
+@Getter @Setter @AllArgsConstructor
 @EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
@@ -29,6 +24,8 @@ public class InventoryItem implements AggregateRoot {
 
     private transient SampleDomainService service;
     private transient InteractionContext interactionContext;
+
+    public InventoryItem() {}
 
     // domain behaviour
 

@@ -1,6 +1,5 @@
 package org.myeslib.stack1.infra;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.data.Event;
@@ -9,7 +8,7 @@ import org.myeslib.data.Snapshot;
 import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkDao;
-import org.myeslib.stack1.data.Stack1KryoSnapshot;
+import org.myeslib.stack1.data.Stack1SpringBeanSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,11 +28,10 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
     private final UnitOfWorkDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
     private final ApplyEventsFunction<A> applyEventsFunction;
-    private final Kryo kryo ;
 
     public Stack1Reader(Supplier<A> supplier, UnitOfWorkDao<K> dao,
-                        Cache<K, Snapshot<A>> cache, ApplyEventsFunction<A> ApplyEventsFunction,
-                        Kryo kryo) {
+                        Cache<K, Snapshot<A>> cache,
+                        ApplyEventsFunction<A> ApplyEventsFunction) {
         checkNotNull(supplier);
         this.supplier = supplier;
         checkNotNull(dao);
@@ -42,8 +40,6 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
         this.cache = cache;
         checkNotNull(ApplyEventsFunction);
         this.applyEventsFunction = ApplyEventsFunction;
-        checkNotNull(kryo);
-        this.kryo = kryo;
     }
 
     /*
@@ -60,7 +56,7 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
                 logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
                 final List<UnitOfWork> unitOfWorkList = dao.getFull(id);
-                return new Stack1KryoSnapshot<>(applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList)), lastVersion(unitOfWorkList), kryo);
+                return new Stack1SpringBeanSnapshot<A>(applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList)), lastVersion(unitOfWorkList));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
@@ -76,7 +72,8 @@ public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
         final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
-        final Snapshot<A> latestSnapshot = new Stack1KryoSnapshot<>(ar, lastVersion(partialTransactionHistory), kryo);
+ //       final Snapshot<A> latestSnapshot = new Stack1KryoSnapshot<>(ar, lastVersion(partialTransactionHistory), kryo);
+        final Snapshot<A> latestSnapshot = new Stack1SpringBeanSnapshot<>(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }

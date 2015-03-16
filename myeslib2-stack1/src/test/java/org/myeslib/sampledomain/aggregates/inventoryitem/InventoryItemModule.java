@@ -21,6 +21,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFa
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
+import org.myeslib.stack1.infra.MultiMethodInteractionContext;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1Reader;
 import org.myeslib.stack1.infra.dao.Stack1Dao;
@@ -56,9 +57,8 @@ public class InventoryItemModule extends AbstractModule {
     public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
                                                               UnitOfWorkDao<UUID> dao,
                                                           Cache<UUID, Snapshot<InventoryItem>> cache,
-                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction,
-                                                          Kryo kryo ) {
-        return new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, kryo);
+                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction) {
+        return new Stack1Reader<>(supplier, dao, cache, applyEventsFunction);
     }
 
     @Provides
@@ -101,8 +101,12 @@ public class InventoryItemModule extends AbstractModule {
     }
 
     @Provides
-    @Singleton
-    public Supplier<InventoryItem> supplier() { return () -> InventoryItem.builder().build(); }
+    public Supplier<InventoryItem> supplier(SampleDomainService sampleDomainService) {
+        final InventoryItem item = new InventoryItem();
+        item.setService(sampleDomainService);
+        item.setInteractionContext(new MultiMethodInteractionContext(item));
+        return () -> item;
+    }
 
     @Provides
     @Singleton

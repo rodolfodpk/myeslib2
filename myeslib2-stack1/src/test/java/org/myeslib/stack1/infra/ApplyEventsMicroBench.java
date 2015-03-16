@@ -34,7 +34,7 @@ public class ApplyEventsMicroBench {
 
         ApplyEventsFunction<InventoryItem> engine = new MultiMethodApplyEventsFunction<>();
 
-        InventoryItem item = InventoryItem.builder().build();
+        InventoryItem item = new InventoryItem();
 
         engine.apply(item, events());
 
@@ -48,7 +48,7 @@ public class ApplyEventsMicroBench {
 
         ApplyEventsFunction<InventoryItem> engine = new EventBusApplyEventsFunction<>();
 
-        InventoryItem item = InventoryItem.builder().build();
+        InventoryItem item = new InventoryItem();
 
         engine.apply(item, events());
 
