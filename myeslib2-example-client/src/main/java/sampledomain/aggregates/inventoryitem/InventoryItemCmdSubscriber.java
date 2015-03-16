@@ -29,11 +29,7 @@ public class InventoryItemCmdSubscriber {
 
     @Subscribe
     public void on(CreateInventoryItem command) {
-        try {
-            createInventoryItemHandler.handle(command);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        createInventoryItemHandler.handle(command);
     }
 
     @Subscribe
@@ -50,4 +46,5 @@ public class InventoryItemCmdSubscriber {
     public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
         createThenIncreaseThenDecreaseHandler.handle(command);
     }
+
 }

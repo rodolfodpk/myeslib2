@@ -61,7 +61,7 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
         when:
             command(IncreaseInventory.create(CommandId.create(), itemId, 10))
         then:
-        allEvents(itemId) == [InventoryItemCreated.create(itemId, itemDescription), InventoryIncreased.create(10)]
+            lastCmdEvents(itemId) == [InventoryIncreased.create(10)]
     }
 
     def "decrease"() {
@@ -90,10 +90,8 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
     }
 
     static class MockedDomainServicesModule extends AbstractModule {
-
         def SampleDomainService sampleDomainService
         def Consumer<EventMessage> eventsConsumer
-
         @Override
         protected void configure() {
             bind(new TypeLiteral<List<Consumer<EventMessage>>>() {})

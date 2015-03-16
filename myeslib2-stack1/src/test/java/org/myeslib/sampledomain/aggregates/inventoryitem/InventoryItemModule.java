@@ -1,24 +1,26 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
-import org.myeslib.data.*;
-import org.myeslib.infra.ApplyEventsFunction;
-import org.myeslib.infra.SnapshotReader;
-import org.myeslib.infra.UnitOfWorkDao;
-import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.data.Command;
+import org.myeslib.data.UnitOfWork;
+import org.myeslib.infra.*;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
+import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
-import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
 import org.myeslib.stack1.infra.MultiMethodInteractionContext;
@@ -31,12 +33,25 @@ import org.myeslib.stack1.infra.dao.config.UowSerialization;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 import org.skife.jdbi.v2.DBI;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class InventoryItemModule extends AbstractModule {
+
+    @Provides
+    public Supplier<InventoryItem> supplier() {
+        return InventoryItem::new;
+    }
+
+    @Provides
+    public Function<InventoryItem, InventoryItem> injector(SampleDomainService sampleDomainService) {
+        return item -> {
+            item.setService(sampleDomainService);
+            item.setInteractionContext(new MultiMethodInteractionContext(item));
+            return item;
+        };
+    }
 
     @Provides
     @Singleton
@@ -48,28 +63,6 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public UnitOfWorkJournal<UUID> journal(UnitOfWorkDao<UUID> dao, List<Consumer<EventMessage>> sagaConsumer) {
-        return new Stack1Journal<>(dao, sagaConsumer);
-    }
-
-    @Provides
-    @Singleton
-    public SnapshotReader<UUID, InventoryItem> snapshotReader(Supplier<InventoryItem> supplier,
-                                                              UnitOfWorkDao<UUID> dao,
-                                                          Cache<UUID, Snapshot<InventoryItem>> cache,
-                                                          ApplyEventsFunction<InventoryItem> applyEventsFunction) {
-        return new Stack1Reader<>(supplier, dao, cache, applyEventsFunction);
-    }
-
-    @Provides
-    @Singleton
-    public UnitOfWorkDao<UUID> dao(UowSerialization uowSer, CmdSerialization cmdSer,
-                             DbMetadata dbMetadata, DBI dbi) {
-        return new Stack1Dao<>(uowSer, cmdSer, dbMetadata, dbi);
-    }
-
-    @Provides
-    @Singleton
     public DatabaseHelper databaseHelper(DBI dbi){
         return new DatabaseHelper(dbi, "database/V1__Create_inventory_item_tables.sql");
     }
@@ -77,8 +70,11 @@ public class InventoryItemModule extends AbstractModule {
     @Provides
     @Singleton
     public Kryo kryo() {
-        return new Kryo();
+        Kryo kryo = new Kryo();
+        kryo.register(InventoryItem.class);
+        return kryo;
     }
+
 
     @Provides
     @Named("events-json")
@@ -98,14 +94,6 @@ public class InventoryItemModule extends AbstractModule {
     @Singleton
     Cache<UUID, Snapshot<InventoryItem>> cache(){
         return CacheBuilder.newBuilder().maximumSize(1000).build();
-    }
-
-    @Provides
-    public Supplier<InventoryItem> supplier(SampleDomainService sampleDomainService) {
-        final InventoryItem item = new InventoryItem();
-        item.setService(sampleDomainService);
-        item.setInteractionContext(new MultiMethodInteractionContext(item));
-        return () -> item;
     }
 
     @Provides
@@ -138,6 +126,14 @@ public class InventoryItemModule extends AbstractModule {
 
     @Override
     protected void configure() {
+
+        bind(new TypeLiteral<UnitOfWorkDao<UUID>>() {})
+                .to(new TypeLiteral<Stack1Dao<UUID>>() {}).asEagerSingleton();
+        bind(new TypeLiteral<UnitOfWorkJournal<UUID>>() {})
+                .to(new TypeLiteral<Stack1Journal<UUID>>() {}).asEagerSingleton();
+        bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {})
+                .to(new TypeLiteral<Stack1Reader<UUID, InventoryItem>>() {}).asEagerSingleton();
+
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
 

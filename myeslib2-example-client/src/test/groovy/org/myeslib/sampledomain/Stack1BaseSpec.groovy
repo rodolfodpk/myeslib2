@@ -20,13 +20,16 @@ public abstract class Stack1BaseSpec<K> extends Specification {
 
     protected List<Event> lastCmdEvents(K id) {
         def unitOfWorkList = getUnitOfWorkDao().getFull(id)
+        // println(" *** " + unitOfWorkList)
         def lastUnitOfWork = unitOfWorkList.last()
         def events = lastUnitOfWork.events
         events as List<Event>
     }
 
     protected List<Event> allEvents(K id) {
-        flatMap(getUnitOfWorkDao().getFull(id))
+        def events = flatMap(getUnitOfWorkDao().getFull(id))
+        // println(" *** " + events)
+        events as List<Event>
     }
 
     List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {

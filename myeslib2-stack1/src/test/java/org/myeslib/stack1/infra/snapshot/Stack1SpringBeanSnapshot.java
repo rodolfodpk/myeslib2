@@ -1,31 +1,34 @@
-package org.myeslib.stack1.data;
+package org.myeslib.stack1.infra.snapshot;
 
 import net.jcip.annotations.Immutable;
-import org.apache.commons.beanutils.BeanUtils;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.core.Saga;
-import org.myeslib.data.Snapshot;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
-import org.myeslib.stack1.infra.MultiMethodSagaInteractionContext;
+import org.myeslib.infra.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
-public class Stack1BeanUtilsSnapshot<A extends AggregateRoot> implements Snapshot<A> {
+@Deprecated
+public class Stack1SpringBeanSnapshot<A extends AggregateRoot> implements Snapshot<A> {
 
-    static final Logger logger = LoggerFactory.getLogger(Stack1BeanUtilsSnapshot.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1SpringBeanSnapshot.class);
 
     final A aggregateInstance;
     final Long version;
+    final Function<A, A> injectFunction;
 
-    public Stack1BeanUtilsSnapshot(A aggregateInstance, Long version) {
+    public Stack1SpringBeanSnapshot(A aggregateInstance, Long version, Function<A, A> injectFunction) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);
         this.version = version;
+        checkNotNull(injectFunction);
+        this.injectFunction = injectFunction;
     }
 
     @Override
@@ -33,19 +36,11 @@ public class Stack1BeanUtilsSnapshot<A extends AggregateRoot> implements Snapsho
         final A newInstance;
         try {
             newInstance = (A) aggregateInstance.getClass().newInstance();
-            BeanUtils.copyProperties(newInstance, aggregateInstance);
-            if (aggregateInstance instanceof AggregateRoot) {
-                newInstance.setInteractionContext(new MultiMethodInteractionContext(newInstance));
-            } else if (aggregateInstance instanceof Saga) {
-                newInstance.setInteractionContext(new MultiMethodSagaInteractionContext(newInstance));
-            } else {
-                throw new IllegalArgumentException("Class must be AggregateRoot or Saga");
-            }
-
+            BeanUtils.copyProperties(aggregateInstance, newInstance);
+            return injectFunction.apply(newInstance);
         } catch (Exception e) {
             throw new RuntimeException(e.getCause());
         }
-        return newInstance;
     }
 
     @Override
@@ -58,7 +53,7 @@ public class Stack1BeanUtilsSnapshot<A extends AggregateRoot> implements Snapsho
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Stack1BeanUtilsSnapshot snapshot = (Stack1BeanUtilsSnapshot) o;
+        Stack1SpringBeanSnapshot snapshot = (Stack1SpringBeanSnapshot) o;
 
         if (!aggregateInstance.equals(snapshot.aggregateInstance)) return false;
         if (!version.equals(snapshot.version)) return false;

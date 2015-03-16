@@ -1,7 +1,6 @@
 package org.myeslib.infra;
 
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.data.Snapshot;
 
 public interface SnapshotReader<K, A extends AggregateRoot> {
 

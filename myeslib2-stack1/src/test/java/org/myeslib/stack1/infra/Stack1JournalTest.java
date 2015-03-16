@@ -50,7 +50,7 @@ public class Stack1JournalTest {
     @Test
     public void singleCommandShouldWork() {
 
-        Stack1Journal<UUID> store = new Stack1Journal<>(dao);
+        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
 
@@ -66,7 +66,7 @@ public class Stack1JournalTest {
     @Test
     public void twoCommandsShouldWork() {
 
-        Stack1Journal<UUID> store = new Stack1Journal<>(dao);
+        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
 
         UUID id = UUID.randomUUID();
 

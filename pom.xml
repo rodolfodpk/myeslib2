@@ -140,6 +140,8 @@
                 <artifactId>guice</artifactId>
                 <version>${guice.version}</version>
             </dependency>
+
+            <!-- bean cloners / mappers -->
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
@@ -149,6 +151,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>4.1.5.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>uk.com.robust-it</groupId>
+                <artifactId>cloning</artifactId>
+                <version>1.9.1</version>
             </dependency>
 
             <!-- Test -->

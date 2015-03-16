@@ -21,12 +21,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
-    private UUID id;
-    private String description;
-    private Integer available = 0;
+    public UUID id;
+    public String description;
+    public Integer available = 0;
 
-    private transient SampleDomainService service;
-    private transient InteractionContext interactionContext;
+    transient SampleDomainService service;
+    transient InteractionContext interactionContext;
 
     public InventoryItem() {}
 

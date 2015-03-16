@@ -20,6 +20,7 @@ import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -39,6 +40,7 @@ public class Stack1Dao<K> implements UnitOfWorkDao<K> {
     private final DbMetadata dbMetadata;
     private final DBI dbi;
 
+    @Inject
     public Stack1Dao(UowSerialization uowSer, CmdSerialization cmdSer, DbMetadata dbMetadata, DBI dbi) {
         checkNotNull(uowSer);
         this.uowSer = uowSer;

@@ -1,44 +1,49 @@
-package org.myeslib.stack1.data;
+package org.myeslib.stack1.infra;
 
-import com.esotericsoftware.kryo.Kryo;
 import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.data.Snapshot;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.infra.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
-public class Stack1KryoSnapshot<A extends AggregateRoot> implements Snapshot<A> {
+public class Stack1Snapshot<A extends AggregateRoot> implements Snapshot<A> {
 
-    static final Logger logger = LoggerFactory.getLogger(Stack1KryoSnapshot.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1Snapshot.class);
 
     final A aggregateInstance;
     final Long version;
-    final transient Kryo kryo;
+    final Function<A, A> injectFunction;
 
-    public Stack1KryoSnapshot(A aggregateInstance, Long version, Kryo kryo) {
+    public Stack1Snapshot(A aggregateInstance, Long version, Function<A, A> injectFunction) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);
         this.version = version;
-        checkNotNull(kryo);
-        this.kryo = kryo;
+        checkNotNull(injectFunction);
+        this.injectFunction = injectFunction;
     }
 
     @Override
     public A getAggregateInstance() {
         final A newInstance;
         try {
-            newInstance = kryo.copy(aggregateInstance);
-            newInstance.setInteractionContext(new MultiMethodInteractionContext(newInstance));
+            newInstance = (A) aggregateInstance.getClass().newInstance();
+            Field[] fields = aggregateInstance.getClass().getFields();
+            for (Field field : fields) {
+                Object value = field.get(aggregateInstance);
+                field.set(newInstance, value);
+            }
+            return injectFunction.apply(newInstance);
         } catch (Exception e) {
             throw new RuntimeException(e.getCause());
         }
-        return newInstance;
     }
 
     @Override
@@ -51,7 +56,7 @@ public class Stack1KryoSnapshot<A extends AggregateRoot> implements Snapshot<A> 
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Stack1KryoSnapshot snapshot = (Stack1KryoSnapshot) o;
+        Stack1Snapshot snapshot = (Stack1Snapshot) o;
 
         if (!aggregateInstance.equals(snapshot.aggregateInstance)) return false;
         if (!version.equals(snapshot.version)) return false;
@@ -71,5 +76,9 @@ public class Stack1KryoSnapshot<A extends AggregateRoot> implements Snapshot<A> 
                 "aggregateInstance=" + aggregateInstance +
                 ", version=" + version +
                 '}';
+    }
+
+    public void doit() {
+
     }
 }

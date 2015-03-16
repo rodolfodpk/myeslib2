@@ -1,42 +1,47 @@
-package org.myeslib.stack1.data;
+package org.myeslib.stack1.infra.snapshot;
 
+import com.rits.cloning.Cloner;
 import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
-import org.myeslib.data.Snapshot;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.infra.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
+
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
-public class Stack1SpringBeanSnapshot<A extends AggregateRoot> implements Snapshot<A> {
+@Deprecated
+public class Stack1CloningSnapshot<A extends AggregateRoot> implements Snapshot<A> {
 
-    static final Logger logger = LoggerFactory.getLogger(Stack1SpringBeanSnapshot.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1CloningSnapshot.class);
 
     final A aggregateInstance;
     final Long version;
+    final Cloner cloner;
+    final Function<A, A> injectFunction;
 
-    public Stack1SpringBeanSnapshot(A aggregateInstance, Long version) {
+    public Stack1CloningSnapshot(A aggregateInstance, Long version, Function<A, A> injectFunction) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);
         this.version = version;
+        this.cloner = new Cloner();
+        this.cloner.setNullTransient(true);
+        this.injectFunction = injectFunction;
     }
 
     @Override
     public A getAggregateInstance() {
         final A newInstance;
         try {
-            newInstance = (A) aggregateInstance.getClass().newInstance();
-            BeanUtils.copyProperties(aggregateInstance, newInstance);
-            newInstance.setInteractionContext(new MultiMethodInteractionContext(newInstance));
+            newInstance = cloner.deepClone(aggregateInstance);
+            return injectFunction.apply(newInstance);
         } catch (Exception e) {
             throw new RuntimeException(e.getCause());
         }
-        return newInstance;
     }
 
     @Override
@@ -49,7 +54,7 @@ public class Stack1SpringBeanSnapshot<A extends AggregateRoot> implements Snapsh
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Stack1SpringBeanSnapshot snapshot = (Stack1SpringBeanSnapshot) o;
+        Stack1CloningSnapshot snapshot = (Stack1CloningSnapshot) o;
 
         if (!aggregateInstance.equals(snapshot.aggregateInstance)) return false;
         if (!version.equals(snapshot.version)) return false;
@@ -70,4 +75,5 @@ public class Stack1SpringBeanSnapshot<A extends AggregateRoot> implements Snapsh
                 ", version=" + version +
                 '}';
     }
+
 }
