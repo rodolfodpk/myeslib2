@@ -33,7 +33,7 @@ On this kind of project you will select the stack for things like JSON serializa
 
 Role       | implementation
 ---------- | --------------
-database   | h2
+database   | h2 in memory
 json ser/d | gson
 DI impl    | guice
 crqs/es    | myeslib2-stack1
