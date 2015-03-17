@@ -15,7 +15,7 @@ public interface AggregateRoot extends EventSourced {
         getInteractionContext().emit(event);
     }
 
-    default List<? extends Event> getEmittedEvents() {
+    default List<Event> getEmittedEvents() {
         return getInteractionContext().getEmittedEvents();
     }
 

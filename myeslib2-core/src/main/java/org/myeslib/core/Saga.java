@@ -16,7 +16,7 @@ public interface Saga extends EventSourced {
         getInteractionContext().emit(event);
     }
 
-    default List<? extends Event> getEmitedvents() {
+    default List<Event> getEmitedvents() {
         return getInteractionContext().getEmittedEvents();
     }
 
@@ -24,7 +24,7 @@ public interface Saga extends EventSourced {
         getInteractionContext().emit(command);
     }
 
-    default List<? extends Command> getEmitedCommands() {
+    default List<Command> getEmitedCommands() {
         return getInteractionContext().getEmittedCommands();
     }
 
