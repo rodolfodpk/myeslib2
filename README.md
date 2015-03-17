@@ -40,13 +40,13 @@ crqs/es    | myeslib2-stack1
 
 myeslib-stack1 is currently the only myeslib-core implementation. It has these dependencies:
 
-Role       | implementation
----------- | --------------
-logging    | sl4j
-DI         | javax.inject
-jdbc lib   | jdbi
-locl cache | guava 
-eventbus   | guava
+Role        | implementation
+----------- | --------------
+logging     | sl4j
+DI          | javax.inject
+jdbc lib    | jdbi
+local cache | guava 
+eventbus    | guava
 
 ## Testing 
 
