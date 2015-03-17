@@ -1,13 +1,14 @@
 package org.myeslib.stack1;
 
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
 import org.myeslib.infra.ApplyEventsFunction;
 
 import java.util.List;
 
 @Deprecated
-public class EventBusApplyEventsFunction<A extends AggregateRoot> implements ApplyEventsFunction<A> {
+public class EventBusApplyEventsFunction<A extends EventSourced> implements ApplyEventsFunction<A> {
 
     @Override
     public A apply(A a, List<Event> events) {
@@ -15,7 +16,7 @@ public class EventBusApplyEventsFunction<A extends AggregateRoot> implements App
         return a;
     }
 
-    private void _applyEventsOn(final AggregateRoot instance, final List<? extends Event> events) {
+    private void _applyEventsOn(final EventSourced instance, final List<? extends Event> events) {
         EventBusInteractionContext bus = new EventBusInteractionContext(instance);
         events.forEach(bus::emit);
     }
