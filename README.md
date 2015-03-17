@@ -32,11 +32,12 @@ fixjava    | lombok and autoValue (TODO decide about this)
 On this kind of project you will select the stack for things like JSON serialization, the target database and the dependency injection. For example, myeslib-example-client is using:
 
 Role       | implementation
----------- | --------------
-database   | h2 in memory
-json ser/d | gson
-DI impl    | guice
-crqs/es    | myeslib2-stack1
+------------- | --------------
+logging impl  | slf4j-simple
+database      | h2 in memory
+json serializ | gson
+DI impl       | guice
+crqs/es       | myeslib2-stack1
 
 myeslib-stack1 is currently the only myeslib-core implementation. It has these dependencies:
 
