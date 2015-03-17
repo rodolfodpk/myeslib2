@@ -86,7 +86,6 @@ public class InventoryItemModule extends AbstractModule {
         return CacheBuilder.newBuilder().maximumSize(1000).build();
     }
 
-
     @Provides
     @Singleton
     public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
