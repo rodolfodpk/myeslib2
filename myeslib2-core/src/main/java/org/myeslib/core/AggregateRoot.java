@@ -3,16 +3,20 @@ package org.myeslib.core;
 import org.myeslib.data.Event;
 import org.myeslib.infra.InteractionContext;
 
-import java.io.Serializable;
 import java.util.List;
 
-public interface AggregateRoot extends Serializable {
+public interface AggregateRoot extends EventSourced {
 
     InteractionContext getInteractionContext();
 
-    default List<? extends Event> getAppliedEvents() {
-       return getInteractionContext().getAppliedEvents();
+    void setInteractionContext(InteractionContext interactionContext);
+
+    default void emit(Event event) {
+        getInteractionContext().emit(event);
     }
 
-    void setInteractionContext(InteractionContext interactionContext);
+    default List<? extends Event> getEmittedEvents() {
+        return getInteractionContext().getEmittedEvents();
+    }
+
 }

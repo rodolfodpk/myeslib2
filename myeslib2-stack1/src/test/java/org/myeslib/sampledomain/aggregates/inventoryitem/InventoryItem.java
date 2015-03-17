@@ -32,18 +32,18 @@ public class InventoryItem implements AggregateRoot {
     public void create(UUID id) {
         isNew();
         hasAllRequiredServices();
-        interactionContext.apply(InventoryItemCreated.create(id, service.generateItemDescription(id)));
+        interactionContext.emit(InventoryItemCreated.create(id, service.generateItemDescription(id)));
     }
 
     public void increase(int howMany) {
         isCreated();
-        interactionContext.apply(InventoryIncreased.create(howMany));
+        interactionContext.emit(InventoryIncreased.create(howMany));
     }
 
     public void decrease(int howMany) {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
-        interactionContext.apply(InventoryDecreased.create(howMany));
+        interactionContext.emit(InventoryDecreased.create(howMany));
     }
 
     // guards

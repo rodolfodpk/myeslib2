@@ -1,8 +1,8 @@
 package org.myeslib.infra;
 
-import org.myeslib.core.AggregateRoot;
+import org.myeslib.core.EventSourced;
 
-public interface SnapshotReader<K, A extends AggregateRoot> {
+public interface SnapshotReader<K, A extends EventSourced> {
 
     public Snapshot<A> getSnapshot(final K id);
 

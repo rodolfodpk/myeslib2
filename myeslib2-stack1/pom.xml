@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.myeslib</groupId>
         <artifactId>myeslib2</artifactId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>myeslib2-stack1</artifactId>

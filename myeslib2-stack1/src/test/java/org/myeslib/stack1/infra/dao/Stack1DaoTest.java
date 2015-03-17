@@ -61,9 +61,9 @@ public class Stack1DaoTest {
 //
 //        IncreaseInventory command = IncreaseInventory.create(new CommandId(UUID.randomUUID()), new CommandId(UUID.randomUUID()), 1);
 //
-//        String asString = cmdSer.toStringFunction.apply(command);
+//        String asString = cmdSer.toStringFunction.emit(command);
 //
-//        Command cmd = cmdSer.fromStringFunction.apply(asString);
+//        Command cmd = cmdSer.fromStringFunction.emit(asString);
 //
 //        assertThat(command, is(cmd));
 //
@@ -78,9 +78,9 @@ public class Stack1DaoTest {
 //
 //        UnitOfWork unitOfWork = UnitOfWork.create(new CommandId(UUID.randomUUID()), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 //
-//        String asString = uowSer.toStringFunction.apply(unitOfWork);
+//        String asString = uowSer.toStringFunction.emit(unitOfWork);
 //
-//        UnitOfWork fromJson = uowSer.fromStringFunction.apply(asString);
+//        UnitOfWork fromJson = uowSer.fromStringFunction.emit(asString);
 //
 //        assertThat(unitOfWork, is(fromJson));
 //    }

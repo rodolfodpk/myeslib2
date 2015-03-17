@@ -4,13 +4,12 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.infra.InteractionContext;
 import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 import sampledomain.services.SampleDomainService;
-import org.myeslib.infra.InteractionContext;
 
 import java.util.UUID;
 
@@ -35,18 +34,18 @@ public class InventoryItem implements AggregateRoot {
     public void create(UUID id) {
         isNew();
         hasAllRequiredServices();
-        interactionContext.apply(InventoryItemCreated.create(id, service.generateItemDescription(id)));
+        emit(InventoryItemCreated.create(id, service.generateItemDescription(id)));
     }
 
     public void increase(int howMany) {
         isCreated();
-        interactionContext.apply(InventoryIncreased.create(howMany));
+        emit(InventoryIncreased.create(howMany));
     }
 
     public void decrease(int howMany) {
         isCreated();
         checkArgument(howMany <= available, "there aren't enough items available");
-        interactionContext.apply(InventoryDecreased.create(howMany));
+        emit(InventoryDecreased.create(howMany));
     }
 
     // guards

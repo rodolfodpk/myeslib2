@@ -34,7 +34,7 @@ public class DecreaseHandler implements CommandHandler<DecreaseInventory>, State
 
         aggregateRoot.decrease(command.howMany());
 
-        this.unitOfWork = Optional.of(UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getAppliedEvents()));
+        this.unitOfWork = Optional.of(UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getEmittedEvents()));
         journal.append(command.targetId(), command.getCommandId(), command, unitOfWork.get());
     }
 

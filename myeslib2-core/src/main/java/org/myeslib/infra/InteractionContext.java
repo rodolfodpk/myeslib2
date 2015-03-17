@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface InteractionContext {
 
-    void apply(Event event);
+    void emit(Event event);
 
-    List<Event> getAppliedEvents();
+    List<Event> getEmittedEvents();
 
 }

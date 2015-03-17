@@ -35,7 +35,7 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
         aggregateRoot.increase(command.howManyToIncrease());
         aggregateRoot.decrease(command.howManyToDecrease());
 
-        final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getAppliedEvents());
+        final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getEmittedEvents());
 
         journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
     }

@@ -4,21 +4,28 @@ import org.myeslib.data.Command;
 import org.myeslib.data.Event;
 import org.myeslib.infra.SagaInteractionContext;
 
-import java.io.Serializable;
 import java.util.List;
 
-public interface Saga extends Serializable {
+public interface Saga extends EventSourced {
 
     SagaInteractionContext getInteractionContext();
 
-    default List<? extends Event> getAppliedEvents() {
-        return getInteractionContext().getAppliedEvents();
+    void setInteractionContext(SagaInteractionContext interactionContext);
+
+    default void emit(Event event) {
+        getInteractionContext().emit(event);
+    }
+
+    default List<? extends Event> getEmitedvents() {
+        return getInteractionContext().getEmittedEvents();
+    }
+
+    default void emit(Command command) {
+        getInteractionContext().emit(command);
     }
 
     default List<? extends Command> getEmitedCommands() {
-        return getInteractionContext().getEmitedCommands();
+        return getInteractionContext().getEmittedCommands();
     }
-
-    void setInteractionContext(SagaInteractionContext interactionContext);
 
 }

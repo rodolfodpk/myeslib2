@@ -17,7 +17,7 @@ public class EventBusApplyEventsFunction<A extends AggregateRoot> implements App
 
     private void _applyEventsOn(final AggregateRoot instance, final List<? extends Event> events) {
         EventBusInteractionContext bus = new EventBusInteractionContext(instance);
-        events.forEach(bus::apply);
+        events.forEach(bus::emit);
     }
 
 }

@@ -8,6 +8,6 @@ public interface SagaInteractionContext extends InteractionContext {
 
     void emit(Command command);
 
-    List<Command> getEmitedCommands();
+    List<Command> getEmittedCommands();
 
 }
