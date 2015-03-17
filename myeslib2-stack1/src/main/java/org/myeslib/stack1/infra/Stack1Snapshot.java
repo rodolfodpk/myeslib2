@@ -2,6 +2,7 @@ package org.myeslib.stack1.infra;
 
 import net.jcip.annotations.Immutable;
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.core.EventSourced;
 import org.myeslib.infra.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
-public class Stack1Snapshot<A extends AggregateRoot> implements Snapshot<A> {
+public class Stack1Snapshot<A extends EventSourced> implements Snapshot<A> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1Snapshot.class);
 

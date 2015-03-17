@@ -2,6 +2,7 @@ package org.myeslib.stack1.infra;
 
 import com.google.common.cache.Cache;
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.Snapshot;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Stack1Reader<K, A extends AggregateRoot> implements SnapshotReader<K, A> {
+public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K, A> {
 
     private static final Logger logger = LoggerFactory.getLogger(Stack1Reader.class);
 
