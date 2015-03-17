@@ -45,7 +45,7 @@ Role       | implementation
 logging    | sl4j
 DI         | javax.inject
 jdbc lib   | jdbi
-cache      | guava 
+locl cache | guava 
 eventbus   | guava
 
 ## Testing 
