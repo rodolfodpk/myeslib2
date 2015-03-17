@@ -42,7 +42,7 @@ myeslib-stack1 is currently the only myeslib-core implementation. It has these d
 
 Role       | implementation
 ---------- | --------------
-database   | h2
+logging    | sl4j
 DI         | javax.inject
 jdbc lib   | jdbi
 eventbus   | guava
