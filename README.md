@@ -18,8 +18,8 @@ Role       | implementation
 ---------- | --------------
 logging    | sl4j
 DI         | javax.inject
-validation | Guava preconditions  
-fixjava    | Lombok and AutoValue (TODO decide about this)
+validation | guava preconditions  
+fixjava    | lombok and autoValue (TODO decide about this)
 
 2) Then create another project for your API client. You may have myeslib-example-client as template. Mandatory dependencies: your api project and also: 
 ```
@@ -33,9 +33,19 @@ On this kind of project you will select the stack for things like JSON serializa
 
 Role       | implementation
 ---------- | --------------
-database   | H2
+database   | h2
 json ser/d | gson
-DI impl    | Guice
+DI impl    | guice
+crqs/es    | myeslib2-stack1
+
+myeslib-stack1 is currently the only myeslib-core implementation. It has these dependencies:
+
+Role       | implementation
+---------- | --------------
+database   | h2
+DI         | javax.inject
+jdbc lib   | jdbi
+eventbus   | guava
 
 ## Testing 
 
