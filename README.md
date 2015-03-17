@@ -29,7 +29,7 @@ fixjava    | lombok and autoValue (TODO decide about this)
     <version>${myeslib2.version}</version>
 </dependency>
 ```
-On this kind of project you will select the stack for things like JSON serialization, the target database and the dependency injection. For example, myeslib-example-client is using:
+On this kind of project you will select your stack for things like JSON serialization, the target database and the dependency injection. For example, myeslib-example-client is using:
 
 Role       | implementation
 ------------- | --------------
