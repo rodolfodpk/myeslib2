@@ -12,7 +12,7 @@ This project is a work in progress so until any published release you may use ht
     <version>${myeslib2.version}</version>
 </dependency>
 ```
-On this project you will create you aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses:
+On this project you will create your aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses:
 
 Role       | implementation
 ---------- | --------------
@@ -21,7 +21,7 @@ DI         | javax.inject
 validation | Guava preconditions  
 fixjava    | Lombok and AutoValue (TODO decide about this)
 
-2) Then create another project for you API client.  You may have myeslib-example-client as template. Mandatory dependencies: you api project and also: 
+2) Then create another project for your API client. You may have myeslib-example-client as template. Mandatory dependencies: your api project and also: 
 ```
 <dependency>
     <groupId>com.github.rodolfodpk</groupId>
