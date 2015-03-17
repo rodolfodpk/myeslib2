@@ -12,7 +12,14 @@ This project is a work in progress so until any published release you may use ht
     <version>${myeslib2.version}</version>
 </dependency>
 ```
-On this project you will create you aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses only slf4, lombok, autoValue (TODO: decide between these 2), javax.inject and guava only because its preconditions API.
+On this project you will create you aggregate root and the respectives commands, events and command handlers. Try to minimize the dependencies here. The example uses:
+
+Role       | implementation
+---------- | --------------
+logging    | sl4j
+DI         | javax.inject
+validation | Guava preconditions  
+fixjava    | Lombok and AutoValue (TODO decide about this)
 
 2) Then create another project for you API client.  You may have myeslib-example-client as template. Mandatory dependencies: you api project and also: 
 ```
@@ -22,7 +29,13 @@ On this project you will create you aggregate root and the respectives commands,
     <version>${myeslib2.version}</version>
 </dependency>
 ```
-On this kind of project you will select the stack for things like JSON serialization, the target database and the dependency injection. For example, myeslib-example-client is using Gson, H2 and Guice.
+On this kind of project you will select the stack for things like JSON serialization, the target database and the dependency injection. For example, myeslib-example-client is using:
+
+Role       | implementation
+---------- | --------------
+database   | H2
+json ser/d | gson
+DI impl    | Guice
 
 ## Testing 
 
