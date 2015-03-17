@@ -32,7 +32,7 @@ public class ApplyEventsMicroBench {
     @Benchmark
     public void multiMethodEngine() {
 
-        ApplyEventsFunction<InventoryItem> engine = new MultiMethodApplyEventsFunction<>();
+        ApplyEventsFunction<InventoryItem> engine = new Stack1ApplyEventsFunction<>();
 
         InventoryItem item = new InventoryItem();
 

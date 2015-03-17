@@ -11,7 +11,7 @@ import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.stack1.infra.Stack1InteractionContext;
 
 import javax.inject.Inject;
 import java.util.UUID;
@@ -35,7 +35,7 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
 
         final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
+        final InteractionContext interactionContext = new Stack1InteractionContext(aggregateRoot);
 
         aggregateRoot.setService(service); // if aggregateRoot uses many domain services, it could be using Guice to inject necessary services
         aggregateRoot.setInteractionContext(interactionContext);

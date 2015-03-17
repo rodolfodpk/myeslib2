@@ -1,8 +1,9 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.core.AggregateRoot;
+import org.myeslib.data.Command;
 import org.myeslib.data.Event;
-import org.myeslib.infra.InteractionContext;
+import org.myeslib.infra.SagaInteractionContext;
 import org.myeslib.stack1.infra.helpers.MultiMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,18 +14,20 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class MultiMethodInteractionContext implements InteractionContext {
+public class Stack1SagaInteractionContext implements SagaInteractionContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(MultiMethodInteractionContext.class);
+    private static final Logger logger = LoggerFactory.getLogger(Stack1SagaInteractionContext.class);
     private final AggregateRoot aggregateRoot;
     private final MultiMethod mm ;
     private final List<Event> events;
+    private final List<Command> commands;
 
-    public MultiMethodInteractionContext(AggregateRoot aggregateRoot) {
-        this.mm = MultiMethod.getMultiMethod(aggregateRoot.getClass(), "on");
-        this.events = new ArrayList<>();
+    public Stack1SagaInteractionContext(AggregateRoot aggregateRoot) {
         checkNotNull(aggregateRoot);
         this.aggregateRoot = aggregateRoot;
+        this.mm = MultiMethod.getMultiMethod(aggregateRoot.getClass(), "on");
+        this.events = new ArrayList<>();
+        this.commands = new ArrayList<>();
     }
 
     @Override
@@ -47,5 +50,15 @@ public class MultiMethodInteractionContext implements InteractionContext {
         } catch (Exception e) {
             throw new RuntimeException("Error when applying events via reflection", e.getCause());
         }
+    }
+
+    @Override
+    public void emit(Command command) {
+        commands.add(command);
+    }
+
+    @Override
+    public List<Command> getEmitedCommands() {
+        return commands;
     }
 }

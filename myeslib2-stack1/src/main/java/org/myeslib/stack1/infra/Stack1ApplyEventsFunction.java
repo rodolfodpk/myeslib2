@@ -7,7 +7,7 @@ import org.myeslib.stack1.infra.helpers.MultiMethod;
 
 import java.util.List;
 
-public class MultiMethodApplyEventsFunction<A extends AggregateRoot> implements ApplyEventsFunction<A> {
+public class Stack1ApplyEventsFunction<A extends AggregateRoot> implements ApplyEventsFunction<A> {
 
     @Override
     public A apply(A a, List<Event> events) {

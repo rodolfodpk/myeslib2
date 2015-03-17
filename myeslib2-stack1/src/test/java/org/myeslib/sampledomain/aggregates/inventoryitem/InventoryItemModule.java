@@ -1,7 +1,6 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
@@ -22,8 +21,8 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncr
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
-import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
+import org.myeslib.stack1.infra.Stack1InteractionContext;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1Reader;
 import org.myeslib.stack1.infra.dao.Stack1Dao;
@@ -48,7 +47,7 @@ public class InventoryItemModule extends AbstractModule {
     public Function<InventoryItem, InventoryItem> injector(SampleDomainService sampleDomainService) {
         return item -> {
             item.setService(sampleDomainService);
-            item.setInteractionContext(new MultiMethodInteractionContext(item));
+            item.setInteractionContext(new Stack1InteractionContext(item));
             return item;
         };
     }
@@ -99,7 +98,7 @@ public class InventoryItemModule extends AbstractModule {
     @Provides
     @Singleton
     public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
-        return new MultiMethodApplyEventsFunction<>();
+        return new Stack1ApplyEventsFunction<>();
     }
 
     @Provides

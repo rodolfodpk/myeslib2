@@ -10,7 +10,7 @@ import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.stack1.infra.Stack1InteractionContext;
 
 import javax.inject.Inject;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
     public void handle(IncreaseInventory command) {
         final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
+        final InteractionContext interactionContext = new Stack1InteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.increase(command.howMany());
         final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents());

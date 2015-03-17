@@ -11,7 +11,7 @@ import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.UnitOfWorkJournal;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.stack1.infra.Stack1InteractionContext;
 
 import javax.inject.Inject;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class DecreaseHandler implements CommandHandler<DecreaseInventory>, State
     public void handle(DecreaseInventory command) {
         final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-        final InteractionContext interactionContext = new MultiMethodInteractionContext(aggregateRoot);
+        final InteractionContext interactionContext = new Stack1InteractionContext(aggregateRoot);
         aggregateRoot.setInteractionContext(interactionContext);
         aggregateRoot.decrease(command.howMany());
         this.unitOfWork = Optional.of(UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getAppliedEvents()));

@@ -14,8 +14,8 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.data.Command;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.*;
-import org.myeslib.stack1.infra.MultiMethodApplyEventsFunction;
-import org.myeslib.stack1.infra.MultiMethodInteractionContext;
+import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
+import org.myeslib.stack1.infra.Stack1InteractionContext;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1Reader;
 import org.myeslib.stack1.infra.dao.Stack1Dao;
@@ -47,7 +47,7 @@ public class InventoryItemModule extends AbstractModule {
     public Function<InventoryItem, InventoryItem> injector(SampleDomainService sampleDomainService) {
         return item -> {
             item.setService(sampleDomainService);
-            item.setInteractionContext(new MultiMethodInteractionContext(item));
+            item.setInteractionContext(new Stack1InteractionContext(item));
             return item;
         };
     }
@@ -90,7 +90,7 @@ public class InventoryItemModule extends AbstractModule {
     @Provides
     @Singleton
     public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
-        return new MultiMethodApplyEventsFunction<>();
+        return new Stack1ApplyEventsFunction<>();
     }
 
     @Provides
