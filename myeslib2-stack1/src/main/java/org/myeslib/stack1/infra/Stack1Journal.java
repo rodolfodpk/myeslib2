@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -35,7 +34,7 @@ public class Stack1Journal<K> implements UnitOfWorkJournal<K> {
             for (Consumer<EventMessage> consumer : consumers) {
                 logger.debug("consumer.post {}", unitOfWork);
                 for (Event event : unitOfWork.getEvents()) {
-                    consumer.accept(new EventMessage(EventId.create(), event));
+                    consumer.accept(new EventMessage(EventMessageId.create(), event));
                 }
             }
         } catch (Exception e) {

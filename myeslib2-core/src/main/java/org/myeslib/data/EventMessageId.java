@@ -5,11 +5,11 @@ import net.jcip.annotations.Immutable;
 import java.util.UUID;
 
 @Immutable
-public class EventId {
+public class EventMessageId {
 
     private final UUID uuid;
 
-    public EventId(UUID uuid) {
+    public EventMessageId(UUID uuid) {
         this.uuid =  uuid;
     }
 
@@ -17,12 +17,12 @@ public class EventId {
         return uuid;
     }
 
-    public static EventId create(UUID uuid) {
-        return new EventId(uuid);
+    public static EventMessageId create(UUID uuid) {
+        return new EventMessageId(uuid);
     }
 
-    public static EventId create() {
-        return new EventId(UUID.randomUUID());
+    public static EventMessageId create() {
+        return new EventMessageId(UUID.randomUUID());
     }
 
     public String toString() {
@@ -34,7 +34,7 @@ public class EventId {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        EventId commandId = (EventId) o;
+        EventMessageId commandId = (EventMessageId) o;
 
         if (!uuid.equals(commandId.uuid)) return false;
 
