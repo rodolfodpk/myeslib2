@@ -34,8 +34,9 @@ On this kind of project you will select your stack for things like JSON serializ
 Role       | implementation
 ------------- | --------------
 logging impl  | slf4j-simple
-database      | h2 in memory if using Stack1JdbiDao or guava's LinkedListMultimap if using Stack1MemDao
+sql dao       | h2 in memory if using Stack1JdbiDao 
 json serializ | gson (necessary only if using Stack1JdbiDao)
+in memory dao | guava's LinkedListMultimap if using Stack1MemDao
 DI impl       | guice
 crqs/es       | myeslib2-stack1
 
