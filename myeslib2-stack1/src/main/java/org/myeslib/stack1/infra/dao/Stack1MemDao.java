@@ -47,7 +47,7 @@ public class Stack1MemDao<K> implements WriteModelDao<K> {
     @Override
     public void append(K targetId, CommandId commandId, Command command, UnitOfWork unitOfWork) {
         if (uowMultiMap.containsKey(targetId)) {
-            UnitOfWork last = uowMultiMap.get(targetId).stream().reduce((previous, current) -> current).get();
+            final UnitOfWork last = uowMultiMap.get(targetId).stream().reduce((previous, current) -> current).get();
             if (unitOfWork.getVersion() != last.getVersion()+1) {
                 throw new ConcurrencyException("I got you !");
             }

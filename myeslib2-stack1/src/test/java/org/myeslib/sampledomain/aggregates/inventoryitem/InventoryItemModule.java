@@ -1,6 +1,5 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.eventbus.EventBus;
@@ -25,7 +24,7 @@ import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
 import org.myeslib.stack1.infra.Stack1InteractionContext;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1Reader;
-import org.myeslib.stack1.infra.dao.Stack1Dao;
+import org.myeslib.stack1.infra.dao.Stack1MemDao;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.config.UowSerialization;
@@ -65,15 +64,6 @@ public class InventoryItemModule extends AbstractModule {
     public DatabaseHelper databaseHelper(DBI dbi){
         return new DatabaseHelper(dbi, "database/V1__Create_inventory_item_tables.sql");
     }
-
-    @Provides
-    @Singleton
-    public Kryo kryo() {
-        Kryo kryo = new Kryo();
-        kryo.register(InventoryItem.class);
-        return kryo;
-    }
-
 
     @Provides
     @Named("events-json")
@@ -127,7 +117,7 @@ public class InventoryItemModule extends AbstractModule {
     protected void configure() {
 
         bind(new TypeLiteral<WriteModelDao<UUID>>() {})
-                .to(new TypeLiteral<Stack1Dao<UUID>>() {}).asEagerSingleton();
+                .to(new TypeLiteral<Stack1MemDao<UUID>>() {}).asEagerSingleton();
         bind(new TypeLiteral<WriteModelJournal<UUID>>() {})
                 .to(new TypeLiteral<Stack1Journal<UUID>>() {}).asEagerSingleton();
         bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {})

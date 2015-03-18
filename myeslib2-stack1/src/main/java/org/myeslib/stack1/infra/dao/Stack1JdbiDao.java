@@ -31,9 +31,9 @@ import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Stack1Dao<K> implements WriteModelDao<K> {
+public class Stack1JdbiDao<K> implements WriteModelDao<K> {
 
-    static final Logger logger = LoggerFactory.getLogger(Stack1Dao.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1JdbiDao.class);
 
     private final UowSerialization uowSer;
     private final CmdSerialization cmdSer;
@@ -41,7 +41,7 @@ public class Stack1Dao<K> implements WriteModelDao<K> {
     private final DBI dbi;
 
     @Inject
-    public Stack1Dao(UowSerialization uowSer, CmdSerialization cmdSer, DbMetadata dbMetadata, DBI dbi) {
+    public Stack1JdbiDao(UowSerialization uowSer, CmdSerialization cmdSer, DbMetadata dbMetadata, DBI dbi) {
         checkNotNull(uowSer);
         this.uowSer = uowSer;
         checkNotNull(cmdSer);

@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class Stack1DaoTest {
+public class Stack1JdbiDaoTest {
 
     @Inject
     WriteModelDao<UUID> dao;

@@ -11,6 +11,7 @@ import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
 import org.myeslib.infra.WriteModelDao
+import org.myeslib.stack1.infra.dao.Stack1JdbiDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import sampledomain.aggregates.inventoryitem.InventoryItemModule
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
@@ -94,9 +95,16 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
         def Consumer<EventMessage> eventsConsumer
         @Override
         protected void configure() {
+
             bind(new TypeLiteral<List<Consumer<EventMessage>>>() {})
                     .toInstance([eventsConsumer])
+
             bind(SampleDomainService.class).toInstance(sampleDomainService);
+
+            // If you want to persist to database, you may use Stack1JdbiDao instead of Stack1MemDao
+            // bind(new TypeLiteral<WriteModelDao<UUID>>() {})
+            //        .to(new TypeLiteral<Stack1JdbiDao<UUID>>() {}).asEagerSingleton();
+
         }
     }
 
