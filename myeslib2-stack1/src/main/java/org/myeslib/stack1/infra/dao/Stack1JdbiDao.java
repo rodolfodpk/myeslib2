@@ -42,13 +42,9 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
 
     @Inject
     public Stack1JdbiDao(UowSerialization uowSer, CmdSerialization cmdSer, DbMetadata dbMetadata, DBI dbi) {
-        checkNotNull(uowSer);
         this.uowSer = uowSer;
-        checkNotNull(cmdSer);
         this.cmdSer = cmdSer;
-        checkNotNull(dbMetadata);
         this.dbMetadata = dbMetadata;
-        checkNotNull(dbi);
         this.dbi = dbi;
     }
 

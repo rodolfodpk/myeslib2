@@ -13,7 +13,6 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Stack1MemDao<K> implements WriteModelDao<K> {
@@ -36,12 +35,7 @@ public class Stack1MemDao<K> implements WriteModelDao<K> {
 
     @Override
     public List<UnitOfWork> getPartial(K id, Long biggerThanThisVersion) {
-        return uowMultiMap.get(id).stream().filter(new Predicate<UnitOfWork>() {
-            @Override
-            public boolean test(UnitOfWork unitOfWork) {
-                return unitOfWork.getVersion() > biggerThanThisVersion;
-            }
-        }).collect(Collectors.toList());
+        return uowMultiMap.get(id).stream().filter((UnitOfWork unitOfWork) -> unitOfWork.getVersion() > biggerThanThisVersion).collect(Collectors.toList());
     }
 
     @Override
@@ -49,7 +43,7 @@ public class Stack1MemDao<K> implements WriteModelDao<K> {
         if (uowMultiMap.containsKey(targetId)) {
             final UnitOfWork last = uowMultiMap.get(targetId).stream().reduce((previous, current) -> current).get();
             if (unitOfWork.getVersion() != last.getVersion()+1) {
-                throw new ConcurrencyException("I got you !");
+                throw new ConcurrencyException("new version " + unitOfWork.getVersion() + " should be current version " + last.getVersion() + " +1 !");
             }
         }
         uowMultiMap.put(targetId, unitOfWork);
