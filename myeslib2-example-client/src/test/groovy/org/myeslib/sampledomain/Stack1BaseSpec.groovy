@@ -3,7 +3,7 @@ package org.myeslib.sampledomain
 import com.google.common.eventbus.EventBus
 import org.myeslib.data.Event
 import org.myeslib.data.UnitOfWork
-import org.myeslib.infra.UnitOfWorkDao
+import org.myeslib.infra.WriteModelDao
 import spock.lang.Specification
 
 
@@ -11,7 +11,7 @@ public abstract class Stack1BaseSpec<K> extends Specification {
 
     protected abstract EventBus getCommandBus()
 
-    protected abstract UnitOfWorkDao<K> getUnitOfWorkDao()
+    protected abstract WriteModelDao<K> getUnitOfWorkDao()
 
     protected <C> C command(C cmd) {
         getCommandBus().post(cmd)

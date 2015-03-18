@@ -1,8 +1,8 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.data.*;
-import org.myeslib.infra.UnitOfWorkDao;
-import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.infra.WriteModelDao;
+import org.myeslib.infra.WriteModelJournal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,15 +12,15 @@ import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Stack1Journal<K> implements UnitOfWorkJournal<K> {
+public class Stack1Journal<K> implements WriteModelJournal<K> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1Journal.class);
 
-    private final UnitOfWorkDao<K> dao;
+    private final WriteModelDao<K> dao;
     private final List<Consumer<EventMessage>> consumers;
 
     @Inject
-    public Stack1Journal(UnitOfWorkDao<K> dao, List<Consumer<EventMessage>> consumers) {
+    public Stack1Journal(WriteModelDao<K> dao, List<Consumer<EventMessage>> consumers) {
         checkNotNull(dao);
         this.dao = dao;
         checkNotNull(consumers);

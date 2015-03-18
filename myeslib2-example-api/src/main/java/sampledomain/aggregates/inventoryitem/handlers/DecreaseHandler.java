@@ -7,7 +7,7 @@ import org.myeslib.infra.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.SnapshotReader;
-import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.infra.WriteModelJournal;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 
@@ -18,12 +18,12 @@ import java.util.UUID;
 @NotThreadSafe
 public class DecreaseHandler implements CommandHandler<DecreaseInventory>, StatefulCommandHandler {
 
-    final UnitOfWorkJournal<UUID> journal;
+    final WriteModelJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
     private Optional<UnitOfWork> unitOfWork = Optional.empty();
 
     @Inject
-    public DecreaseHandler(UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public DecreaseHandler(WriteModelJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
     }

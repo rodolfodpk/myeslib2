@@ -6,7 +6,7 @@ import org.myeslib.infra.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.SnapshotReader;
-import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.infra.WriteModelJournal;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 
@@ -16,11 +16,11 @@ import java.util.UUID;
 @ThreadSafe
 public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
 
-    final UnitOfWorkJournal<UUID> journal;
+    final WriteModelJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
     @Inject
-    public IncreaseHandler(UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public IncreaseHandler(WriteModelJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
     }

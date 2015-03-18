@@ -7,7 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.*;
-import org.myeslib.infra.UnitOfWorkDao;
+import org.myeslib.infra.WriteModelDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 public class Stack1JournalTest {
 
     @Mock
-    UnitOfWorkDao<UUID> dao;
+    WriteModelDao<UUID> dao;
 
     @Mock
     Consumer<EventMessage> queryModelConsumer;

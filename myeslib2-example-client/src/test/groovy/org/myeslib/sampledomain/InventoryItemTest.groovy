@@ -10,7 +10,7 @@ import org.mockito.Mockito
 import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
-import org.myeslib.infra.UnitOfWorkDao
+import org.myeslib.infra.WriteModelDao
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import sampledomain.aggregates.inventoryitem.InventoryItemModule
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
@@ -32,7 +32,7 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
     EventBus commandBus
 
     @Inject
-    UnitOfWorkDao<UUID> unitOfWorkDao;
+    WriteModelDao<UUID> unitOfWorkDao;
 
     def setup() {
         def Consumer<EventMessage> eventsConsumer = Mockito.mock(Consumer.class)

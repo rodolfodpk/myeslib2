@@ -11,7 +11,7 @@ import org.myeslib.data.CommandId;
 import org.myeslib.data.EventMessage;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
-import org.myeslib.infra.UnitOfWorkDao;
+import org.myeslib.infra.WriteModelDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItemModule;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
 public class Stack1DaoTest {
 
     @Inject
-    UnitOfWorkDao<UUID> dao;
+    WriteModelDao<UUID> dao;
 
     static Injector injector;
 

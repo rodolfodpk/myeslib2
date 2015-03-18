@@ -7,7 +7,7 @@ import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.InteractionContext;
 import org.myeslib.infra.SnapshotReader;
-import org.myeslib.infra.UnitOfWorkJournal;
+import org.myeslib.infra.WriteModelJournal;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.services.SampleDomainService;
@@ -20,11 +20,11 @@ import java.util.UUID;
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
 
     final SampleDomainService service;
-    final UnitOfWorkJournal<UUID> journal;
+    final WriteModelJournal<UUID> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
     @Inject
-    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, UnitOfWorkJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public CreateThenIncreaseThenDecreaseHandler(SampleDomainService service, WriteModelJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.snapshotReader = snapshotReader;
         this.journal = journal;
         this.service = service;

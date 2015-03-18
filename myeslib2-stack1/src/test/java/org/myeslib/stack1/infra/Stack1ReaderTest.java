@@ -13,7 +13,7 @@ import org.myeslib.data.Event;
 import org.myeslib.infra.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.ApplyEventsFunction;
-import org.myeslib.infra.UnitOfWorkDao;
+import org.myeslib.infra.WriteModelDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -41,7 +41,7 @@ public class Stack1ReaderTest {
     Supplier<InventoryItem> supplier;
 
     @Mock
-    UnitOfWorkDao<UUID> dao;
+    WriteModelDao<UUID> dao;
 
     @Mock
     ApplyEventsFunction<InventoryItem> applyEventsFunction;

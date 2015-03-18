@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.infra.UnitOfWorkDao;
+import org.myeslib.infra.WriteModelDao;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.config.UowSerialization;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Stack1Dao<K> implements UnitOfWorkDao<K> {
+public class Stack1Dao<K> implements WriteModelDao<K> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1Dao.class);
 

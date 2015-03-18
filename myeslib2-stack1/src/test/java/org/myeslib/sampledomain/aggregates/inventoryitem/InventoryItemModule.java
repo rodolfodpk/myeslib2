@@ -126,9 +126,9 @@ public class InventoryItemModule extends AbstractModule {
     @Override
     protected void configure() {
 
-        bind(new TypeLiteral<UnitOfWorkDao<UUID>>() {})
+        bind(new TypeLiteral<WriteModelDao<UUID>>() {})
                 .to(new TypeLiteral<Stack1Dao<UUID>>() {}).asEagerSingleton();
-        bind(new TypeLiteral<UnitOfWorkJournal<UUID>>() {})
+        bind(new TypeLiteral<WriteModelJournal<UUID>>() {})
                 .to(new TypeLiteral<Stack1Journal<UUID>>() {}).asEagerSingleton();
         bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {})
                 .to(new TypeLiteral<Stack1Reader<UUID, InventoryItem>>() {}).asEagerSingleton();

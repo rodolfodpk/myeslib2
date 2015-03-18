@@ -6,7 +6,7 @@ import org.myeslib.data.UnitOfWork;
 
 import java.util.List;
 
-public interface UnitOfWorkDao<K> {
+public interface WriteModelDao<K> {
 
     List<UnitOfWork> getFull(K id);
 
