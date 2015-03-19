@@ -15,6 +15,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,6 +24,7 @@ public class SnapshotMicroBench {
 
     static Kryo kryo = new Kryo();
     static Gson gson = new Gson();
+    static Supplier<InventoryItem> supplier = InventoryItem::new;
     static Function<InventoryItem, InventoryItem> injectFunction = item -> item;
 
     public static void main(String[] args) throws RunnerException {
@@ -108,7 +110,7 @@ public class SnapshotMicroBench {
 
         final InventoryItem item =  create();
         final InventoryItem identicalItem = clone(item);
-        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 0L, injectFunction);
+        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 0L, supplier, injectFunction);
         assertThat(snapshot.getAggregateInstance(), is(item));
         final InventoryItem itemFromSnapshot = snapshot.getAggregateInstance();
         itemFromSnapshot.setDescription("notAnymore");

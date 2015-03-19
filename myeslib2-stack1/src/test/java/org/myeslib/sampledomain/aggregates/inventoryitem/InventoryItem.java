@@ -22,8 +22,8 @@ public class InventoryItem implements AggregateRoot {
     public String description;
     public Integer available = 0;
 
-    public transient SampleDomainService service;
-    public transient InteractionContext interactionContext;
+    transient SampleDomainService service;
+    transient InteractionContext interactionContext;
 
     public InventoryItem() {}
 

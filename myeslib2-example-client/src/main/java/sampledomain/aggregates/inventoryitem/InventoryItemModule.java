@@ -12,12 +12,10 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.data.Command;
+import org.myeslib.data.Event;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.*;
-import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
-import org.myeslib.stack1.infra.Stack1InteractionContext;
-import org.myeslib.stack1.infra.Stack1Journal;
-import org.myeslib.stack1.infra.Stack1Reader;
+import org.myeslib.stack1.infra.*;
 import org.myeslib.stack1.infra.dao.Stack1JdbiDao;
 import org.myeslib.stack1.infra.dao.Stack1MemDao;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
@@ -33,7 +31,9 @@ import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import sampledomain.services.SampleDomainService;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -51,6 +51,13 @@ public class InventoryItemModule extends AbstractModule {
             item.setInteractionContext(new Stack1InteractionContext(item));
             return item;
         };
+    }
+
+    @Provides
+    @Singleton
+    public SnapshotFactory<InventoryItem> snapshotFactory(final Supplier<InventoryItem> supplier,
+                                                          final Function<InventoryItem, InventoryItem> injectorFunction) {
+        return (eventSourced, version) -> new Stack1Snapshot<>(eventSourced, version, supplier, injectorFunction);
     }
 
     @Provides
@@ -89,12 +96,6 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
-        return new Stack1ApplyEventsFunction<>();
-    }
-
-    @Provides
-    @Singleton
     public DBI dbi() {
         return new DBI(JdbcConnectionPool.create("jdbc:h2:mem:test;MODE=Oracle", "scott", "tiger"));
     }
@@ -117,6 +118,9 @@ public class InventoryItemModule extends AbstractModule {
 
     @Override
     protected void configure() {
+
+        bind(new TypeLiteral<BiFunction<InventoryItem, List<Event>, InventoryItem>>() {})
+                .toInstance(new Stack1ApplyEventsFunction<>());
 
         bind(new TypeLiteral<WriteModelDao<UUID>>() {})
                 .to(new TypeLiteral<Stack1MemDao<UUID>>() {}).asEagerSingleton();

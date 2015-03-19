@@ -2,12 +2,12 @@ package org.myeslib.stack1.infra;
 
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
-import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.stack1.infra.helpers.MultiMethod;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
-public class Stack1ApplyEventsFunction<A extends EventSourced> implements ApplyEventsFunction<A> {
+public class Stack1ApplyEventsFunction<A extends EventSourced> implements BiFunction<A, List<Event>, A> {
 
     @Override
     public A apply(A a, List<Event> events) {

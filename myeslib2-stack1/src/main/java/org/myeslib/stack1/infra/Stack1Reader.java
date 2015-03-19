@@ -5,7 +5,6 @@ import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.Snapshot;
-import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.WriteModelDao;
 import org.slf4j.Logger;
@@ -15,6 +14,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -28,26 +28,21 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
     private final Supplier<A> supplier;
     private final WriteModelDao<K> dao;
     private final Cache<K, Snapshot<A>> cache;
-    private final ApplyEventsFunction<A> applyEventsFunction;
-    private final Function<A, A> injectFunction;
+    private final BiFunction<A, List<Event>, A> applyEventsFunction;
+    private final SnapshotFactory<A> snapshotFactory;
 
     @Inject
     public Stack1Reader(Supplier<A> supplier,
                         WriteModelDao<K> dao,
                         Cache<K, Snapshot<A>> cache,
-                        ApplyEventsFunction<A> ApplyEventsFunction,
-                        Function<A, A> injectFunction) {
+                        BiFunction<A, List<Event>, A> ApplyEventsFunction,
+                        SnapshotFactory<A> snapshotFactory) {
 
-        checkNotNull(supplier);
         this.supplier = supplier;
-        checkNotNull(dao);
         this.dao = dao;
-        checkNotNull(cache);
         this.cache = cache;
-        checkNotNull(ApplyEventsFunction);
         this.applyEventsFunction = ApplyEventsFunction;
-        checkNotNull(injectFunction);
-        this.injectFunction = injectFunction;
+        this.snapshotFactory = snapshotFactory;
     }
 
     /*
@@ -65,7 +60,7 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
                 wasDaoCalled.set(true);
                 final List<UnitOfWork> unitOfWorkList = dao.getFull(id);
                 final A currentSnapshot = applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList));
-                return new Stack1Snapshot<>(currentSnapshot, lastVersion(unitOfWorkList), injectFunction);
+                return snapshotFactory.create(currentSnapshot, lastVersion(unitOfWorkList));
             });
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
@@ -81,7 +76,7 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
         final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
-        final Snapshot<A> latestSnapshot = new Stack1Snapshot<>(ar, lastVersion(partialTransactionHistory), injectFunction);
+        final Snapshot<A> latestSnapshot = snapshotFactory.create(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }

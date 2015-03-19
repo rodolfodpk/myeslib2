@@ -4,16 +4,17 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.junit.Test;
 import org.myeslib.infra.Snapshot;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
-import org.myeslib.stack1.infra.Stack1Snapshot;
 
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class Stack1SnapshotTest {
 
+    final Supplier<InventoryItem> supplier = InventoryItem::new;
     final Function<InventoryItem, InventoryItem> injectFunction = item -> item;
 
     @Test
@@ -29,7 +30,7 @@ public class Stack1SnapshotTest {
     @Test
     public void getAggregateInstance() throws Exception {
         final InventoryItem item = create();
-        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 1L, injectFunction);
+        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 1L, supplier, injectFunction);
         assertThat(snapshot.getAggregateInstance(), is(item));
 
     }
@@ -37,22 +38,22 @@ public class Stack1SnapshotTest {
     @Test
     public void getVersion() throws Exception {
         final InventoryItem item = create();
-        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 1L, injectFunction);
+        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 1L, supplier, injectFunction);
         assertThat(snapshot.getVersion(), is(1L));
     }
 
     @Test
     public void equals() throws Exception {
         final InventoryItem item = create();
-        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 1L, injectFunction);
-        assertThat(snapshot.equals(new Stack1Snapshot<>(item, 1L, injectFunction)), is(true));
+        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 1L, supplier, injectFunction);
+        assertThat(snapshot.equals(new Stack1Snapshot<>(item, 1L, supplier, injectFunction)), is(true));
     }
 
     @Test
     public void mutatingAggregateDoesNotAffectSnapshot() throws Exception {
         final InventoryItem item = create();
         final InventoryItem identicalItem = (InventoryItem) BeanUtils.cloneBean(item);
-        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 0L, injectFunction);
+        final Snapshot<InventoryItem> snapshot = new Stack1Snapshot<>(item, 0L, supplier, injectFunction);
         assertThat(snapshot.getAggregateInstance(), is(item));
         final InventoryItem itemFromSnapshot = snapshot.getAggregateInstance();
         itemFromSnapshot.setDescription("notAnymore");

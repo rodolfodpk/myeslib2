@@ -1,14 +1,13 @@
 package org.myeslib.stack1;
 
-import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
-import org.myeslib.infra.ApplyEventsFunction;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 @Deprecated
-public class EventBusApplyEventsFunction<A extends EventSourced> implements ApplyEventsFunction<A> {
+public class EventBusApplyEventsFunction<A extends EventSourced> implements BiFunction<A, List<Event>, A> {
 
     @Override
     public A apply(A a, List<Event> events) {

@@ -1,7 +1,6 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.data.Event;
-import org.myeslib.infra.ApplyEventsFunction;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
@@ -16,6 +15,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 public class ApplyEventsMicroBench {
 
@@ -32,7 +32,7 @@ public class ApplyEventsMicroBench {
     @Benchmark
     public void multiMethodEngine() {
 
-        ApplyEventsFunction<InventoryItem> engine = new Stack1ApplyEventsFunction<>();
+        BiFunction<InventoryItem, List<Event>, InventoryItem> engine = new Stack1ApplyEventsFunction<>();
 
         InventoryItem item = new InventoryItem();
 
@@ -46,7 +46,7 @@ public class ApplyEventsMicroBench {
     @Benchmark
     public void eventBusEngine() {
 
-        ApplyEventsFunction<InventoryItem> engine = new EventBusApplyEventsFunction<>();
+        BiFunction<InventoryItem, List<Event>, InventoryItem> engine = new EventBusApplyEventsFunction<>();
 
         InventoryItem item = new InventoryItem();
 

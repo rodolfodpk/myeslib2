@@ -1,6 +1,5 @@
 package org.myeslib.stack1.infra;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
@@ -9,24 +8,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.myeslib.data.CommandId;
 import org.myeslib.data.Event;
-import org.myeslib.infra.Snapshot;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.infra.ApplyEventsFunction;
+import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.infra.Snapshot;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.sampledomain.aggregates.inventoryitem.InventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.data.CommandId;
-import org.myeslib.data.UnitOfWorkId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -38,61 +37,59 @@ import static org.mockito.Mockito.*;
 public class Stack1ReaderTest {
 
     @Mock
-    Supplier<InventoryItem> supplier;
-
-    @Mock
     WriteModelDao<UUID> dao;
-
     @Mock
-    ApplyEventsFunction<InventoryItem> applyEventsFunction;
+    BiFunction<InventoryItem, List<Event>, InventoryItem> applyEventsFunction;
+    @Mock
+    Supplier<InventoryItem> supplier ;
+    @Mock
+    SnapshotFactory<InventoryItem> snapshotFactory;
 
     Cache<UUID, Snapshot<InventoryItem>> cache;
-
-    Kryo kryo ;
-
-    final Function<InventoryItem, InventoryItem> injectFunction = item -> item;
+    Function<InventoryItem,InventoryItem> injectFunction;
 
     @Before
     public void init() throws Exception {
-        kryo = new Kryo();
-        kryo.register(InventoryItem.class);
         cache = CacheBuilder.newBuilder().maximumSize(1000).build();
+        injectFunction = (item) -> item;
     }
 
     @Test
-    public void lastSnapshotNullEmptyHistory() throws ExecutionException {
+    public void emptyCacheEmptyHistory() throws ExecutionException {
 
         UUID id = UUID.randomUUID();
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, injectFunction);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, snapshotFactory);
 
-        InventoryItem instance =  new InventoryItem(id, "item1", 0, null, null);
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(instance, 0L, injectFunction);
+        InventoryItem instance = new InventoryItem();
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(instance, 0L, supplier, injectFunction);
         List<UnitOfWork> expectedHistory = new ArrayList<>();
         List<Event> expectedEvents = new ArrayList<>();
 
-        when(supplier.get()).thenReturn(instance);
         when(dao.getFull(id)).thenReturn(expectedHistory);
-        when(applyEventsFunction.apply(instance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
+        when(supplier.get()).thenReturn(instance);
+        when(applyEventsFunction.apply(instance, expectedEvents)).thenReturn(instance);
+        when(snapshotFactory.create(instance, 0L)).thenReturn(expectedSnapshot);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
-        verify(supplier).get();
         verify(dao).getFull(id);
+        verify(supplier).get();
         verify(applyEventsFunction).apply(instance, expectedEvents);
+        verify(snapshotFactory).create(instance, 0L);
 
     }
 
     @Test
-    public void lastSnapshotNullWithHistory() {
+    public void emptyCacheWithHistory() {
 
         UUID id = UUID.randomUUID();
 
-        InventoryItem expectedInstance = new InventoryItem(id, "item1", 0, null, null);
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(expectedInstance, 1L, injectFunction);
+        InventoryItem expectedInstance = new InventoryItem();
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(expectedInstance, 1L, supplier, injectFunction);
 
         CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), id);
-        
+
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
         List<UnitOfWork> expectedHistory = Lists.newArrayList(newUow);
@@ -100,50 +97,32 @@ public class Stack1ReaderTest {
 
         when(supplier.get()).thenReturn(expectedInstance);
         when(dao.getFull(id)).thenReturn(expectedHistory);
-        when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
+        when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedInstance);
+        when(snapshotFactory.create(expectedInstance, 1L)).thenReturn(expectedSnapshot);
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, injectFunction);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, snapshotFactory);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
         verify(supplier).get();
         verify(dao).getFull(id);
         verify(applyEventsFunction).apply(expectedInstance, expectedEvents);
+        verify(snapshotFactory).create(expectedInstance, 1L);
 
     }
 
     @Test
-    public void lastSnapshotNotNullButUpToDate() {
+    public void hasCache() {
 
-        UUID id = UUID.randomUUID();
+        UUID itemId = UUID.randomUUID();
+        InventoryItem expectedInstance = new InventoryItem();
+        CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), itemId);
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(expectedInstance, 1L, supplier, injectFunction);
 
-        Long expectedVersion = 1L;
-        String expectedDescription = "item1";
+        cache.put(itemId, expectedSnapshot);
 
-        InventoryItem expectedInstance = new InventoryItem(id, expectedDescription, 0, null, null);
-
-        CreateInventoryItem command = CreateInventoryItem.create(CommandId.create(), id);
-        
-        UnitOfWork currentUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryItemCreated.create(id, expectedDescription)));
-
-        List<UnitOfWork> expectedHistory = Lists.newArrayList(currentUow);
-        List<Event> expectedEvents = new ArrayList<>(currentUow.getEvents());
-
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(expectedInstance, expectedVersion, injectFunction);
-
-        cache.put(id, expectedSnapshot);
-
-        when(dao.getPartial(id, expectedVersion)).thenReturn(expectedHistory);
-        when(applyEventsFunction.apply(expectedInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
-
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<UUID, InventoryItem>(supplier, dao, cache, applyEventsFunction, injectFunction);
-
-        assertThat(reader.getSnapshot(id), is(expectedSnapshot));
-
-        verify(supplier, times(0)).get();
-        verify(dao, times(1)).getPartial(id, expectedVersion);
-        verify(dao, times(0)).getFull(id);
-        verify(applyEventsFunction).apply(expectedInstance, expectedEvents);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, snapshotFactory);
+        assertThat(reader.getSnapshot(itemId), is(expectedSnapshot));
 
     }
 
@@ -156,34 +135,33 @@ public class Stack1ReaderTest {
         String expectedDescription = "item1";
 
         InventoryItem currentInstance = new InventoryItem(id, expectedDescription, 0, null, null);
-
-        Snapshot<InventoryItem> currentSnapshot = new Stack1Snapshot<>(currentInstance, currentVersion, injectFunction);
-
+        Snapshot<InventoryItem> currentSnapshot = new Stack1Snapshot<>(currentInstance, currentVersion, supplier, injectFunction);
         cache.put(id, currentSnapshot);
 
         IncreaseInventory command = IncreaseInventory.create(CommandId.create(), id, 2);
-
         UnitOfWork partialUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), currentVersion, Arrays.asList(InventoryIncreased.create(2)));
-
         List<UnitOfWork> remainingHistory = Lists.newArrayList(partialUow);
-        List<Event> expectedEvents = new ArrayList<>(partialUow.getEvents());
+        List<Event> remainingEvents = new ArrayList<>(partialUow.getEvents());
 
         Long expectedVersion = 2L;
         InventoryItem expectedInstance = new InventoryItem(id, expectedDescription, 2, null, null);
 
-        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(expectedInstance, expectedVersion, injectFunction);
+        Snapshot<InventoryItem> expectedSnapshot = new Stack1Snapshot<>(expectedInstance, expectedVersion, supplier, injectFunction);
 
+        when(supplier.get()).thenReturn(new InventoryItem());
         when(dao.getPartial(id, currentVersion)).thenReturn(remainingHistory);
-        when(applyEventsFunction.apply(currentInstance, expectedEvents)).thenReturn(expectedSnapshot.getAggregateInstance());
+        when(applyEventsFunction.apply(currentInstance, remainingEvents)).thenReturn(expectedInstance);
+        when(snapshotFactory.create(expectedInstance, 2L)).thenReturn(expectedSnapshot);
 
-        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, injectFunction);
+        Stack1Reader<UUID, InventoryItem> reader = new Stack1Reader<>(supplier, dao, cache, applyEventsFunction, snapshotFactory);
 
         assertThat(reader.getSnapshot(id), is(expectedSnapshot));
 
-        verify(supplier, times(0)).get();
+        verify(supplier).get();
         verify(dao, times(1)).getPartial(id, currentVersion);
-        verify(dao, times(0)).getFull(id);
-        verify(applyEventsFunction).apply(currentInstance, expectedEvents);
+        verify(applyEventsFunction).apply(currentInstance, remainingEvents);
+        verify(snapshotFactory).create(expectedInstance, 2L);
+        verifyNoMoreInteractions(supplier, dao, applyEventsFunction, snapshotFactory);
 
     }
 

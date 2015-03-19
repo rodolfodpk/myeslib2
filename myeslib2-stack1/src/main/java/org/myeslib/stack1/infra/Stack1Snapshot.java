@@ -1,14 +1,15 @@
 package org.myeslib.stack1.infra;
 
 import net.jcip.annotations.Immutable;
-import org.myeslib.core.AggregateRoot;
 import org.myeslib.core.EventSourced;
 import org.myeslib.infra.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -20,29 +21,36 @@ public class Stack1Snapshot<A extends EventSourced> implements Snapshot<A> {
 
     final A aggregateInstance;
     final Long version;
+    final Supplier<A> supplier;
     final Function<A, A> injectFunction;
 
-    public Stack1Snapshot(A aggregateInstance, Long version, Function<A, A> injectFunction) {
+    public Stack1Snapshot(A aggregateInstance, Long version, Supplier<A> supplier, Function<A, A> injectFunction) {
         checkNotNull(aggregateInstance);
         this.aggregateInstance = aggregateInstance;
         checkNotNull(version);
         this.version = version;
+        checkNotNull(supplier);
+        this.supplier = supplier;
         checkNotNull(injectFunction);
         this.injectFunction = injectFunction;
     }
 
     @Override
     public A getAggregateInstance() {
-        final A newInstance;
+        final A newInstance = supplier.get();
         try {
-            newInstance = (A) aggregateInstance.getClass().newInstance();
-            Field[] fields = aggregateInstance.getClass().getFields();
+            final Field[] fields = aggregateInstance.getClass().getFields();
             for (Field field : fields) {
                 Object value = field.get(aggregateInstance);
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+                logger.info("will set value {} to field {} ", value, field);
                 field.set(newInstance, value);
             }
             return injectFunction.apply(newInstance);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e.getCause());
         }
     }
@@ -79,7 +87,4 @@ public class Stack1Snapshot<A extends EventSourced> implements Snapshot<A> {
                 '}';
     }
 
-    public void doit() {
-
-    }
 }

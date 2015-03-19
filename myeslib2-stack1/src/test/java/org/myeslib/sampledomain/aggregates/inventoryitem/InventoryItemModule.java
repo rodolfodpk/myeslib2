@@ -11,6 +11,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.data.Command;
+import org.myeslib.data.Event;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.*;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
@@ -20,10 +21,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncr
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
-import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
-import org.myeslib.stack1.infra.Stack1InteractionContext;
-import org.myeslib.stack1.infra.Stack1Journal;
-import org.myeslib.stack1.infra.Stack1Reader;
+import org.myeslib.stack1.infra.*;
 import org.myeslib.stack1.infra.dao.Stack1MemDao;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
@@ -31,7 +29,9 @@ import org.myeslib.stack1.infra.dao.config.UowSerialization;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 import org.skife.jdbi.v2.DBI;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -43,12 +43,25 @@ public class InventoryItemModule extends AbstractModule {
     }
 
     @Provides
-    public Function<InventoryItem, InventoryItem> injector(SampleDomainService sampleDomainService) {
+    public Function<InventoryItem, InventoryItem> injectorFunction(SampleDomainService sampleDomainService) {
         return item -> {
             item.setService(sampleDomainService);
             item.setInteractionContext(new Stack1InteractionContext(item));
             return item;
         };
+    }
+
+    @Provides
+    @Singleton
+    public SnapshotFactory<InventoryItem> snapshotFactory(final Supplier<InventoryItem> supplier,
+                                                          final Function<InventoryItem, InventoryItem> injectorFunction) {
+        return (eventSourced, version) -> new Stack1Snapshot<>(eventSourced, version, supplier, injectorFunction);
+    }
+
+    @Provides
+    @Singleton
+    public BiFunction<InventoryItem, List<Event>, InventoryItem> applyEventsFunction() {
+        return new Stack1ApplyEventsFunction<>();
     }
 
     @Provides
@@ -83,12 +96,6 @@ public class InventoryItemModule extends AbstractModule {
     @Singleton
     Cache<UUID, Snapshot<InventoryItem>> cache(){
         return CacheBuilder.newBuilder().maximumSize(1000).build();
-    }
-
-    @Provides
-    @Singleton
-    public ApplyEventsFunction<InventoryItem> applyEventsFunction() {
-        return new Stack1ApplyEventsFunction<>();
     }
 
     @Provides
