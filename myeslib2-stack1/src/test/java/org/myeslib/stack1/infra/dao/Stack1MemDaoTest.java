@@ -62,7 +62,7 @@ public class Stack1MemDaoTest {
 
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
 
-        dao.append(command.targetId(), command.getCommandId(), command, newUow);
+        dao.append(command.targetId(), command, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
@@ -83,8 +83,8 @@ public class Stack1MemDaoTest {
         UnitOfWork existingUow = UnitOfWork.create(UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create(1)));
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        dao.append(command1.targetId(), command1.getCommandId(), command1, existingUow);
-        dao.append(command2.targetId(), command2.getCommandId(), command2, newUow);
+        dao.append(command1.targetId(), command1, existingUow);
+        dao.append(command2.targetId(), command2, newUow);
 
         List<UnitOfWork> fromDb = dao.getFull(id);
 
@@ -106,11 +106,11 @@ public class Stack1MemDaoTest {
 
         UnitOfWork existingUow = UnitOfWork.create(UnitOfWorkId.create(), command1.getCommandId(), 0L, Arrays.asList(InventoryIncreased.create((1))));
 
-        dao.append(id, command1.getCommandId(), command1, existingUow);
+        dao.append(id, command1, existingUow);
 
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command2.getCommandId(), 0L, Arrays.asList(InventoryDecreased.create((1))));
 
-        dao.append(command2.targetId(), command2.getCommandId(), command2, newUow);
+        dao.append(command2.targetId(), command2, newUow);
 
     }
 

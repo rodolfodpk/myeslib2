@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class Stack1MemDao<K> implements WriteModelDao<K> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1MemDao.class);
@@ -39,7 +42,11 @@ public class Stack1MemDao<K> implements WriteModelDao<K> {
     }
 
     @Override
-    public void append(K targetId, CommandId commandId, Command command, UnitOfWork unitOfWork) {
+    public void append(K targetId, Command command, UnitOfWork unitOfWork) {
+        checkNotNull(targetId);
+        checkNotNull(command);
+        checkNotNull(unitOfWork);
+        checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
         if (uowMultiMap.containsKey(targetId)) {
             final UnitOfWork last = uowMultiMap.get(targetId).stream().reduce((previous, current) -> current).get();
             if (unitOfWork.getVersion() != last.getVersion()+1) {
@@ -47,7 +54,7 @@ public class Stack1MemDao<K> implements WriteModelDao<K> {
             }
         }
         uowMultiMap.put(targetId, unitOfWork);
-        commandsMap.put(commandId, command);
+        commandsMap.put(command.getCommandId(), command);
     }
 
     @Override

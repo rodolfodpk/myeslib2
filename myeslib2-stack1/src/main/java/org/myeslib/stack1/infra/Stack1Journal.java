@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Stack1Journal<K> implements WriteModelJournal<K> {
@@ -21,24 +22,22 @@ public class Stack1Journal<K> implements WriteModelJournal<K> {
 
     @Inject
     public Stack1Journal(WriteModelDao<K> dao, List<Consumer<EventMessage>> consumers) {
-        checkNotNull(dao);
         this.dao = dao;
-        checkNotNull(consumers);
         this.consumers = consumers;
     }
 
     @Override
-    public void append(K targetId, CommandId commandId, Command command, UnitOfWork unitOfWork) {
-        try {
-            dao.append(targetId, commandId, command, unitOfWork);
-            for (Consumer<EventMessage> consumer : consumers) {
-                logger.debug("consumer.post {}", unitOfWork);
-                for (Event event : unitOfWork.getEvents()) {
-                    consumer.accept(new EventMessage(EventMessageId.create(), event));
-                }
+    public void append(K targetId, Command command, UnitOfWork unitOfWork) {
+        checkNotNull(targetId);
+        checkNotNull(command);
+        checkNotNull(unitOfWork);
+        checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
+        dao.append(targetId, command, unitOfWork);
+        for (Consumer<EventMessage> consumer : consumers) {
+            logger.debug("consumer.post {}", unitOfWork);
+            for (Event event : unitOfWork.getEvents()) {
+                consumer.accept(new EventMessage(EventMessageId.create(), event));
             }
-        } catch (Exception e) {
-            throw e ;
         }
     }
 

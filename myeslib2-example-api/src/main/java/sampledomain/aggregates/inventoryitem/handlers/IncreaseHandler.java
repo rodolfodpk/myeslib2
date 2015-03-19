@@ -32,7 +32,7 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
         aggregateRoot.increase(command.howMany());
 
         final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getEmittedEvents());
-        journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
+        journal.append(command.targetId(), command, unitOfWork);
     }
 
 }

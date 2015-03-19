@@ -12,7 +12,7 @@ public interface WriteModelDao<K> {
 
     List<UnitOfWork> getPartial(K id, Long biggerThanThisVersion);
 
-    void append(K targetId, CommandId commandId, Command command, UnitOfWork unitOfWork);
+    void append(K targetId, Command command, UnitOfWork unitOfWork);
 
     Command getCommand(CommandId commandId);
 }

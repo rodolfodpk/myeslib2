@@ -33,6 +33,6 @@ public class CreateInventoryItemHandler implements CommandHandler<CreateInventor
         aggregateRoot.create(command.targetId());
 
         final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getEmittedEvents());
-        journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
+        journal.append(command.targetId(), command, unitOfWork);
     }
 }

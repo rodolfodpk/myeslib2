@@ -57,9 +57,9 @@ public class Stack1JournalTest {
         CreateInventoryItem command =  CreateInventoryItem.create(commandId, id);
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), commandId, 0L, Arrays.asList(InventoryItemCreated.create(id, "item1")));
 
-        store.append(id, commandId, command, newUow);
+        store.append(id, command, newUow);
 
-        verify(dao).append(id, commandId, command, newUow);
+        verify(dao).append(id, command, newUow);
 
     }
 
@@ -79,13 +79,13 @@ public class Stack1JournalTest {
 
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), command2.getCommandId(), 1L, Arrays.asList(InventoryDecreased.create((1))));
 
-        store.append(id, command1.getCommandId(), command1, existingUow);
+        store.append(id, command1, existingUow);
 
-        store.append(id, command2.getCommandId(), command2, newUow);
+        store.append(id, command2, newUow);
 
-        verify(dao).append(id, command1.getCommandId(), command1, existingUow);
+        verify(dao).append(id, command1, existingUow);
 
-        verify(dao).append(id, command2.getCommandId(), command2, newUow);
+        verify(dao).append(id, command2, newUow);
 
     }
 
@@ -101,9 +101,9 @@ public class Stack1JournalTest {
 
         UnitOfWork newUow = UnitOfWork.create(UnitOfWorkId.create(), commandId, 0L, Arrays.asList(event));
 
-        store.append(id, commandId, command, newUow);
+        store.append(id, command, newUow);
 
-        verify(dao).append(id, commandId, command, newUow);
+        verify(dao).append(id, command, newUow);
 
         ArgumentCaptor<EventMessage> msgCaptor = ArgumentCaptor.forClass(EventMessage.class);
 
@@ -121,14 +121,14 @@ public class Stack1JournalTest {
 
         IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
         UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
-        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command.getCommandId(), command, unitOfWork);
+        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command, unitOfWork);
 
         try {
-            store.append(command.targetId(), command.getCommandId(), command, unitOfWork);
+            store.append(command.targetId(), command, unitOfWork);
         } catch (Exception e) {
         }
 
-        verify(dao).append(command.targetId(), command.getCommandId(), command, unitOfWork);
+        verify(dao).append(command.targetId(), command, unitOfWork);
 
         verify(queryModelConsumer, times(0)).accept(any());
         verify(sagaConsumer, times(0)).accept(any());

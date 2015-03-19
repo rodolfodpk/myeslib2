@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Stack1JdbiDao<K> implements WriteModelDao<K> {
@@ -112,12 +113,12 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
     }
 
     @Override
-    public void append(final K targetId, final CommandId commandId, final Command command, final UnitOfWork unitOfWork) {
+    public void append(final K targetId, final Command command, final UnitOfWork unitOfWork) {
 
         checkNotNull(targetId);
-        checkNotNull(commandId);
         checkNotNull(command);
         checkNotNull(unitOfWork);
+        checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
 
         String insertUowSql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
         String insertCommandSql = String.format("insert into %s (id, cmd_data) values (:id, :cmd_data)", dbMetadata.commandTable);

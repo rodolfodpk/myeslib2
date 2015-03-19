@@ -46,6 +46,6 @@ public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<Cre
 
         final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), interactionContext.getEmittedEvents());
 
-        journal.append(command.targetId(), command.getCommandId(), command, unitOfWork);
+        journal.append(command.targetId(),  command, unitOfWork);
     }
 }
