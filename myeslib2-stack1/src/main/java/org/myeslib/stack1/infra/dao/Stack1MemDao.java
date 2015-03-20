@@ -9,6 +9,7 @@ import org.myeslib.stack1.infra.exceptions.ConcurrencyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@NotThreadSafe
 public class Stack1MemDao<K> implements WriteModelDao<K> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1MemDao.class);
