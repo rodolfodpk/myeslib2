@@ -1,4 +1,4 @@
-package org.myeslib.infra.failure;
+package org.myeslib.infra.commandbus.failure;
 
 import net.jcip.annotations.Immutable;
 import org.myeslib.data.Command;

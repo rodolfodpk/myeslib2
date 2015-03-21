@@ -2,7 +2,6 @@ package org.myeslib.sampledomain.aggregates.inventoryitem;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.eventbus.EventBus;
 import com.google.gson.Gson;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -13,7 +12,13 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.data.Command;
 import org.myeslib.data.Event;
 import org.myeslib.data.UnitOfWork;
-import org.myeslib.infra.*;
+import org.myeslib.infra.Snapshot;
+import org.myeslib.infra.SnapshotReader;
+import org.myeslib.infra.WriteModelDao;
+import org.myeslib.infra.WriteModelJournal;
+import org.myeslib.infra.commandbus.CommandBus;
+import org.myeslib.infra.commandbus.CommandSubscriber;
+import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
@@ -22,6 +27,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandle
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import org.myeslib.sampledomain.services.SampleDomainService;
 import org.myeslib.stack1.infra.*;
+import org.myeslib.stack1.infra.commandbus.Stack1CommandBus;
 import org.myeslib.stack1.infra.dao.Stack1MemDao;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
@@ -32,6 +38,7 @@ import org.skife.jdbi.v2.DBI;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -66,10 +73,8 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public EventBus commandBus(InventoryItemCmdSubscriber subscriber) {
-        EventBus eventBus = new EventBus("inventoryItemCommandBus");
-        eventBus.register(subscriber);
-        return eventBus;
+    public Consumer<CommandErrorMessage> errorMessageConsumer() {
+        return commandErrorMessage -> System.err.println(" ** " + commandErrorMessage);
     }
 
     @Provides
@@ -132,6 +137,10 @@ public class InventoryItemModule extends AbstractModule {
 
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
         bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
+
+        // command bus
+        bind(CommandBus.class).to(Stack1CommandBus.class).asEagerSingleton();
+        bind(CommandSubscriber.class).to(InventoryItemCmdSubscriber.class);
 
         // command handlers
         bind(CreateInventoryItemHandler.class).asEagerSingleton();

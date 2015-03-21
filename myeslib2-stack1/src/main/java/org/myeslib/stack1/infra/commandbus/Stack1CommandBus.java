@@ -1,13 +1,14 @@
-package org.myeslib.stack1.infra.failure;
+package org.myeslib.stack1.infra.commandbus;
 
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 import org.myeslib.data.Command;
+import org.myeslib.infra.commandbus.CommandBus;
+import org.myeslib.infra.commandbus.CommandSubscriber;
 import org.myeslib.infra.exceptions.ConcurrencyException;
-import org.myeslib.infra.failure.CommandErrorMessage;
-import org.myeslib.infra.failure.CommandErrorMessageId;
-import org.myeslib.infra.failure.ConcurrencyErrorMessage;
-import org.myeslib.infra.failure.UnknowErrorMessage;
+import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
+import org.myeslib.infra.commandbus.failure.CommandErrorMessageId;
+import org.myeslib.infra.commandbus.failure.ConcurrencyErrorMessage;
+import org.myeslib.infra.commandbus.failure.UnknowErrorMessage;
+import org.myeslib.stack1.infra.helpers.MultiMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,23 +18,26 @@ import java.io.StringWriter;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class CommandErrorHandler implements MethodInterceptor {
+public class Stack1CommandBus implements CommandBus {
 
-    static final Logger logger = LoggerFactory.getLogger(CommandErrorHandler.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1CommandBus.class);
 
+    private final CommandSubscriber commandSubscriber;
     private final Consumer<CommandErrorMessage> exceptionsConsumer;
+    private final MultiMethod mm ;
 
     @Inject
-    public CommandErrorHandler(Consumer<CommandErrorMessage> exceptionsConsumer) {
+    public Stack1CommandBus(CommandSubscriber commandSubscriber, Consumer<CommandErrorMessage> exceptionsConsumer) {
+        this.commandSubscriber = commandSubscriber;
         this.exceptionsConsumer = exceptionsConsumer;
+        this.mm =  MultiMethod.getMultiMethod(commandSubscriber.getClass(), "on");
     }
 
     @Override
-    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
+    public void post(Command command) {
         try {
-            methodInvocation.proceed();
+            mm.invoke(commandSubscriber, (Object) command);
         } catch (Throwable t) {
-            final Command command = (Command) methodInvocation.getArguments()[0];
             final CommandErrorMessage msg ;
             if (t instanceof ConcurrencyException) {
                 msg =  new ConcurrencyErrorMessage(new CommandErrorMessageId(UUID.randomUUID()), command);
@@ -43,7 +47,6 @@ public class CommandErrorHandler implements MethodInterceptor {
             logger.error("Detected an error [{}] for command [{}]. It will be notified", msg.getId(), command);
             exceptionsConsumer.accept(msg);
         }
-        return null;
     }
 
     private String getStackTrace(Throwable t) {

@@ -1,6 +1,5 @@
 package org.myeslib.sampledomain
 
-import com.google.common.eventbus.EventBus
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import com.google.inject.Inject
@@ -11,7 +10,7 @@ import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
 import org.myeslib.infra.WriteModelDao
-import org.myeslib.stack1.infra.dao.Stack1JdbiDao
+import org.myeslib.infra.commandbus.CommandBus
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import sampledomain.aggregates.inventoryitem.InventoryItemModule
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.when
 public class InventoryItemTest extends Stack1BaseSpec<UUID> {
 
     @Inject
-    EventBus commandBus
+    CommandBus commandBus
 
     @Inject
     WriteModelDao<UUID> unitOfWorkDao;
@@ -41,6 +40,7 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
         when(sampleDomainService.generateItemDescription(any(UUID.class))).thenReturn(itemDescription)
         def injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new MockedDomainServicesModule(sampleDomainService: sampleDomainService, eventsConsumer: eventsConsumer)))
         injector.injectMembers(this);
+        assert (commandBus!=null);
         injector.getInstance(DatabaseHelper.class).initDb();
     }
 

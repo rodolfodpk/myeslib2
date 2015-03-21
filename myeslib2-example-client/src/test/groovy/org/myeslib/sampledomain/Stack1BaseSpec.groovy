@@ -1,15 +1,15 @@
 package org.myeslib.sampledomain
 
-import com.google.common.eventbus.EventBus
 import org.myeslib.data.Event
 import org.myeslib.data.UnitOfWork
 import org.myeslib.infra.WriteModelDao
+import org.myeslib.infra.commandbus.CommandBus
 import spock.lang.Specification
 
 
 public abstract class Stack1BaseSpec<K> extends Specification {
 
-    protected abstract EventBus getCommandBus()
+    protected abstract CommandBus getCommandBus()
 
     protected abstract WriteModelDao<K> getUnitOfWorkDao()
 

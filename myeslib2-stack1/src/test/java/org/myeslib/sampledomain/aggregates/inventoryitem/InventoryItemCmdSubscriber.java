@@ -1,18 +1,18 @@
 package org.myeslib.sampledomain.aggregates.inventoryitem;
 
-import com.google.common.eventbus.Subscribe;
+import org.myeslib.infra.commandbus.CommandSubscriber;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
+import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import org.myeslib.sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
-import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 
 import javax.inject.Inject;
 
-public class InventoryItemCmdSubscriber {
+public class InventoryItemCmdSubscriber implements CommandSubscriber{
 
     final CreateInventoryItemHandler createInventoryItemHandler;
     final IncreaseHandler increaseHandler;
@@ -27,22 +27,18 @@ public class InventoryItemCmdSubscriber {
         this.createThenIncreaseThenDecreaseHandler = createThenIncreaseThenDecreaseHandler;
     }
 
-    @Subscribe
     public void on(CreateInventoryItem command) {
         createInventoryItemHandler.handle(command);
     }
 
-    @Subscribe
     public void on(IncreaseInventory command) {
         increaseHandler.handle(command);
     }
 
-    @Subscribe
     public void on(DecreaseInventory command) {
         decreaseHandler.handle(command);
     }
 
-    @Subscribe
     public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
         createThenIncreaseThenDecreaseHandler.handle(command);
     }

@@ -45,7 +45,7 @@ public class Stack1Snapshot<A extends EventSourced> implements Snapshot<A> {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-                logger.info("will set value {} to field {} ", value, field);
+                logger.debug("will set value {} to field {} ", value, field);
                 field.set(newInstance, value);
             }
             return injectFunction.apply(newInstance);

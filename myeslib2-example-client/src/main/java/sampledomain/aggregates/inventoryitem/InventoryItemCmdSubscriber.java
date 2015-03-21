@@ -1,7 +1,6 @@
 package sampledomain.aggregates.inventoryitem;
 
-import com.google.common.eventbus.Subscribe;
-import org.myeslib.infra.failure.CommandErrorAware;
+import org.myeslib.infra.commandbus.CommandSubscriber;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
@@ -13,7 +12,7 @@ import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 
 import javax.inject.Inject;
 
-public class InventoryItemCmdSubscriber {
+public class InventoryItemCmdSubscriber implements CommandSubscriber {
 
     final CreateInventoryItemHandler createInventoryItemHandler;
     final IncreaseHandler increaseHandler;
@@ -28,26 +27,18 @@ public class InventoryItemCmdSubscriber {
         this.createThenIncreaseThenDecreaseHandler = createThenIncreaseThenDecreaseHandler;
     }
 
-    @Subscribe
-    @CommandErrorAware
     public void on(CreateInventoryItem command) {
         createInventoryItemHandler.handle(command);
     }
 
-    @Subscribe
-    @CommandErrorAware
     public void on(IncreaseInventory command) {
         increaseHandler.handle(command);
     }
 
-    @Subscribe
-    @CommandErrorAware
     public void on(DecreaseInventory command) {
         decreaseHandler.handle(command);
     }
 
-    @Subscribe
-    @CommandErrorAware
     public void on(CreateInventoryItemThenIncreaseThenDecrease command) {
         createThenIncreaseThenDecreaseHandler.handle(command);
     }
