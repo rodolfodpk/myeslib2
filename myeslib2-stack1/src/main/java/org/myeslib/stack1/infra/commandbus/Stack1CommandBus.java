@@ -36,7 +36,7 @@ public class Stack1CommandBus implements CommandBus {
     @Override
     public void post(Command command) {
         try {
-            mm.invoke(commandSubscriber, (Object) command);
+            mm.invoke(commandSubscriber, command);
         } catch (Throwable t) {
             final CommandErrorMessage msg ;
             if (t instanceof ConcurrencyException) {
