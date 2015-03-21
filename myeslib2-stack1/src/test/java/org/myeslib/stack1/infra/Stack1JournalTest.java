@@ -14,7 +14,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInvent
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
-import org.myeslib.stack1.infra.exceptions.InfraRuntimeException;
+import org.myeslib.infra.exceptions.CommandExecutionException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +121,7 @@ public class Stack1JournalTest {
 
         IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
         UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));
-        doThrow(InfraRuntimeException.class).when(dao).append(command.targetId(), command, unitOfWork);
+        doThrow(CommandExecutionException.class).when(dao).append(command.targetId(), command, unitOfWork);
 
         try {
             store.append(command.targetId(), command, unitOfWork);

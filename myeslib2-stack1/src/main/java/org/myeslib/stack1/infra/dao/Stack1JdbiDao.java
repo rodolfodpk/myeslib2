@@ -8,8 +8,8 @@ import org.myeslib.infra.WriteModelDao;
 import org.myeslib.stack1.infra.dao.config.CmdSerialization;
 import org.myeslib.stack1.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.config.UowSerialization;
-import org.myeslib.stack1.infra.exceptions.ConcurrencyException;
-import org.myeslib.stack1.infra.exceptions.InfraRuntimeException;
+import org.myeslib.infra.exceptions.ConcurrencyException;
+import org.myeslib.infra.exceptions.CommandExecutionException;
 import org.myeslib.stack1.infra.helpers.ClobToStringMapper;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -67,46 +67,37 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
 
         final List<UnitOfWork> arh = new ArrayList<>();
 
-        try {
+        logger.debug("will load {} from {}", id.toString(), dbMetadata.aggregateRootTable);
 
-            logger.debug("will load {} from {}", id.toString(), dbMetadata.aggregateRootTable);
+        List<UowRecord> unitsOfWork = dbi
+                .withHandle(new HandleCallback<List<UowRecord>>() {
 
-            List<UowRecord> unitsOfWork = dbi
-                    .withHandle(new HandleCallback<List<UowRecord>>() {
+                                String sql = String.format("select id, version, uow_data, seq_number " +
+                                        "from %s where id = :id " +
+                                        " and version > :version " +
+                                        "order by version", dbMetadata.unitOfWorkTable);
 
-                                    String sql = String.format("select id, version, uow_data, seq_number " +
-                                            "from %s where id = :id " +
-                                            " and version > :version " +
-                                            "order by version", dbMetadata.unitOfWorkTable);
-
-                                    public List<UowRecord> withHandle(Handle h) {
-                                        return h.createQuery(sql)
-                                                .bind("id", id.toString())
-                                                .bind("version", biggerThanThisVersion)
-                                                .map(new UowRecordMapper()).list();
-                                    }
+                                public List<UowRecord> withHandle(Handle h) {
+                                    return h.createQuery(sql)
+                                            .bind("id", id.toString())
+                                            .bind("version", biggerThanThisVersion)
+                                            .map(new UowRecordMapper()).list();
                                 }
-                    );
+                            }
+                );
 
-            if (unitsOfWork == null) {
-                logger.debug("found none unit of work for id {} and version > {} on {}", id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
-                return Lists.newArrayList();
-            }
+        if (unitsOfWork == null) {
+            logger.debug("found none unit of work for id {} and version > {} on {}", id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
+            return Lists.newArrayList();
+        }
 
-            logger.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
-            for (UowRecord r : unitsOfWork) {
-                logger.debug("converting to uow from {}", r.uowData);
-                Function<String, UnitOfWork> f = uowSer.fromStringFunction;
-                UnitOfWork uow = f.apply(r.uowData);
-                logger.debug(uow.toString());
-                arh.add(uow);
-            }
-
-        } catch (Exception e) {
-            logger.error("error when loading {} from table {}", id.toString(), dbMetadata.unitOfWorkTable);
-            e.printStackTrace();
-
-        } finally {
+        logger.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
+        for (UowRecord r : unitsOfWork) {
+            logger.debug("converting to uow from {}", r.uowData);
+            Function<String, UnitOfWork> f = uowSer.fromStringFunction;
+            UnitOfWork uow = f.apply(r.uowData);
+            logger.debug(uow.toString());
+            arh.add(uow);
         }
 
         return Collections.unmodifiableList(arh);
@@ -142,7 +133,7 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
                     }
             );
         } catch (Exception e) {
-            InfraRuntimeException exception = convertFrom(e);
+            CommandExecutionException exception = convertFrom(e);
             logger.error(exception.getMessage());
             throw exception;
         }
@@ -168,12 +159,12 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
                 );
     }
 
-    private InfraRuntimeException convertFrom(Exception e) {
+    private CommandExecutionException convertFrom(Exception e) {
         final String msg = e.getCause() != null ? e.getCause().getMessage() : "unable to append to database";
         if (msg !=null && msg.contains("does not match the last version")) {
             return new ConcurrencyException(msg);
         }
-        return new InfraRuntimeException(msg);
+        return new CommandExecutionException(msg);
     }
 
     public static class UowRecord {

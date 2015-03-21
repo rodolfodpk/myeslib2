@@ -17,7 +17,7 @@ import org.myeslib.sampledomain.aggregates.inventoryitem.commands.DecreaseInvent
 import org.myeslib.sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import org.myeslib.sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
-import org.myeslib.stack1.infra.exceptions.ConcurrencyException;
+import org.myeslib.infra.exceptions.ConcurrencyException;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
 
 import java.util.Arrays;

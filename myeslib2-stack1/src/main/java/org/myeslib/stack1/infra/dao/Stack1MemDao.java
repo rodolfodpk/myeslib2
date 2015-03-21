@@ -5,7 +5,7 @@ import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.WriteModelDao;
-import org.myeslib.stack1.infra.exceptions.ConcurrencyException;
+import org.myeslib.infra.exceptions.ConcurrencyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

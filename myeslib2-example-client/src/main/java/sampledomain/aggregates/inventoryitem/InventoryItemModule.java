@@ -90,7 +90,7 @@ public class InventoryItemModule extends AbstractModule {
 
     @Provides
     @Singleton
-    Cache<UUID, Snapshot<InventoryItem>> cache(){
+    public Cache<UUID, Snapshot<InventoryItem>> cache(){
         return CacheBuilder.newBuilder().maximumSize(1000).build();
     }
 
