@@ -43,10 +43,10 @@
 
     <modules>
         <module>myeslib2-core</module>
-        <module>myeslib2-stack1-core</module>
-        <module>myeslib2-stack1-guava</module>
-        <module>myeslib2-stack1-hazelcast</module>
-        <module>myeslib2-stack1-tests</module>
+        <!--<module>myeslib2-stack1-core</module>-->
+        <module>myeslib2-guava</module>
+        <module>myeslib2-hazelcast</module>
+        <module>myeslib2-tests</module>
         <module>myeslib2-example-api</module>
         <module>myeslib2-example-client</module>
     </modules>
@@ -60,19 +60,19 @@
                 <artifactId>myeslib2-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <!--<dependency>-->
+                <!--<groupId>${project.groupId}</groupId>-->
+                <!--<artifactId>myeslib2-stack1-core</artifactId>-->
+                <!--<version>${project.version}</version>-->
+            <!--</dependency>-->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-stack1-core</artifactId>
+                <artifactId>myeslib2-guava</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-stack1-guava</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-stack1-hazelcast</artifactId>
+                <artifactId>myeslib2-hazelcast</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -87,7 +87,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-stack1-tests</artifactId>
+                <artifactId>myeslib2-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
