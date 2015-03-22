@@ -1,6 +1,5 @@
 package org.myeslib.stack1.infra.dao;
 
-import com.google.common.collect.Lists;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
@@ -29,8 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 public class Stack1JdbiDao<K> implements WriteModelDao<K> {
 
@@ -88,7 +87,7 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
 
         if (unitsOfWork == null) {
             logger.debug("found none unit of work for id {} and version > {} on {}", id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);
-            return Lists.newArrayList();
+            return new ArrayList<>();
         }
 
         logger.debug("found {} units of work for id {} and version > {} on {}", unitsOfWork.size(), id.toString(), biggerThanThisVersion, dbMetadata.unitOfWorkTable);

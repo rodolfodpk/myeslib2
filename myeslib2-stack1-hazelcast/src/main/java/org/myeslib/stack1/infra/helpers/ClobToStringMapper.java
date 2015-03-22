@@ -1,10 +1,10 @@
 package org.myeslib.stack1.infra.helpers;
 
-import com.google.common.io.CharStreams;
 import org.skife.jdbi.v2.util.TypedMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.Clob;
@@ -32,42 +32,48 @@ public class ClobToStringMapper extends TypedMapper<String> {
     @Override
     protected String extractByName(ResultSet r, String name) throws SQLException {
         final Clob clob = r.getClob(name);
-        final Reader stream = clob.getCharacterStream();
         try {
-            final String result = CharStreams.toString(stream);
-            stream.close();
+            final String result = clobToString(clob);
             return result;
-        } catch (IOException e) {
-            log.error("error on extract Clob by name {} ", e);
         } finally {
             clob.free();
-            try {
-                stream.close();
-            } catch (IOException e) {
-                log.error("error on extract Clob by name {} ", e);
-            }
         }
-        return null;
     }
 
     @Override
     protected String extractByIndex(ResultSet r, int index) throws SQLException {
         final Clob clob = r.getClob(index);
-        final Reader stream = clob.getCharacterStream();
         try {
-            final String result = CharStreams.toString(stream);
-            stream.close();
+            final String result = clobToString(clob);
             return result;
-        } catch (IOException e) {
-            log.error("error on extract Clob by name {} ", e);
         } finally {
             clob.free();
-            try {
-                stream.close();
-            } catch (IOException e) {
-                log.error("error on extract Clob by name {} ", e);
-            }
         }
-        return null;
     }
+
+    private String clobToString(java.sql.Clob data)
+    {
+        final StringBuilder sb = new StringBuilder();
+        try
+        {
+            final Reader         reader = data.getCharacterStream();
+            final BufferedReader br     = new BufferedReader(reader);
+            int b;
+            while(-1 != (b = br.read())){
+                sb.append((char)b);
+            }
+            br.close();
+        }
+        catch (SQLException e){
+            log.error("SQL. Could not convert CLOB to string",e);
+            throw new RuntimeException(e.getCause());
+        }
+        catch (IOException e) {
+            log.error("IO. Could not convert CLOB to string",e);
+            throw new RuntimeException(e.getCause());
+        }
+
+        return sb.toString();
+    }
+
 }

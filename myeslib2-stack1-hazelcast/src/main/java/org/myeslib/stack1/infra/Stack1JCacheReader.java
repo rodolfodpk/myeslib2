@@ -16,7 +16,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 public class Stack1JCacheReader<K, A extends EventSourced> implements SnapshotReader<K, A> {
 

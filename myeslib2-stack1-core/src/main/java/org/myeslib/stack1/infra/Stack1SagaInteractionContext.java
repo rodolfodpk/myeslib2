@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 public class Stack1SagaInteractionContext implements SagaInteractionContext {
 

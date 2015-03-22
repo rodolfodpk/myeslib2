@@ -11,7 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable

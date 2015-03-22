@@ -10,8 +10,8 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 public class Stack1Journal<K> implements WriteModelJournal<K> {
 

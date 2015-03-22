@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 @NotThreadSafe
 public class Stack1MemDao<K> implements WriteModelDao<K> {

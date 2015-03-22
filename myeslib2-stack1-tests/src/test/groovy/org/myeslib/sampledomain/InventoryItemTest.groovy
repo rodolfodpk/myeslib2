@@ -43,7 +43,7 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID> {
         injector.injectMembers(this);
         assert (commandBus!=null);
 
-        // If you want to persist to database, comment out
+        // If you want to persist to database, comment out this
        // injector.getInstance(DatabaseHelper.class).initDb();
     }
 

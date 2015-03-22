@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable
