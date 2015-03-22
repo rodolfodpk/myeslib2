@@ -14,8 +14,8 @@ import sampledomain.services.SampleDomainService;
 
 import java.util.UUID;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
 
 @Getter @Setter @Builder
@@ -62,7 +62,7 @@ public class InventoryItem implements AggregateRoot {
         checkArgument(id != null, "This item is not created and no operations can be executed on it");
     }
 
-    // events handlers (reflect the state)
+    // events handlers
 
     public void on(InventoryItemCreated event) {
         this.id = event.id();

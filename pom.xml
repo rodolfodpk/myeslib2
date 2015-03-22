@@ -20,6 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spock.version>0.7-groovy-2.0</spock.version>
         <jmh.version>1.5</jmh.version>
+        <hazelcast.version>3.4.1</hazelcast.version>
 
         <!-- default maven settings -->
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
@@ -44,7 +45,8 @@
     <modules>
         <module>myeslib2-core</module>
         <module>myeslib2-guava</module>
-        <module>myeslib2-hazelcast</module>
+        <module>myeslib2-jcache</module>
+        <module>myeslib2-jdbi</module>
         <module>myeslib2-tests</module>
         <module>myeslib2-example-api</module>
     </modules>
@@ -65,7 +67,12 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-hazelcast</artifactId>
+                <artifactId>myeslib2-jcache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>myeslib2-jdbi</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -149,7 +156,7 @@
             <dependency>
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast</artifactId>
-                <version>3.4.1</version>
+                <version>${hazelcast.version}</version>
             </dependency>
 
             <!-- bean cloners / mappers -->

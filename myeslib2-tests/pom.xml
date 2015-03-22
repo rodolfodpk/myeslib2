@@ -47,7 +47,11 @@
         </dependency>
         <dependency>
             <groupId>org.myeslib</groupId>
-            <artifactId>myeslib2-hazelcast</artifactId>
+            <artifactId>myeslib2-jcache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.myeslib</groupId>
+            <artifactId>myeslib2-jdbi</artifactId>
         </dependency>
 
         <!-- Other -->
@@ -66,6 +70,10 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
         </dependency>
 
         <!-- test -->
