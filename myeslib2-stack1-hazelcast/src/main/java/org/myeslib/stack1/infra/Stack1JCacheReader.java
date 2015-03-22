@@ -30,6 +30,7 @@ public class Stack1JCacheReader<K, A extends EventSourced> implements SnapshotRe
 
     // http://stackoverflow.com/questions/27703342/exception-while-trying-to-make-hazelcast-cluster-work-with-jcache-compliant-clie
 
+    // TODO use CacheLoader and CacheWriter
     @Inject
     public Stack1JCacheReader(Supplier<A> supplier,
                               WriteModelDao<K> dao,
