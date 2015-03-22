@@ -48,15 +48,6 @@
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-        </dependency>
-
 
         <!-- test -->
         <dependency>
