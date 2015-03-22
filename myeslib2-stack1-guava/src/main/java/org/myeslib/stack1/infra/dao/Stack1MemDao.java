@@ -1,6 +1,7 @@
 package org.myeslib.stack1.infra.dao;
 
 import com.google.common.collect.LinkedListMultimap;
+import net.jcip.annotations.NotThreadSafe;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-// @NotThreadSafe
+@NotThreadSafe
 public class Stack1MemDao<K> implements WriteModelDao<K> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1MemDao.class);
