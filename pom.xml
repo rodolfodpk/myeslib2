@@ -43,7 +43,10 @@
 
     <modules>
         <module>myeslib2-core</module>
-        <module>myeslib2-stack1</module>
+        <module>myeslib2-stack1-core</module>
+        <module>myeslib2-stack1-guava</module>
+        <module>myeslib2-stack1-hazelcast</module>
+        <module>myeslib2-stack1-tests</module>
         <module>myeslib2-example-api</module>
         <module>myeslib2-example-client</module>
     </modules>
@@ -59,7 +62,17 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>myeslib2-stack1</artifactId>
+                <artifactId>myeslib2-stack1-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>myeslib2-stack1-guava</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>myeslib2-stack1-hazelcast</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -70,6 +83,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>myeslib2-example-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>myeslib2-stack1-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -139,6 +157,11 @@
                 <groupId>com.google.inject</groupId>
                 <artifactId>guice</artifactId>
                 <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast</artifactId>
+                <version>3.4.1</version>
             </dependency>
 
             <!-- bean cloners / mappers -->

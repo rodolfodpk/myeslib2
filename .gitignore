@@ -81,6 +81,7 @@ tmp/
 local.properties
 .settings/
 .loadpath
+pom.xml.versionsBackup
 
 # External tool builders
 .externalToolBuilders/

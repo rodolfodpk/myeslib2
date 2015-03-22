@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.Builder;
 import org.myeslib.core.AggregateRoot;
 import org.myeslib.infra.InteractionContext;
 import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
@@ -16,7 +17,7 @@ import java.util.UUID;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Getter @Setter
+@Getter @Setter @Builder
 @EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
@@ -26,8 +27,6 @@ public class InventoryItem implements AggregateRoot {
 
     transient SampleDomainService service;
     transient InteractionContext interactionContext;
-
-    public InventoryItem() {}
 
     // domain behaviour
 
