@@ -80,11 +80,4 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
         return latestSnapshot;
     }
 
-    List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {
-        return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());
-    }
-
-    Long lastVersion(List<UnitOfWork> unitOfWorks) {
-        return unitOfWorks.isEmpty() ? 0L : unitOfWorks.get(unitOfWorks.size()-1).getVersion();
-    }
 }
