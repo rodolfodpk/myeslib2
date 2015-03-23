@@ -59,7 +59,6 @@ public class InventoryItemStack1Module extends AbstractModule {
         return commandErrorMessage -> System.err.println(" ** " + commandErrorMessage);
     }
 
-
     @Override
     protected void configure() {
 
