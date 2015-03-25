@@ -1,6 +1,9 @@
 package org.myeslib.stack1.infra;
 
-import org.myeslib.data.*;
+import org.myeslib.data.Command;
+import org.myeslib.data.Event;
+import org.myeslib.data.EventMessage;
+import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.WriteModelJournal;
 import org.slf4j.Logger;
@@ -10,8 +13,9 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkArgument;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
+
 
 public class Stack1Journal<K> implements WriteModelJournal<K> {
 
@@ -36,7 +40,7 @@ public class Stack1Journal<K> implements WriteModelJournal<K> {
         for (Consumer<EventMessage> consumer : consumers) {
             logger.debug("consumer.post {}", unitOfWork);
             for (Event event : unitOfWork.getEvents()) {
-                consumer.accept(new EventMessage(EventMessageId.create(), event));
+                consumer.accept(EventMessage.builder().event(event).build());
             }
         }
     }

@@ -7,32 +7,30 @@ import org.myeslib.stack1.infra.helpers.AutoGsonAnnotation;
 import java.util.Optional;
 
 @AutoValue
-@AutoGsonAnnotation(autoValueClass = AutoValue_ConcurrencyErrorMessage.class)
-public abstract class ConcurrencyErrorMessage implements CommandErrorMessage {
+@AutoGsonAnnotation(autoValueClass = AutoValue_UnknownErrorMessage.class)
+public abstract class UnknownErrorMessage implements CommandErrorMessage {
 
     public abstract CommandErrorMessageId id();
     public abstract Command command();
-    public abstract Long newVersion();
-    public abstract Long currentVersion();
+    public abstract Optional<String> description();
 
     public static Builder builder() {
-        return new AutoValue_ConcurrencyErrorMessage.Builder().id(CommandErrorMessageId.builder().build());
+        return new AutoValue_UnknownErrorMessage.Builder().id(CommandErrorMessageId.builder().build());
     }
 
     @AutoValue.Builder
     public interface Builder {
         Builder id(CommandErrorMessageId id);
         Builder command(Command command);
-        Builder newVersion(Long newVersion);
-        Builder currentVersion(Long currentVersion);
-        ConcurrencyErrorMessage build();
+        Builder description(Optional<String> desc);
+        UnknownErrorMessage build();
     }
 
     // interface methods
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("new version " + newVersion() + ", currentVersion " + currentVersion());
+        return description();
     }
 
     @Override

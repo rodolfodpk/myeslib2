@@ -28,8 +28,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkArgument;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
+
 
 public class Stack1JdbiDao<K> implements WriteModelDao<K> {
 
@@ -161,9 +162,9 @@ public class Stack1JdbiDao<K> implements WriteModelDao<K> {
     private CommandExecutionException convertFrom(Exception e) {
         final String msg = e.getCause() != null ? e.getCause().getMessage() : "unable to append to database";
         if (msg !=null && msg.contains("does not match the last version")) {
-            return new ConcurrencyException(msg);
+            return new ConcurrencyException(e, 0L, 0L); // TODO trigger must have a token with a message we can parse it
         }
-        return new CommandExecutionException(msg);
+        return new CommandExecutionException(e);
     }
 
     public static class UowRecord {

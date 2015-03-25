@@ -1,7 +1,22 @@
 package org.myeslib.infra.exceptions;
 
 public class ConcurrencyException extends CommandExecutionException {
-    public ConcurrencyException(String s) {
-        super(s);
+
+    private final Long newVersion;
+    private final Long currentVersion;
+
+    public ConcurrencyException(Throwable cause, Long newVersion, Long currentVersion) {
+        super(cause);
+        this.newVersion = newVersion;
+        this.currentVersion = currentVersion;
     }
+
+    public Long getNewVersion() {
+        return newVersion;
+    }
+
+    public Long getCurrentVersion() {
+        return currentVersion;
+    }
+
 }

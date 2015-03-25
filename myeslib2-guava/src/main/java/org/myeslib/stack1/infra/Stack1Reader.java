@@ -16,9 +16,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K, A> {
 

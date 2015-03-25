@@ -11,7 +11,7 @@ import java.lang.reflect.Modifier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("serial")
 @Immutable

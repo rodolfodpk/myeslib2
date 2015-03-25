@@ -2,9 +2,9 @@ package sampledomain.aggregates.inventoryitem.handlers;
 
 import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
-import org.myeslib.infra.Snapshot;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.infra.Snapshot;
 import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.WriteModelJournal;
 import sampledomain.aggregates.inventoryitem.InventoryItem;

@@ -1,48 +1,32 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
+import com.google.auto.value.AutoValue;
+import org.myeslib.stack1.infra.helpers.AutoGsonAnnotation;
 
 import java.util.UUID;
 
-@Immutable
-public class CommandId {
+@AutoValue
+@AutoGsonAnnotation(autoValueClass = AutoValue_CommandId.class)
+public abstract class CommandId {
 
-    private final UUID uuid;
+    public abstract UUID uuid();
 
-    public CommandId(UUID uuid) {
-        this.uuid =  uuid;
+    public static Builder builder() {
+        return new AutoValue_CommandId.Builder().uuid(UUID.randomUUID());
     }
 
-    public UUID uuid() {
-        return uuid;
-    }
-
-    public static CommandId create(UUID uuid) {
-        return new CommandId(uuid);
+    @AutoValue.Builder
+    public interface Builder {
+        Builder uuid(UUID uuid);
+        CommandId build();
     }
 
     public static CommandId create() {
-        return new CommandId(UUID.randomUUID());
+        return new AutoValue_CommandId.Builder().uuid(UUID.randomUUID()).build();
     }
 
+    @Override
     public String toString() {
         return uuid().toString();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        CommandId commandId = (CommandId) o;
-
-        if (!uuid.equals(commandId.uuid)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return uuid.hashCode();
     }
 }

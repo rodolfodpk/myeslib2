@@ -1,7 +1,6 @@
 package org.myeslib.stack1.infra.commandbus;
 
 import junit.framework.TestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +14,6 @@ import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +43,7 @@ public class IdempotentCommandBusTest extends TestCase {
 
     @Test
     public void idempotentcy_must_works() {
-        TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
+        TestCommand command = new TestCommand(CommandId.builder().build());
         commandBus.post(command);
         verify(commandSubscriber).on(command);
         commandBus.post(command);
@@ -56,7 +54,7 @@ public class IdempotentCommandBusTest extends TestCase {
 
     @Test
     public void happyExecution() {
-        TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
+        TestCommand command = new TestCommand(CommandId.builder().build());
         commandBus.post(command);
         verify(commandSubscriber).on(command);
         verifyNoMoreInteractions(consumer, commandSubscriber);
@@ -65,7 +63,7 @@ public class IdempotentCommandBusTest extends TestCase {
 
     @Test
     public void errorsShouldBeNotified() {
-        TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
+        TestCommand command = new TestCommand(CommandId.builder().build());
         doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
         commandBus.post(command);
         verify(consumer).accept(captor.capture());

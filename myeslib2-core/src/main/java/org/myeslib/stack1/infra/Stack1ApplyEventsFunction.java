@@ -2,6 +2,7 @@ package org.myeslib.stack1.infra;
 
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
+import org.myeslib.infra.exceptions.ApplyEventsException;
 import org.myeslib.stack1.infra.helpers.MultiMethod;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class Stack1ApplyEventsFunction<A extends EventSourced> implements BiFunc
             try {
                 mm.invoke(instance, event);
             } catch (Exception e) {
-                throw new RuntimeException("Error when applying events via reflection", e.getCause());
+                throw new ApplyEventsException(e.getCause());
             }
         }
     }

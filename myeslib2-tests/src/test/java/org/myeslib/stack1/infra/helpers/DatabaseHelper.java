@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URL;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
 
 
 public class DatabaseHelper {

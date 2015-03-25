@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
+
 
 public class Stack1SagaInteractionContext implements SagaInteractionContext {
 

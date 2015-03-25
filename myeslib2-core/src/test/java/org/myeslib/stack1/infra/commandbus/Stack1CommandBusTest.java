@@ -12,8 +12,6 @@ import org.myeslib.data.CommandId;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 
-import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,7 +39,7 @@ public class Stack1CommandBusTest extends TestCase {
 
     @Test
     public void happyExecution() {
-        TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
+        TestCommand command = new TestCommand(CommandId.builder().build());
         commandBus.post(command);
         verify(commandSubscriber).on(command);
         verifyNoMoreInteractions(consumer, commandSubscriber);
@@ -50,7 +48,7 @@ public class Stack1CommandBusTest extends TestCase {
 
     @Test
     public void errorsShouldBeNotified() {
-        TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
+        TestCommand command = new TestCommand(CommandId.builder().build());
         doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
         commandBus.post(command);
         verify(consumer).accept(captor.capture());

@@ -12,7 +12,6 @@ import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
 import org.myeslib.infra.WriteModelDao
 import org.myeslib.infra.commandbus.CommandBus
-import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory

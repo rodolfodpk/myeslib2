@@ -110,7 +110,7 @@ public class Stack1JournalTest {
         verify(queryModelConsumer).accept(msgCaptor.capture());
         verify(sagaConsumer).accept(msgCaptor.capture());
 
-        assertThat(msgCaptor.getValue().getEvent(), is(event));
+        assertThat(msgCaptor.getValue().event(), is(event));
 
     }
 

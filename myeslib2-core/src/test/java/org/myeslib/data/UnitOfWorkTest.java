@@ -1,9 +1,6 @@
 package org.myeslib.data;
 
 import org.junit.Test;
-import org.myeslib.data.CommandId;
-import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkId;
 
 import java.util.ArrayList;
 
@@ -14,28 +11,28 @@ public class UnitOfWorkTest {
 
     @Test
     public void versionShouldBeSnapshotVersionPlusOne() {
-        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.create(), CommandId.create(), 0L, new ArrayList<>());
+        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.builder().build(), CommandId.builder().build(), 0L, new ArrayList<>());
         assertThat(uow.getVersion(), is(1L));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalStateException.class)
     public void nullCmdIdMustFail() {
-        UnitOfWork uow = UnitOfWork.create(null, CommandId.create(), 0L, new ArrayList<>());
+        UnitOfWork uow = UnitOfWork.create(null, CommandId.builder().build(), 0L, new ArrayList<>());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalStateException.class)
     public void nullAggregateIdIdMustFail() {
-        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.create(), null, 0L, new ArrayList<>());
+        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.builder().build(), null, 0L, new ArrayList<>());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidSnapshotVersionMustFail() {
-        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.create(), CommandId.create(), -1L, new ArrayList<>());
+        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.builder().build(), CommandId.builder().build(), -1L, new ArrayList<>());
     }
 
     @Test(expected = NullPointerException.class)
     public void nullEventsListMustFail() {
-        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.create(), CommandId.create(), 0L, null);
+        UnitOfWork uow = UnitOfWork.create(UnitOfWorkId.builder().build(), CommandId.builder().build(), 0L, null);
     }
 
 }

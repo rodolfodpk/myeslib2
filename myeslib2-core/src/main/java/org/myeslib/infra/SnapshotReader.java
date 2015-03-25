@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public interface SnapshotReader<K, A extends EventSourced> {
 
-    public Snapshot<A> getSnapshot(final K id);
+    Snapshot<A> getSnapshot(final K id);
 
     default List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {
         return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());

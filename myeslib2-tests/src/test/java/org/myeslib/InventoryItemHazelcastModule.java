@@ -1,11 +1,11 @@
 package org.myeslib;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.data.Command;
 import org.myeslib.data.UnitOfWork;
@@ -21,11 +21,13 @@ import org.myeslib.stack1.infra.Stack1JCacheReader;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.dao.Stack1JdbiDao;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
+import org.myeslib.stack1.infra.helpers.gson.autovalue.AutoValueTypeAdapterFactory;
 import org.skife.jdbi.v2.DBI;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
-import sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
-import sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
+import sampledomain.aggregates.inventoryitem.commands.CommandsGsonAdapter;
+import sampledomain.aggregates.inventoryitem.events.EventsGsonAdapter;
 
+import java.lang.reflect.Modifier;
 import java.util.UUID;
 
 public class InventoryItemHazelcastModule extends AbstractModule {
@@ -35,22 +37,20 @@ public class InventoryItemHazelcastModule extends AbstractModule {
     final javax.cache.Cache<UUID, Snapshot<InventoryItem>> jcache = factory.cache(UUID.randomUUID().toString(), UUID.class, InventoryItem.class);
 
     @Provides
-    @Named("events-json")
     @Singleton
     public Gson gsonEvents() {
-        return new EventsGsonFactory().create();
+
+        return new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT)
+                .registerTypeAdapterFactory(CommandsGsonAdapter.commandAdapter())
+                .registerTypeAdapterFactory(EventsGsonAdapter.eventAdapter())
+                .registerTypeAdapterFactory(new AutoValueTypeAdapterFactory())
+                .setPrettyPrinting()
+                .create();
     }
 
     @Provides
-    @Named("commands-json")
     @Singleton
-    public Gson gsonCommands() {
-        return new CommandsGsonFactory().create();
-    }
-
-    @Provides
-    @Singleton
-    public UowSerialization uowSerialization(@Named("events-json") Gson gson) {
+    public UowSerialization uowSerialization(Gson gson) {
         return new UowSerialization(
                 (uow) -> gson.toJson(uow),
                 (json) -> gson.fromJson(json, UnitOfWork.class));
@@ -58,7 +58,7 @@ public class InventoryItemHazelcastModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public CmdSerialization cmdSerialization(@Named("commands-json") Gson gson) {
+    public CmdSerialization cmdSerialization(Gson gson) {
         return new CmdSerialization(
                 (cmd) -> gson.toJson(cmd, Command.class),
                 (json) -> gson.fromJson(json, Command.class));

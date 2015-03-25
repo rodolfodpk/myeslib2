@@ -1,51 +1,28 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
+import com.google.auto.value.AutoValue;
+import org.myeslib.stack1.infra.helpers.AutoGsonAnnotation;
 
-@Immutable
-public class EventMessage {
+@AutoValue
+@AutoGsonAnnotation(autoValueClass = AutoValue_EventMessage.class)
+public abstract class EventMessage {
 
-    private final EventMessageId eventMessageId;
-    private final Event event;
+    public abstract EventMessageId id();
+    public abstract Event event();
 
-    public EventMessage(EventMessageId eventMessageId, Event event) {
-        this.eventMessageId = eventMessageId;
-        this.event = event;
+    public static Builder builder() {
+        return new AutoValue_EventMessage.Builder().id(EventMessageId.builder().build());
     }
 
-    public EventMessageId getEventMessageId() {
-        return eventMessageId;
+    @AutoValue.Builder
+    public interface Builder {
+        Builder id(EventMessageId id);
+        Builder event(Event event);
+        EventMessage build();
     }
 
-    public Event getEvent() {
-        return event;
+    public static EventMessage create(Event event) {
+        return new AutoValue_EventMessage.Builder().id(EventMessageId.create()).event(event).build();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        EventMessage that = (EventMessage) o;
-
-        if (!event.equals(that.event)) return false;
-        if (!eventMessageId.equals(that.eventMessageId)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = eventMessageId.hashCode();
-        result = 31 * result + event.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "EventMessage{" +
-                "eventId=" + eventMessageId +
-                ", event=" + event +
-                '}';
-    }
 }

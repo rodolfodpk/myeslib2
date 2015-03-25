@@ -1,48 +1,36 @@
 package org.myeslib.infra.commandbus.failure;
 
-import net.jcip.annotations.Immutable;
+import com.google.auto.value.AutoValue;
+import org.myeslib.stack1.infra.helpers.AutoGsonAnnotation;
 
 import java.util.UUID;
 
-@Immutable
-public class CommandErrorMessageId {
+@AutoValue
+@AutoGsonAnnotation(autoValueClass = AutoValue_CommandErrorMessageId.class)
+public abstract class CommandErrorMessageId {
 
-    private final UUID uuid;
+    public abstract UUID uuid();
 
-    public CommandErrorMessageId(UUID uuid) {
-        this.uuid =  uuid;
+    public static Builder builder() {
+        return new AutoValue_CommandErrorMessageId.Builder().uuid(UUID.randomUUID());
     }
 
-    public UUID uuid() {
-        return uuid;
+    @AutoValue.Builder
+    public interface Builder {
+        Builder uuid(UUID uuid);
+        CommandErrorMessageId build();
     }
 
     public static CommandErrorMessageId create(UUID uuid) {
-        return new CommandErrorMessageId(uuid);
+        return builder().uuid(uuid).build();
     }
 
     public static CommandErrorMessageId create() {
-        return new CommandErrorMessageId(UUID.randomUUID());
+        return builder().build();
     }
 
+    @Override
     public String toString() {
         return uuid().toString();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        CommandErrorMessageId commandId = (CommandErrorMessageId) o;
-
-        if (!uuid.equals(commandId.uuid)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return uuid.hashCode();
     }
 }

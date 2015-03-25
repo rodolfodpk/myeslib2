@@ -3,6 +3,7 @@ package org.myeslib.stack1.infra;
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
 import org.myeslib.infra.InteractionContext;
+import org.myeslib.infra.exceptions.ApplyEventsException;
 import org.myeslib.stack1.infra.helpers.MultiMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
 
 public class Stack1InteractionContext implements InteractionContext {
 
@@ -45,7 +46,7 @@ public class Stack1InteractionContext implements InteractionContext {
         try {
             mm.invoke(instance, event);
         } catch (Exception e) {
-            throw new RuntimeException("Error when applying events via reflection", e.getCause());
+            throw new ApplyEventsException(e.getCause());
         }
     }
 }

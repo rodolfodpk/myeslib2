@@ -1,18 +1,11 @@
 package sampledomain.aggregates.inventoryitem.events;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.myeslib.data.Event;
-import org.myeslib.stack1.infra.helpers.gson.autovalue.AutoValueTypeAdapterFactory;
 import org.myeslib.stack1.infra.helpers.gson.polymorphic.RuntimeTypeAdapterFactory;
 
-import java.lang.reflect.Modifier;
+public class EventsGsonAdapter {
 
-public class EventsGsonFactory {
-
-    private final Gson gson;
-
-    public EventsGsonFactory() {
+    public static RuntimeTypeAdapterFactory<Event> eventAdapter() {
 
         final RuntimeTypeAdapterFactory<Event> eventAdapter =
                 RuntimeTypeAdapterFactory.of(Event.class)
@@ -20,16 +13,8 @@ public class EventsGsonFactory {
                         .registerSubtype(AutoValue_InventoryIncreased.class, InventoryIncreased.class.getSimpleName())
                         .registerSubtype(AutoValue_InventoryDecreased.class, InventoryDecreased.class.getSimpleName());
 
-
-        this.gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT)
-                .registerTypeAdapterFactory(eventAdapter)
-                .registerTypeAdapterFactory(new AutoValueTypeAdapterFactory())
-                .setPrettyPrinting()
-                .create();
+        return eventAdapter;
 
     }
 
-    public Gson create() {
-        return gson;
-    }
 }

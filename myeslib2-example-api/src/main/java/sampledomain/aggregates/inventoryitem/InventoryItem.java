@@ -14,8 +14,8 @@ import sampledomain.services.SampleDomainService;
 
 import java.util.UUID;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkArgument;
+import static autovalue.shaded.com.google.common.common.base.Preconditions.checkNotNull;
 
 
 @Getter @Setter @Builder

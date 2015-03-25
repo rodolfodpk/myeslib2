@@ -1,49 +1,33 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
+import com.google.auto.value.AutoValue;
+import org.myeslib.stack1.infra.helpers.AutoGsonAnnotation;
 
 import java.util.UUID;
 
-@Immutable
-public class UnitOfWorkId {
+@AutoValue
+@AutoGsonAnnotation(autoValueClass = AutoValue_UnitOfWorkId.class)
+public abstract class UnitOfWorkId {
 
-    private final UUID uuid;
+    public abstract UUID uuid();
 
-    public UnitOfWorkId(UUID uuid) {
-        this.uuid = uuid;
+    public static Builder builder() {
+        return new AutoValue_UnitOfWorkId.Builder().uuid(UUID.randomUUID());
     }
 
-    public UUID uuid() {
-        return uuid;
-    }
-
-    public static UnitOfWorkId create(UUID uuid) {
-        return new UnitOfWorkId(uuid);
+    @AutoValue.Builder
+    interface Builder {
+        Builder uuid(UUID uuid);
+        UnitOfWorkId build();
     }
 
     public static UnitOfWorkId create() {
-        return new UnitOfWorkId(UUID.randomUUID());
+        return new AutoValue_UnitOfWorkId.Builder().uuid(UUID.randomUUID()).build();
     }
 
+    @Override
     public String toString() {
-        return uuid.toString();
+        return uuid().toString();
     }
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        UnitOfWorkId that = (UnitOfWorkId) o;
-
-        if (!uuid.equals(that.uuid)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return uuid.hashCode();
-    }
 }

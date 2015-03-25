@@ -20,6 +20,10 @@
             <artifactId>jcip-annotations</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
@@ -46,4 +50,81 @@
         </dependency>
 
     </dependencies>
+
+    <!--<build>-->
+        <!--<resources>-->
+            <!--<resource>-->
+                <!--<directory>src/main/java</directory>-->
+            <!--</resource>-->
+        <!--</resources>-->
+        <!--<plugins>-->
+            <!--<plugin>-->
+                <!--<artifactId>maven-jar-plugin</artifactId>-->
+                <!--<version>2.5</version>-->
+            <!--</plugin>-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-invoker-plugin</artifactId>-->
+                <!--<version>1.9</version>-->
+                <!--<configuration>-->
+                    <!--<addTestClassPath>true</addTestClassPath>-->
+                    <!--<cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>-->
+                    <!--<filterProperties>-->
+                        <!--<auto.version>${project.version}</auto.version>-->
+                    <!--</filterProperties>-->
+                    <!--<pomIncludes>-->
+                        <!--<pomInclude>*/pom.xml</pomInclude>-->
+                    <!--</pomIncludes>-->
+                    <!--<streamLogs>true</streamLogs>-->
+                <!--</configuration>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>integration-test</id>-->
+                        <!--<goals>-->
+                            <!--<goal>install</goal>-->
+                            <!--<goal>run</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-shade-plugin</artifactId>-->
+                <!--<version>2.3</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>shade</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<minimizeJar>true</minimizeJar>-->
+                            <!--<filters>-->
+                                <!--&lt;!&ndash;<filter>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<artifact>org.apache.velocity:*</artifact>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<includes>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<include>**</include>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</includes>&ndash;&gt;-->
+                                <!--&lt;!&ndash;</filter>&ndash;&gt;-->
+                            <!--</filters>-->
+                            <!--<relocations>-->
+                                <!--<relocation>-->
+                                    <!--<pattern>com.google.guava</pattern>-->
+                                    <!--<shadedPattern>myeslib2.shaded.com.google.guava</shadedPattern>-->
+                                <!--</relocation>-->
+                                <!--&lt;!&ndash;<relocation>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<pattern>com.google</pattern>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<shadedPattern>autovalue.shaded.com.google.common</shadedPattern>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;<excludes>&ndash;&gt;-->
+                                        <!--&lt;!&ndash;<exclude>com.google.auto.value.**</exclude>&ndash;&gt;-->
+                                    <!--&lt;!&ndash;</excludes>&ndash;&gt;-->
+                                <!--&lt;!&ndash;</relocation>&ndash;&gt;-->
+                            <!--</relocations>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+        <!--</plugins>-->
+    <!--</build>-->
+
 </project>

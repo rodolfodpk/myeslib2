@@ -1,19 +1,12 @@
 package sampledomain.aggregates.inventoryitem.commands;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.myeslib.data.Command;
-import org.myeslib.stack1.infra.helpers.gson.autovalue.AutoValueTypeAdapterFactory;
 import org.myeslib.stack1.infra.helpers.gson.polymorphic.RuntimeTypeAdapterFactory;
 
-import java.lang.reflect.Modifier;
+public class CommandsGsonAdapter {
 
-public class CommandsGsonFactory {
-
-    private final Gson gson;
-
-    public CommandsGsonFactory() {
+    public static RuntimeTypeAdapterFactory<Command> commandAdapter() {
 
         final RuntimeTypeAdapterFactory<Command> commandAdapter =
                 RuntimeTypeAdapterFactory.of(Command.class)
@@ -22,16 +15,8 @@ public class CommandsGsonFactory {
                         .registerSubtype(AutoValue_DecreaseInventory.class, DecreaseInventory.class.getSimpleName())
                         .registerSubtype(AutoValue_CreateInventoryItemThenIncreaseThenDecrease.class, CreateInventoryItemThenIncreaseThenDecrease.class.getSimpleName());
 
-        this.gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT)
-                .registerTypeAdapterFactory(commandAdapter)
-                .registerTypeAdapterFactory(new AutoValueTypeAdapterFactory())
-                .setPrettyPrinting()
-                .create();
+        return commandAdapter;
 
-    }
-
-    public Gson create() {
-        return gson;
     }
 
 }

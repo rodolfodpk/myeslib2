@@ -1,48 +1,33 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
+import com.google.auto.value.AutoValue;
+import org.myeslib.stack1.infra.helpers.AutoGsonAnnotation;
 
 import java.util.UUID;
 
-@Immutable
-public class EventMessageId {
+@AutoValue
+@AutoGsonAnnotation(autoValueClass = AutoValue_EventMessageId.class)
+public abstract class EventMessageId {
 
-    private final UUID uuid;
+    public abstract UUID uuid();
 
-    public EventMessageId(UUID uuid) {
-        this.uuid =  uuid;
+    public static Builder builder() {
+        return new AutoValue_EventMessageId.Builder().uuid(UUID.randomUUID());
     }
 
-    public UUID uuid() {
-        return uuid;
-    }
-
-    public static EventMessageId create(UUID uuid) {
-        return new EventMessageId(uuid);
+    @AutoValue.Builder
+    interface Builder {
+        Builder uuid(UUID uuid);
+        EventMessageId build();
     }
 
     public static EventMessageId create() {
-        return new EventMessageId(UUID.randomUUID());
+        return new AutoValue_EventMessageId.Builder().uuid(UUID.randomUUID()).build();
     }
 
+    @Override
     public String toString() {
         return uuid().toString();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        EventMessageId commandId = (EventMessageId) o;
-
-        if (!uuid.equals(commandId.uuid)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return uuid.hashCode();
-    }
 }
