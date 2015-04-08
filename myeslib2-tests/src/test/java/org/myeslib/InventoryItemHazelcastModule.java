@@ -50,16 +50,16 @@ public class InventoryItemHazelcastModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public UowSerialization uowSerialization(@Named("events-json") Gson gson) {
-        return new UowSerialization(
+    public UowSerialization<InventoryItem> uowSerialization(@Named("events-json") Gson gson) {
+        return new UowSerialization<>(
                 (uow) -> gson.toJson(uow),
                 (json) -> gson.fromJson(json, UnitOfWork.class));
     }
 
     @Provides
     @Singleton
-    public CmdSerialization cmdSerialization(@Named("commands-json") Gson gson) {
-        return new CmdSerialization(
+    public CmdSerialization<InventoryItem> cmdSerialization(@Named("commands-json") Gson gson) {
+        return new CmdSerialization<>(
                 (cmd) -> gson.toJson(cmd, Command.class),
                 (json) -> gson.fromJson(json, Command.class));
     }
@@ -79,14 +79,13 @@ public class InventoryItemHazelcastModule extends AbstractModule {
     @Override
     protected void configure() {
 
-        bind(DbMetadata.class).toInstance(new DbMetadata("inventory_item"));
+        bind(new TypeLiteral<DbMetadata<InventoryItem>>() {}).toInstance(new DbMetadata<>("inventory_item"));
 
+        bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {})
+                .to(new TypeLiteral<Stack1JdbiDao<UUID, InventoryItem>>() {}).asEagerSingleton();
 
-        bind(new TypeLiteral<WriteModelDao<UUID>>() {})
-                .to(new TypeLiteral<Stack1JdbiDao<UUID>>() {}).asEagerSingleton();
-
-        bind(new TypeLiteral<WriteModelJournal<UUID>>() {})
-                .to(new TypeLiteral<Stack1Journal<UUID>>() {}).asEagerSingleton();
+        bind(new TypeLiteral<WriteModelJournal<UUID, InventoryItem>>() {})
+                .to(new TypeLiteral<Stack1Journal<UUID, InventoryItem>>() {}).asEagerSingleton();
 
         bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {})
                 .to(new TypeLiteral<Stack1JCacheReader<UUID, InventoryItem>>() {}).asEagerSingleton();

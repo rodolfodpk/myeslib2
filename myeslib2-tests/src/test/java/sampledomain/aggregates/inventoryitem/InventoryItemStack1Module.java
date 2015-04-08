@@ -3,14 +3,13 @@ package sampledomain.aggregates.inventoryitem;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import org.myeslib.data.Event;
+import org.myeslib.infra.WriteModelJournal;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.CommandSubscriber;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
-import org.myeslib.stack1.infra.SnapshotFactory;
-import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
-import org.myeslib.stack1.infra.Stack1InteractionContext;
-import org.myeslib.stack1.infra.Stack1Snapshot;
+import org.myeslib.stack1.infra.*;
 import org.myeslib.stack1.infra.commandbus.Stack1CommandBus;
 import sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
@@ -65,8 +64,12 @@ public class InventoryItemStack1Module extends AbstractModule {
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
 
         // command bus
-        bind(CommandBus.class).to(Stack1CommandBus.class).asEagerSingleton();
-        bind(CommandSubscriber.class).to(InventoryItemCmdSubscriber.class);
+        bind(new TypeLiteral<CommandBus<InventoryItem>>() {})
+                .to(new TypeLiteral<Stack1CommandBus<InventoryItem>>() {
+                }).asEagerSingleton();
+        bind(new TypeLiteral<CommandSubscriber<InventoryItem>>() {})
+                .to(new TypeLiteral<InventoryItemCmdSubscriber<InventoryItem>>() {
+                }).asEagerSingleton();
 
         // command handlers
         bind(CreateInventoryItemHandler.class).asEagerSingleton();

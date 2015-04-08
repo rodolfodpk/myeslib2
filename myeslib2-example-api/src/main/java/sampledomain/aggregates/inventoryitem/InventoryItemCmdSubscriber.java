@@ -1,5 +1,6 @@
 package sampledomain.aggregates.inventoryitem;
 
+import org.myeslib.core.EventSourced;
 import org.myeslib.infra.commandbus.CommandSubscriber;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenIncreaseThenDecrease;
@@ -12,7 +13,7 @@ import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 
 import javax.inject.Inject;
 
-public class InventoryItemCmdSubscriber implements CommandSubscriber{
+public class InventoryItemCmdSubscriber<E extends EventSourced> implements CommandSubscriber<E> {
 
     final CreateInventoryItemHandler createInventoryItemHandler;
     final IncreaseHandler increaseHandler;

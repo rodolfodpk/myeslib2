@@ -1,5 +1,6 @@
 package org.myeslib.stack1.infra.commandbus;
 
+import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.CommandSubscriber;
@@ -18,16 +19,16 @@ import java.io.StringWriter;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class Stack1CommandBus implements CommandBus {
+public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1CommandBus.class);
 
-    private final CommandSubscriber commandSubscriber;
+    private final CommandSubscriber<E> commandSubscriber;
     private final Consumer<CommandErrorMessage> exceptionsConsumer;
     private final MultiMethod mm ;
 
     @Inject
-    public Stack1CommandBus(CommandSubscriber commandSubscriber, Consumer<CommandErrorMessage> exceptionsConsumer) {
+    public Stack1CommandBus(CommandSubscriber<E> commandSubscriber, Consumer<CommandErrorMessage> exceptionsConsumer) {
         this.commandSubscriber = commandSubscriber;
         this.exceptionsConsumer = exceptionsConsumer;
         this.mm =  MultiMethod.getMultiMethod(commandSubscriber.getClass(), "on");
@@ -38,6 +39,8 @@ public class Stack1CommandBus implements CommandBus {
         try {
             mm.invoke(commandSubscriber, command);
         } catch (Throwable t) {
+            System.out.println(" ****** ");
+            t.printStackTrace();
             final CommandErrorMessage msg ;
             if (t instanceof ConcurrencyException) {
                 msg =  new ConcurrencyErrorMessage(new CommandErrorMessageId(UUID.randomUUID()), command);

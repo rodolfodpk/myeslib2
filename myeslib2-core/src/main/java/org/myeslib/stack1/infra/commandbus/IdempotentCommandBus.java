@@ -1,5 +1,6 @@
 package org.myeslib.stack1.infra.commandbus;
 
+import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.infra.commandbus.CommandSubscriber;
@@ -11,7 +12,7 @@ import javax.inject.Inject;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class IdempotentCommandBus extends Stack1CommandBus {
+public class IdempotentCommandBus<E extends EventSourced> extends Stack1CommandBus<E> {
 
     static final Logger logger = LoggerFactory.getLogger(IdempotentCommandBus.class);
 

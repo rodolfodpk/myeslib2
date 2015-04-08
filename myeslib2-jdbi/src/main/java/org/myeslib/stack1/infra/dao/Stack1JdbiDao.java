@@ -1,5 +1,6 @@
 package org.myeslib.stack1.infra.dao;
 
+import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
@@ -31,17 +32,17 @@ import java.util.function.Function;
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
-public class Stack1JdbiDao<K> implements WriteModelDao<K> {
+public class Stack1JdbiDao<K, E extends EventSourced> implements WriteModelDao<K, E> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1JdbiDao.class);
 
-    private final UowSerialization uowSer;
-    private final CmdSerialization cmdSer;
-    private final DbMetadata dbMetadata;
+    private final UowSerialization<E> uowSer;
+    private final CmdSerialization<E> cmdSer;
+    private final DbMetadata<E> dbMetadata;
     private final DBI dbi;
 
     @Inject
-    public Stack1JdbiDao(UowSerialization uowSer, CmdSerialization cmdSer, DbMetadata dbMetadata, DBI dbi) {
+    public Stack1JdbiDao(UowSerialization<E> uowSer, CmdSerialization<E> cmdSer, DbMetadata<E> dbMetadata, DBI dbi) {
         this.uowSer = uowSer;
         this.cmdSer = cmdSer;
         this.dbMetadata = dbMetadata;

@@ -14,29 +14,28 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
-public class Stack1JCacheReader<K, A extends EventSourced> implements SnapshotReader<K, A> {
+public class Stack1JCacheReader<K, E extends EventSourced> implements SnapshotReader<K, E> {
 
     private static final Logger logger = LoggerFactory.getLogger(Stack1JCacheReader.class);
 
-    private final Supplier<A> supplier;
-    private final WriteModelDao<K> dao;
-    private final Cache<K, Snapshot<A>> cache;
-    private final BiFunction<A, List<Event>, A> applyEventsFunction;
-    private final SnapshotFactory<A> snapshotFactory;
+    private final Supplier<E> supplier;
+    private final WriteModelDao<K, E> dao;
+    private final Cache<K, Snapshot<E>> cache;
+    private final BiFunction<E, List<Event>, E> applyEventsFunction;
+    private final SnapshotFactory<E> snapshotFactory;
 
     // http://stackoverflow.com/questions/27703342/exception-while-trying-to-make-hazelcast-cluster-work-with-jcache-compliant-clie
 
     // TODO use CacheLoader and CacheWriter
     @Inject
-    public Stack1JCacheReader(Supplier<A> supplier,
-                              WriteModelDao<K> dao,
-                              Cache<K, Snapshot<A>> cache,
-                              BiFunction<A, List<Event>, A> ApplyEventsFunction,
-                              SnapshotFactory<A> snapshotFactory) {
+    public Stack1JCacheReader(Supplier<E> supplier,
+                              WriteModelDao<K, E> dao,
+                              Cache<K, Snapshot<E>> cache,
+                              BiFunction<E, List<Event>, E> ApplyEventsFunction,
+                              SnapshotFactory<E> snapshotFactory) {
 
         this.supplier = supplier;
         this.dao = dao;
@@ -49,26 +48,26 @@ public class Stack1JCacheReader<K, A extends EventSourced> implements SnapshotRe
      * (non-Javadoc)
      * @see org.myeslib.infra.SnapshotReader#getSnapshot(java.lang.Object)
      */
-    public Snapshot<A> getSnapshot(final K id) {
+    public Snapshot<E> getSnapshot(final K id) {
         checkNotNull(id);
         logger.debug("id {} cache.get(id)", id);
         if (!cache.containsKey(id)) {
             logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
             final List<UnitOfWork> unitOfWorkList = dao.getFull(id);
-            final A currentSnapshot = applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList));
-            final Snapshot<A> result = snapshotFactory.create(currentSnapshot, lastVersion(unitOfWorkList));
+            final E currentSnapshot = applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList));
+            final Snapshot<E> result = snapshotFactory.create(currentSnapshot, lastVersion(unitOfWorkList));
             cache.put(id, result);
             return result;
         }
-        final Snapshot<A> lastSnapshot = cache.get(id);
+        final Snapshot<E> lastSnapshot = cache.get(id);
         logger.debug("id {} lastSnapshot has version {}. will check if there any version beyond it", id, lastSnapshot.getVersion());
         final List<UnitOfWork> partialTransactionHistory = dao.getPartial(id, lastSnapshot.getVersion());
         if (partialTransactionHistory.isEmpty()) {
             return lastSnapshot;
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
-        final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
-        final Snapshot<A> latestSnapshot = snapshotFactory.create(ar, lastVersion(partialTransactionHistory));
+        final E ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
+        final Snapshot<E> latestSnapshot = snapshotFactory.create(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }

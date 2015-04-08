@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
 public class Stack1ReaderTest {
 
     @Mock
-    WriteModelDao<UUID> dao;
+    WriteModelDao<UUID, InventoryItem> dao;
     @Mock
     BiFunction<InventoryItem, List<Event>, InventoryItem> applyEventsFunction;
     @Mock

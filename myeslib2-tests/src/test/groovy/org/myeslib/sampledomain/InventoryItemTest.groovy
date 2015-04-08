@@ -13,6 +13,7 @@ import org.myeslib.data.EventMessage
 import org.myeslib.infra.WriteModelDao
 import org.myeslib.infra.commandbus.CommandBus
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
+import sampledomain.aggregates.inventoryitem.InventoryItem
 import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory
@@ -27,13 +28,13 @@ import java.util.function.Consumer
 import static org.mockito.Mockito.any
 import static org.mockito.Mockito.when
 
-public class InventoryItemTest extends Stack1BaseSpec<UUID> {
+public class InventoryItemTest extends Stack1BaseSpec<UUID, InventoryItem> {
 
     @Inject
-    CommandBus commandBus
+    CommandBus<InventoryItem> commandBus
 
     @Inject
-    WriteModelDao<UUID> unitOfWorkDao;
+    WriteModelDao<UUID, InventoryItem> unitOfWorkDao;
 
     def setup() {
         def Consumer<EventMessage> eventsConsumer = Mockito.mock(Consumer.class)

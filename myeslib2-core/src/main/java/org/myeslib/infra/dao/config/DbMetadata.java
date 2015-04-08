@@ -1,6 +1,8 @@
 package org.myeslib.infra.dao.config;
 
-public class DbMetadata {
+import org.myeslib.core.EventSourced;
+
+public class DbMetadata<E extends EventSourced> {
 
     public final String aggregateRootName;
     public final String aggregateRootTable;

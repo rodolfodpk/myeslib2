@@ -28,14 +28,14 @@ public class InventoryItemGuavaModule extends AbstractModule {
     @Override
     protected void configure() {
 
-        bind(new TypeLiteral<WriteModelDao<UUID>>() {})
-                .to(new TypeLiteral<Stack1MemDao<UUID>>() {}).asEagerSingleton();
+        bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {})
+                .to(new TypeLiteral<Stack1MemDao<UUID, InventoryItem>>() {}).asEagerSingleton();
 
         bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {})
                 .to(new TypeLiteral<Stack1Reader<UUID, InventoryItem>>() {}).asEagerSingleton();
 
-        bind(new TypeLiteral<WriteModelJournal<UUID>>() {})
-                .to(new TypeLiteral<Stack1Journal<UUID>>() {}).asEagerSingleton();
+        bind(new TypeLiteral<WriteModelJournal<UUID, InventoryItem>>() {})
+                .to(new TypeLiteral<Stack1Journal<UUID, InventoryItem>>() {}).asEagerSingleton();
 
     }
 }

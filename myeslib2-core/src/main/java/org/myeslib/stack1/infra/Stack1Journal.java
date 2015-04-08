@@ -1,5 +1,6 @@
 package org.myeslib.stack1.infra;
 
+import org.myeslib.core.EventSourced;
 import org.myeslib.data.*;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.WriteModelJournal;
@@ -13,15 +14,15 @@ import java.util.function.Consumer;
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
-public class Stack1Journal<K> implements WriteModelJournal<K> {
+public class Stack1Journal<K, E extends EventSourced> implements WriteModelJournal<K, E> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1Journal.class);
 
-    private final WriteModelDao<K> dao;
+    private final WriteModelDao<K, E> dao;
     private final List<Consumer<EventMessage>> consumers;
 
     @Inject
-    public Stack1Journal(WriteModelDao<K> dao, List<Consumer<EventMessage>> consumers) {
+    public Stack1Journal(WriteModelDao<K, E> dao, List<Consumer<EventMessage>> consumers) {
         this.dao = dao;
         this.consumers = consumers;
     }

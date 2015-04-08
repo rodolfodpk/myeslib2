@@ -15,6 +15,7 @@ import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.exceptions.ConcurrencyException;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
+import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -32,7 +33,7 @@ import static org.junit.Assert.assertThat;
 public class Stack1JdbiDaoTest {
 
     @Inject
-    WriteModelDao<UUID> dao;
+    WriteModelDao<UUID, InventoryItem> dao;
 
     static Injector injector;
 

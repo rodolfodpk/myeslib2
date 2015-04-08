@@ -20,22 +20,22 @@ import java.util.stream.Collectors;
 
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
 
-public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K, A> {
+public class Stack1Reader<K, E extends EventSourced> implements SnapshotReader<K, E> {
 
     private static final Logger logger = LoggerFactory.getLogger(Stack1Reader.class);
 
-    private final Supplier<A> supplier;
-    private final WriteModelDao<K> dao;
-    private final Cache<K, Snapshot<A>> cache;
-    private final BiFunction<A, List<Event>, A> applyEventsFunction;
-    private final SnapshotFactory<A> snapshotFactory;
+    private final Supplier<E> supplier;
+    private final WriteModelDao<K, E> dao;
+    private final Cache<K, Snapshot<E>> cache;
+    private final BiFunction<E, List<Event>, E> applyEventsFunction;
+    private final SnapshotFactory<E> snapshotFactory;
 
     @Inject
-    public Stack1Reader(Supplier<A> supplier,
-                        WriteModelDao<K> dao,
-                        Cache<K, Snapshot<A>> cache,
-                        BiFunction<A, List<Event>, A> ApplyEventsFunction,
-                        SnapshotFactory<A> snapshotFactory) {
+    public Stack1Reader(Supplier<E> supplier,
+                        WriteModelDao<K, E> dao,
+                        Cache<K, Snapshot<E>> cache,
+                        BiFunction<E, List<Event>, E> ApplyEventsFunction,
+                        SnapshotFactory<E> snapshotFactory) {
 
         this.supplier = supplier;
         this.dao = dao;
@@ -48,9 +48,9 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
      * (non-Javadoc)
      * @see org.myeslib.infra.SnapshotReader#getSnapshot(java.lang.Object)
      */
-    public Snapshot<A> getSnapshot(final K id) {
+    public Snapshot<E> getSnapshot(final K id) {
         checkNotNull(id);
-        final Snapshot<A> lastSnapshot;
+        final Snapshot<E> lastSnapshot;
         final AtomicBoolean wasDaoCalled = new AtomicBoolean(false);
         try {
             logger.debug("id {} cache.get(id)", id);
@@ -58,7 +58,7 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
                 logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
                 final List<UnitOfWork> unitOfWorkList = dao.getFull(id);
-                final A currentSnapshot = applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList));
+                final E currentSnapshot = applyEventsFunction.apply(supplier.get(), flatMap(unitOfWorkList));
                 return snapshotFactory.create(currentSnapshot, lastVersion(unitOfWorkList));
             });
         } catch (ExecutionException e) {
@@ -74,8 +74,8 @@ public class Stack1Reader<K, A extends EventSourced> implements SnapshotReader<K
             return lastSnapshot;
         }
         logger.debug("id {} found {} pending transactions. Last version is {}", id, partialTransactionHistory.size(), lastVersion(partialTransactionHistory));
-        final A ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
-        final Snapshot<A> latestSnapshot = snapshotFactory.create(ar, lastVersion(partialTransactionHistory));
+        final E ar = applyEventsFunction.apply(lastSnapshot.getAggregateInstance(), flatMap(partialTransactionHistory));
+        final Snapshot<E> latestSnapshot = snapshotFactory.create(ar, lastVersion(partialTransactionHistory));
         cache.put(id, latestSnapshot); // TODO assert this on tests
         return latestSnapshot;
     }

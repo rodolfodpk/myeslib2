@@ -16,11 +16,11 @@ import java.util.UUID;
 @ThreadSafe
 public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
 
-    final WriteModelJournal<UUID> journal;
+    final WriteModelJournal<UUID, InventoryItem> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
     @Inject
-    public IncreaseHandler(WriteModelJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public IncreaseHandler(WriteModelJournal<UUID, InventoryItem> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
     }

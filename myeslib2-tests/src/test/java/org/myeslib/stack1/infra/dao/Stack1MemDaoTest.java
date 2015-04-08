@@ -14,6 +14,7 @@ import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.exceptions.ConcurrencyException;
+import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -31,7 +32,7 @@ import static org.junit.Assert.assertThat;
 public class Stack1MemDaoTest {
 
     @Inject
-    WriteModelDao<UUID> dao;
+    WriteModelDao<UUID, InventoryItem> dao;
 
     static Injector injector;
 
@@ -43,7 +44,7 @@ public class Stack1MemDaoTest {
             @Override
             protected void configure() {
                 bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance(consumerList);
-                bind(new TypeLiteral<WriteModelDao<UUID>>() {}).to(new TypeLiteral<Stack1MemDao<UUID>>() {}).asEagerSingleton();
+                bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {}).to(new TypeLiteral<Stack1MemDao<UUID, InventoryItem>>() {}).asEagerSingleton();
             }
         }));
     }

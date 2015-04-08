@@ -9,6 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.*;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.exceptions.CommandExecutionException;
+import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -30,7 +31,7 @@ import static org.mockito.Mockito.*;
 public class Stack1JournalTest {
 
     @Mock
-    WriteModelDao<UUID> dao;
+    WriteModelDao<UUID, InventoryItem> dao;
 
     @Mock
     Consumer<EventMessage> queryModelConsumer;
@@ -50,7 +51,7 @@ public class Stack1JournalTest {
     @Test
     public void singleCommandShouldWork() {
 
-        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
 
@@ -66,7 +67,7 @@ public class Stack1JournalTest {
     @Test
     public void twoCommandsShouldWork() {
 
-        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
 
         UUID id = UUID.randomUUID();
 
@@ -92,7 +93,7 @@ public class Stack1JournalTest {
     @Test
     public void onSuccessThenEventConsumersShouldReceiveEvents() {
 
-        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
 
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
@@ -117,7 +118,7 @@ public class Stack1JournalTest {
     @Test
     public void onDaoExceptionConsumersShouldNotReceiveAnyEvent() {
 
-        Stack1Journal<UUID> store = new Stack1Journal<>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
 
         IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
         UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));

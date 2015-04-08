@@ -1,4 +1,6 @@
 package org.myeslib.infra.commandbus;
 
-public interface CommandSubscriber {
+import org.myeslib.core.EventSourced;
+
+public interface CommandSubscriber<E extends EventSourced> {
 }

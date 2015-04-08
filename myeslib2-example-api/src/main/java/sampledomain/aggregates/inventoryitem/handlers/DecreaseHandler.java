@@ -18,12 +18,12 @@ import java.util.UUID;
 @NotThreadSafe
 public class DecreaseHandler implements CommandHandler<DecreaseInventory>, StatefulCommandHandler {
 
-    final WriteModelJournal<UUID> journal;
+    final WriteModelJournal<UUID, InventoryItem> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
     private Optional<UnitOfWork> unitOfWork = Optional.empty();
 
     @Inject
-    public DecreaseHandler(WriteModelJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public DecreaseHandler(WriteModelJournal<UUID, InventoryItem> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.journal = journal;
         this.snapshotReader = snapshotReader;
     }

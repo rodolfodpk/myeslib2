@@ -16,11 +16,11 @@ import java.util.UUID;
 @ThreadSafe
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
 
-    final WriteModelJournal<UUID> journal;
+    final WriteModelJournal<UUID, InventoryItem> journal;
     final SnapshotReader<UUID, InventoryItem> snapshotReader;
 
     @Inject
-    public CreateThenIncreaseThenDecreaseHandler(WriteModelJournal<UUID> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
+    public CreateThenIncreaseThenDecreaseHandler(WriteModelJournal<UUID, InventoryItem> journal, SnapshotReader<UUID, InventoryItem> snapshotReader) {
         this.snapshotReader = snapshotReader;
         this.journal = journal;
     }
