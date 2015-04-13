@@ -7,11 +7,14 @@ import com.google.inject.TypeLiteral
 import com.google.inject.util.Modules
 import org.mockito.Mockito
 import org.myeslib.InventoryItemGuavaModule
+import org.myeslib.data.Command
 import org.myeslib.data.CommandId
 import org.myeslib.data.Event
 import org.myeslib.data.EventMessage
+import org.myeslib.infra.Consumers
 import org.myeslib.infra.WriteModelDao
 import org.myeslib.infra.commandbus.CommandBus
+import org.myeslib.infra.commandbus.failure.CommandErrorMessage
 import org.myeslib.stack1.infra.helpers.DatabaseHelper
 import sampledomain.aggregates.inventoryitem.InventoryItem
 import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module
@@ -37,10 +40,31 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID, InventoryItem> {
     WriteModelDao<UUID, InventoryItem> unitOfWorkDao;
 
     def setup() {
-        def Consumer<EventMessage> eventsConsumer = Mockito.mock(Consumer.class)
+
+        def Consumer<List<EventMessage>> eventsConsumer = Mockito.mock(Consumer.class);
+        def Consumer<List<Command>> commandsConsumer = Mockito.mock(Consumer.class);
+        def Consumer<CommandErrorMessage> errorsConsumer = Mockito.mock(Consumer.class);
+
+        def Consumers<InventoryItem> consumers = new Consumers<InventoryItem>() {
+            @Override
+            List<Consumer<List<EventMessage>>> eventMessageConsumers() {
+                return Arrays.asList(eventsConsumer)
+            }
+
+            @Override
+            List<Consumer<List<Command>>> commandsConsumers() {
+                return Arrays.asList(commandsConsumer)
+            }
+
+            @Override
+            List<Consumer<CommandErrorMessage>> errorMessageConsumers() {
+                return Arrays.asList(errorsConsumer)
+            }
+        }
+
         def sampleDomainService = Mockito.mock(SampleDomainService.class)
         when(sampleDomainService.generateItemDescription(any(UUID.class))).thenReturn(itemDescription)
-        def injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module(), new InventoryItemGuavaModule()).with(new MockedDomainServicesModule(sampleDomainService: sampleDomainService, eventsConsumer: eventsConsumer)))
+        def injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module(), new InventoryItemGuavaModule()).with(new MockedDomainServicesModule(sampleDomainService: sampleDomainService, eventsConsumer: consumers)))
         injector.injectMembers(this);
         assert (commandBus!=null);
 
@@ -96,12 +120,12 @@ public class InventoryItemTest extends Stack1BaseSpec<UUID, InventoryItem> {
 
     static class MockedDomainServicesModule extends AbstractModule {
         def SampleDomainService sampleDomainService
-        def Consumer<EventMessage> eventsConsumer
+        def Consumers<InventoryItem> eventsConsumer
         @Override
         protected void configure() {
 
-            bind(new TypeLiteral<List<Consumer<EventMessage>>>() {})
-                    .toInstance([eventsConsumer])
+            bind(new TypeLiteral<Consumers<InventoryItem>>() {})
+                    .toInstance(eventsConsumer)
 
             bind(SampleDomainService.class).toInstance(sampleDomainService);
 

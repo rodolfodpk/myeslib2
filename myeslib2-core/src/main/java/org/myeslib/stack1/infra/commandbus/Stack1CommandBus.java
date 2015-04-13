@@ -2,6 +2,7 @@ package org.myeslib.stack1.infra.commandbus;
 
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.CommandSubscriber;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
@@ -24,13 +25,13 @@ public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
     static final Logger logger = LoggerFactory.getLogger(Stack1CommandBus.class);
 
     private final CommandSubscriber<E> commandSubscriber;
-    private final Consumer<CommandErrorMessage> exceptionsConsumer;
+    private final Consumers<E> consumers;
     private final MultiMethod mm ;
 
     @Inject
-    public Stack1CommandBus(CommandSubscriber<E> commandSubscriber, Consumer<CommandErrorMessage> exceptionsConsumer) {
+    public Stack1CommandBus(CommandSubscriber<E> commandSubscriber, Consumers<E> consumers) {
         this.commandSubscriber = commandSubscriber;
-        this.exceptionsConsumer = exceptionsConsumer;
+        this.consumers = consumers;
         this.mm =  MultiMethod.getMultiMethod(commandSubscriber.getClass(), "on");
     }
 
@@ -39,8 +40,6 @@ public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
         try {
             mm.invoke(commandSubscriber, command);
         } catch (Throwable t) {
-            System.out.println(" ****** ");
-            t.printStackTrace();
             final CommandErrorMessage msg ;
             if (t instanceof ConcurrencyException) {
                 msg =  new ConcurrencyErrorMessage(new CommandErrorMessageId(UUID.randomUUID()), command);
@@ -48,7 +47,9 @@ public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
                 msg = new UnknowErrorMessage(new CommandErrorMessageId(UUID.randomUUID()), command, getStackTrace(t));
             }
             logger.error("Detected an error [{}] for command [{}]. It will be notified", msg.getId(), command);
-            exceptionsConsumer.accept(msg);
+            for (Consumer<CommandErrorMessage> commandErrorMessageConsumer : consumers.errorMessageConsumers()) {
+                commandErrorMessageConsumer.accept(msg);
+            }
         }
     }
 

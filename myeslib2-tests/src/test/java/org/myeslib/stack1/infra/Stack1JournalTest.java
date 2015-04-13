@@ -4,9 +4,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.*;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.exceptions.CommandExecutionException;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
@@ -34,24 +36,29 @@ public class Stack1JournalTest {
     WriteModelDao<UUID, InventoryItem> dao;
 
     @Mock
-    Consumer<EventMessage> queryModelConsumer;
+    Consumer<List<EventMessage>> queryModelConsumer;
 
     @Mock
-    Consumer<EventMessage> sagaConsumer;
+    Consumer<List<EventMessage>> sagaConsumer;
 
-    List<Consumer<EventMessage>> consumerList ;
+    List<Consumer<List<EventMessage>>> consumerList ;
+
+    @Mock
+    Consumers<InventoryItem> consumers;
+
+    @Captor
+    ArgumentCaptor<List<EventMessage>> msgCaptor;
 
     @Before
     public void init() throws Exception {
-        consumerList = new ArrayList<>();
-        consumerList.add(queryModelConsumer);
-        consumerList.add(sagaConsumer);
+        consumerList = Arrays.asList(queryModelConsumer, sagaConsumer);
+        when(consumers.eventMessageConsumers()).thenReturn(consumerList);
     }
 
     @Test
     public void singleCommandShouldWork() {
 
-        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<>(dao, consumers);
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
 
@@ -67,7 +74,7 @@ public class Stack1JournalTest {
     @Test
     public void twoCommandsShouldWork() {
 
-        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumers);
 
         UUID id = UUID.randomUUID();
 
@@ -93,7 +100,7 @@ public class Stack1JournalTest {
     @Test
     public void onSuccessThenEventConsumersShouldReceiveEvents() {
 
-        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumers);
 
         UUID id = UUID.randomUUID();
         CommandId commandId = CommandId.create();
@@ -106,19 +113,17 @@ public class Stack1JournalTest {
 
         verify(dao).append(id, command, newUow);
 
-        ArgumentCaptor<EventMessage> msgCaptor = ArgumentCaptor.forClass(EventMessage.class);
-
         verify(queryModelConsumer).accept(msgCaptor.capture());
         verify(sagaConsumer).accept(msgCaptor.capture());
 
-        assertThat(msgCaptor.getValue().getEvent(), is(event));
+        assertThat(msgCaptor.getValue().get(0).getEvent(), is(event));
 
     }
 
     @Test
     public void onDaoExceptionConsumersShouldNotReceiveAnyEvent() {
 
-        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumerList);
+        Stack1Journal<UUID, InventoryItem> store = new Stack1Journal<UUID, InventoryItem>(dao, consumers);
 
         IncreaseInventory command =  IncreaseInventory.create(CommandId.create(), UUID.randomUUID(), 10);
         UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), 1L, Arrays.asList(InventoryIncreased.create(10)));

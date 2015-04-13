@@ -9,10 +9,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.CommandId;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,11 +28,11 @@ import static org.mockito.Mockito.*;
 public class IdempotentCommandBusTest extends TestCase {
 
     @Mock
-    Consumer<CommandErrorMessage> consumer;
-
+    Consumers<InventoryItem> consumers;
+    @Mock
+    Consumer<CommandErrorMessage> errorConsumers;
     @Mock
     TestCommandSubscriber commandSubscriber;
-
     @Captor
     ArgumentCaptor<CommandErrorMessage> captor;
 
@@ -40,7 +42,8 @@ public class IdempotentCommandBusTest extends TestCase {
     @Before
     public void before() {
         idempotentMap = new HashMap<>();
-        commandBus = new IdempotentCommandBus<InventoryItem>(commandSubscriber, idempotentMap, consumer);
+        when(consumers.errorMessageConsumers()).thenReturn(Arrays.asList(errorConsumers));
+        commandBus = new IdempotentCommandBus<InventoryItem>(commandSubscriber, idempotentMap, consumers);
     }
 
     @Test
@@ -51,7 +54,7 @@ public class IdempotentCommandBusTest extends TestCase {
         commandBus.post(command);
         commandBus.post(command);
         assertThat(idempotentMap.get(command.getCommandId()), is(true));
-        verifyNoMoreInteractions(consumer, commandSubscriber);
+        verifyNoMoreInteractions(consumers, commandSubscriber);
     }
 
     @Test
@@ -59,7 +62,7 @@ public class IdempotentCommandBusTest extends TestCase {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         commandBus.post(command);
         verify(commandSubscriber).on(command);
-        verifyNoMoreInteractions(consumer, commandSubscriber);
+        verifyNoMoreInteractions(consumers, commandSubscriber);
 
     }
 
@@ -68,7 +71,7 @@ public class IdempotentCommandBusTest extends TestCase {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
         commandBus.post(command);
-        verify(consumer).accept(captor.capture());
+        verify(errorConsumers).accept(captor.capture());
         verify(commandSubscriber).on(command);
         CommandErrorMessage message = captor.getValue();
         assertThat(message.getCommand(), is(command));

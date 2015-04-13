@@ -4,7 +4,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import org.myeslib.data.Command;
 import org.myeslib.data.Event;
+import org.myeslib.data.EventMessage;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.WriteModelJournal;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.CommandSubscriber;
@@ -17,6 +20,7 @@ import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import sampledomain.services.SampleDomainService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -52,19 +56,17 @@ public class InventoryItemStack1Module extends AbstractModule {
         return new Stack1ApplyEventsFunction<>();
     }
 
-    @Provides
-    @Singleton
-    public Consumer<CommandErrorMessage> errorMessageConsumer() {
-        return commandErrorMessage -> System.err.println(" ** " + commandErrorMessage);
-    }
-
     @Override
     protected void configure() {
 
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
 
+        bind(new TypeLiteral<Consumers<InventoryItem>>() {})
+                .toInstance(new InventoryItemConsumers());
+
         // command bus
-        bind(new TypeLiteral<CommandBus<InventoryItem>>() {})
+        bind(new TypeLiteral<CommandBus<InventoryItem>>() {
+        })
                 .to(new TypeLiteral<Stack1CommandBus<InventoryItem>>() {
                 }).asEagerSingleton();
         bind(new TypeLiteral<CommandSubscriber<InventoryItem>>() {})
@@ -77,5 +79,23 @@ public class InventoryItemStack1Module extends AbstractModule {
         bind(IncreaseHandler.class).asEagerSingleton();
         bind(DecreaseHandler.class); // DecreaseHandler is stateful, so it's not thread safe
         bind(InventoryItemCmdSubscriber.class).asEagerSingleton();
+    }
+
+    public static class InventoryItemConsumers implements Consumers<InventoryItem> {
+
+        @Override
+        public List<Consumer<List<EventMessage>>> eventMessageConsumers() {
+            return Arrays.asList((eventList) -> System.out.println("received " + eventList));
+        }
+
+        @Override
+        public List<Consumer<List<Command>>> commandsConsumers() {
+            return Arrays.asList((commandList) -> System.out.println("received " + commandList));
+        }
+
+        @Override
+        public List<Consumer<CommandErrorMessage>> errorMessageConsumers() {
+            return Arrays.asList((error) -> System.out.println("received " + error));
+        }
     }
 }

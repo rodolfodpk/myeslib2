@@ -1,7 +1,11 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.core.EventSourced;
-import org.myeslib.data.*;
+import org.myeslib.data.Command;
+import org.myeslib.data.EventMessage;
+import org.myeslib.data.EventMessageId;
+import org.myeslib.data.UnitOfWork;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.WriteModelJournal;
 import org.slf4j.Logger;
@@ -10,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
 import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
@@ -19,10 +24,10 @@ public class Stack1Journal<K, E extends EventSourced> implements WriteModelJourn
     static final Logger logger = LoggerFactory.getLogger(Stack1Journal.class);
 
     private final WriteModelDao<K, E> dao;
-    private final List<Consumer<EventMessage>> consumers;
+    private final Consumers<E> consumers;
 
     @Inject
-    public Stack1Journal(WriteModelDao<K, E> dao, List<Consumer<EventMessage>> consumers) {
+    public Stack1Journal(WriteModelDao<K, E> dao, Consumers<E> consumers) {
         this.dao = dao;
         this.consumers = consumers;
     }
@@ -34,11 +39,10 @@ public class Stack1Journal<K, E extends EventSourced> implements WriteModelJourn
         checkNotNull(unitOfWork);
         checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
         dao.append(targetId, command, unitOfWork);
-        for (Consumer<EventMessage> consumer : consumers) {
-            logger.debug("consumer.post {}", unitOfWork);
-            for (Event event : unitOfWork.getEvents()) {
-                consumer.accept(new EventMessage(EventMessageId.create(), event));
-            }
+        List<EventMessage> eventMessages = unitOfWork.getEvents().stream()
+                    .map((event) -> new EventMessage(EventMessageId.create(), event)).collect(Collectors.toList());
+        for (Consumer<List<EventMessage>> consumer : consumers.eventMessageConsumers()) {
+            consumer.accept(eventMessages);
         }
     }
 

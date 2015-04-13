@@ -3,6 +3,7 @@ package org.myeslib.stack1.infra.commandbus;
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
 import org.myeslib.data.CommandId;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.commandbus.CommandSubscriber;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 import org.slf4j.Logger;
@@ -19,8 +20,8 @@ public class IdempotentCommandBus<E extends EventSourced> extends Stack1CommandB
     private final Map<CommandId, Boolean> idempotentMap;
 
     @Inject
-    public IdempotentCommandBus(CommandSubscriber commandSubscriber, Map<CommandId, Boolean> idempotentMap, Consumer<CommandErrorMessage> exceptionsConsumer) {
-        super(commandSubscriber, exceptionsConsumer);
+    public IdempotentCommandBus(CommandSubscriber commandSubscriber, Map<CommandId, Boolean> idempotentMap, Consumers<E> consumers) {
+        super(commandSubscriber, consumers);
         this.idempotentMap = idempotentMap;
     }
 

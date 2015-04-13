@@ -43,7 +43,6 @@ public class Stack1MemDaoTest {
         injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module(), new InventoryItemGuavaModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance(consumerList);
                 bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {}).to(new TypeLiteral<Stack1MemDao<UUID, InventoryItem>>() {}).asEagerSingleton();
             }
         }));

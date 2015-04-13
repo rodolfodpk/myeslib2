@@ -9,10 +9,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.CommandId;
+import org.myeslib.infra.Consumers;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -24,7 +27,9 @@ import static org.mockito.Mockito.*;
 public class Stack1CommandBusTest extends TestCase {
 
     @Mock
-    Consumer<CommandErrorMessage> consumer;
+    Consumers<InventoryItem> consumers;
+    @Mock
+    Consumer<CommandErrorMessage> errorConsumers;
 
     @Mock
     TestCommandSubscriber commandSubscriber;
@@ -36,7 +41,8 @@ public class Stack1CommandBusTest extends TestCase {
 
     @Before
     public void before() {
-        commandBus = new Stack1CommandBus<InventoryItem>(commandSubscriber, consumer);
+        when(consumers.errorMessageConsumers()).thenReturn(Arrays.asList(errorConsumers));
+        commandBus = new Stack1CommandBus<>(commandSubscriber, consumers);
     }
 
     @Test
@@ -44,7 +50,7 @@ public class Stack1CommandBusTest extends TestCase {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         commandBus.post(command);
         verify(commandSubscriber).on(command);
-        verifyNoMoreInteractions(consumer, commandSubscriber);
+        verifyNoMoreInteractions(consumers, commandSubscriber);
     }
 
 
@@ -53,7 +59,7 @@ public class Stack1CommandBusTest extends TestCase {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
         commandBus.post(command);
-        verify(consumer).accept(captor.capture());
+        verify(errorConsumers).accept(captor.capture());
         verify(commandSubscriber).on(command);
         CommandErrorMessage message = captor.getValue();
         assertThat(message.getCommand(), is(command));
