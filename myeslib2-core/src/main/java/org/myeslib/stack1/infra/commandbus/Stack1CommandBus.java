@@ -20,6 +20,8 @@ import java.io.StringWriter;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+
 public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
 
     static final Logger logger = LoggerFactory.getLogger(Stack1CommandBus.class);
@@ -38,8 +40,10 @@ public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
     @Override
     public void post(Command command) {
         try {
+            checkNotNull(command);
             mm.invoke(commandSubscriber, command);
         } catch (Throwable t) {
+            t.printStackTrace();
             final CommandErrorMessage msg ;
             if (t instanceof ConcurrencyException) {
                 msg =  new ConcurrencyErrorMessage(new CommandErrorMessageId(UUID.randomUUID()), command);

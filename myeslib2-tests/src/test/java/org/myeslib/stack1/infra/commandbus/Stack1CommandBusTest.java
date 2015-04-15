@@ -53,7 +53,6 @@ public class Stack1CommandBusTest extends TestCase {
         verifyNoMoreInteractions(consumers, commandSubscriber);
     }
 
-
     @Test
     public void errorsShouldBeNotified() {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
@@ -64,6 +63,16 @@ public class Stack1CommandBusTest extends TestCase {
         CommandErrorMessage message = captor.getValue();
         assertThat(message.getCommand(), is(command));
         assert(message.getDescription().get().contains("I got you !"));
+    }
+
+    @Test
+    public void nullCommandMustShouldNotifyError() {
+        TestCommand command = null;
+        commandBus.post(command);
+        verify(errorConsumers).accept(captor.capture());
+        CommandErrorMessage message = captor.getValue();
+        assertThat(message.getCommand(), is(command));
+        assert(message.getDescription().get().contains("NullPointerException"));
     }
 
 }
