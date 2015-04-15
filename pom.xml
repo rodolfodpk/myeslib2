@@ -8,6 +8,45 @@
     <artifactId>myeslib2</artifactId>
     <version>0.0.5-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <name>myeslib2</name>
+    <description>CQRS and event sourcing java library</description>
+    <url>https://github.com/rodolfodpk/myeslib2</url>
+
+    <issueManagement>
+        <url>https://github.com/rodolfodpk/myeslib2/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
+    <licenses>
+        <license>
+            <name>Apache License</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/rodolfodpk/myeslib2</url>
+        <connection>scm:git:git://github.com/rodolfodpk/myeslib2.git.git</connection>
+        <developerConnection>scm:git:git@github.com:rodolfodpk/myeslib2.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <email>rodolfo.dpk@gmail.com</email>
+            <name>Rodolfo de Paula</name>
+            <url>https://github.com/rodolfodpk</url>
+            <id>rodolfodpk</id>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>Vitor Mendes</name>
+            <email>vitor.mendes@outlook.com</email>
+            <url>http://vitormendes.com.br</url>
+        </contributor>
+    </contributors>
 
     <properties>
 
