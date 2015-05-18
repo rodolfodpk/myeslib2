@@ -10,6 +10,11 @@
     <description>CQRS and event sourcing java library</description>
     <url>https://github.com/rodolfodpk/myeslib2</url>
 
+    <issueManagement>
+        <url>https://github.com/rodolfodpk/myeslib2/issues</url>
+        <system>GitHub Issues</system>
+    </issueManagement>
+
     <licenses>
         <license>
             <name>Apache License</name>
@@ -19,9 +24,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git@gitlab.wmxp.com.br:mr-krabs/myeslib2.git</connection>
-        <url>scm:git:git@gitlab.wmxp.com.br:mr-krabs/myeslib2.git</url>
-        <tag>HEAD</tag>
+        <url>https://github.com/rodolfodpk/myeslib2</url>
+        <connection>scm:git:git://github.com/rodolfodpk/myeslib2.git.git</connection>
+        <developerConnection>scm:git:git@github.com:rodolfodpk/myeslib2.git</developerConnection>
     </scm>
 
     <developers>
