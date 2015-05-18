@@ -42,7 +42,6 @@ public class ApplyEventsMicroBench {
 
     }
 
-
     @Benchmark
     public void eventBusEngine() {
 

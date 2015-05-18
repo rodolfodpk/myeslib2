@@ -1,21 +1,28 @@
 package org.myeslib.stack1.infra.dao;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 import com.google.inject.*;
 import com.google.inject.util.Modules;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.myeslib.InventoryItemHazelcastModule;
 import org.myeslib.data.CommandId;
-import org.myeslib.data.EventMessage;
+import org.myeslib.data.SnapshotData;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.data.UnitOfWorkId;
+import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.WriteModelDao;
+import org.myeslib.infra.WriteModelJournal;
+import org.myeslib.infra.dao.config.DbMetadata;
 import org.myeslib.infra.exceptions.ConcurrencyException;
+import org.myeslib.stack1.infra.Stack1Journal;
+import org.myeslib.stack1.infra.Stack1SnapshotReader;
 import org.myeslib.stack1.infra.helpers.DatabaseHelper;
+import sampledomain.aggregates.inventoryitem.InventoryGsonModule;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
+import sampledomain.aggregates.inventoryitem.InventoryItemDbModule;
 import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
@@ -25,7 +32,6 @@ import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -39,12 +45,21 @@ public class Stack1JdbiDaoTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        final Consumer<EventMessage> mockConsumer = Mockito.mock(Consumer.class);
-        List<Consumer<EventMessage>> consumerList = Lists.newArrayList(mockConsumer);
-        injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module(), new InventoryItemHazelcastModule()).with(new AbstractModule() {
+        injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module(), new InventoryGsonModule(), new InventoryItemDbModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(new TypeLiteral<List<Consumer<EventMessage>>>() {}).toInstance(consumerList);
+                bind(new TypeLiteral<DbMetadata<InventoryItem>>() {}).toInstance(new DbMetadata<>("inventory_item"));
+                bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {
+                }).to(new TypeLiteral<Stack1JdbiDao<UUID, InventoryItem>>() {
+                }).asEagerSingleton();
+                bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {
+                }).to(new TypeLiteral<Stack1SnapshotReader<UUID, InventoryItem>>() {
+                }).asEagerSingleton();
+                bind(new TypeLiteral<WriteModelJournal<UUID, InventoryItem>>() {
+                }).to(new TypeLiteral<Stack1Journal<UUID, InventoryItem>>() {
+                }).asEagerSingleton();
+                bind(new TypeLiteral<Cache<UUID, SnapshotData<InventoryItem>>>() {
+                }).toInstance(CacheBuilder.newBuilder().maximumSize(1000).build());
             }
         }));
     }
@@ -147,5 +162,7 @@ public class Stack1JdbiDaoTest {
         dao.append(command2.targetId(), command2, newUow);
 
     }
+
+
 
 }

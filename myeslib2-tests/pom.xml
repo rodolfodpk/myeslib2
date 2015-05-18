@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-        xmlns="http://maven.apache.org/POM/4.0.0">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.myeslib</groupId>
         <artifactId>myeslib2</artifactId>
-        <version>0.0.5-SNAPSHOT</version>
+        <version>0.0.27-SNAPSHOT</version>
     </parent>
 
     <artifactId>myeslib2-tests</artifactId>
@@ -37,24 +34,29 @@
 
     <dependencies>
 
+        <!-- Own libs -->
+        <dependency>
+            <groupId>org.myeslib</groupId>
+            <artifactId>myeslib2-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.myeslib</groupId>
+            <artifactId>myeslib2-stack1</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.myeslib</groupId>
             <artifactId>myeslib2-example-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.myeslib</groupId>
-            <artifactId>myeslib2-guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.myeslib</groupId>
-            <artifactId>myeslib2-jcache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.myeslib</groupId>
-            <artifactId>myeslib2-jdbi</artifactId>
-        </dependency>
 
         <!-- Other -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -68,12 +70,24 @@
             <artifactId>jdbi</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
         </dependency>
 
         <!-- test -->
@@ -87,90 +101,10 @@
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Mandatory dependencies for using Spock -->
-        <dependency>
-            <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
-            <version>1.0-groovy-2.4</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Optional dependencies for using Spock -->
-        <dependency> <!-- use a specific Groovy version rather than the one specified by spock-core -->
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>2.4.1</version>
-        </dependency>
-        <dependency> <!-- enables mocking of classes (in addition to interfaces) -->
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>3.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency> <!-- enables mocking of classes without default constructor (together with CGLIB) -->
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>2.1</version>
-            <scope>test</scope>
-        </dependency>
         <dependency> <!-- only required if Hamcrest matchers are used -->
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
+            <artifactId>hamcrest-all</artifactId>
             <version>1.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- for SnapshotMicroBench test scope-->
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>uk.com.robust-it</groupId>
-            <artifactId>cloning</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.esotericsoftware</groupId>
-            <artifactId>kryo-shaded</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- for sample domain also in test scope-->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <scope>test</scope>
-        </dependency>
-         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.auto.value</groupId>
-            <artifactId>auto-value</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
             <scope>test</scope>
         </dependency>
 

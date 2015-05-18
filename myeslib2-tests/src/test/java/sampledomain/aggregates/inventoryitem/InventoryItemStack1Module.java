@@ -1,18 +1,22 @@
 package sampledomain.aggregates.inventoryitem;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import org.myeslib.data.Command;
 import org.myeslib.data.Event;
-import org.myeslib.data.EventMessage;
+import org.myeslib.data.SnapshotData;
 import org.myeslib.infra.Consumers;
+import org.myeslib.infra.SnapshotReader;
 import org.myeslib.infra.WriteModelJournal;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.CommandSubscriber;
-import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
-import org.myeslib.stack1.infra.*;
+import org.myeslib.stack1.infra.Stack1ApplyEventsFunction;
+import org.myeslib.stack1.infra.Stack1InteractionContext;
+import org.myeslib.stack1.infra.Stack1Journal;
+import org.myeslib.stack1.infra.Stack1SnapshotReader;
 import org.myeslib.stack1.infra.commandbus.Stack1CommandBus;
 import sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
@@ -20,34 +24,25 @@ import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
 import sampledomain.aggregates.inventoryitem.handlers.IncreaseHandler;
 import sampledomain.services.SampleDomainService;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class InventoryItemStack1Module extends AbstractModule {
 
     @Provides
-    public Supplier<InventoryItem> supplier() {
-        return () -> InventoryItem.builder().build();
+    public Supplier<InventoryItem> supplier(SampleDomainService sampleDomainService) {
+        return () -> InventoryItem.builder().service(sampleDomainService).build();
     }
 
     @Provides
-    public Function<InventoryItem, InventoryItem> injectorFunction(SampleDomainService sampleDomainService) {
+    public Function<InventoryItem, InventoryItem> injector() {
         return item -> {
-            item.setService(sampleDomainService);
             item.setInteractionContext(new Stack1InteractionContext(item));
             return item;
         };
-    }
-
-    @Provides
-    @Singleton
-    public SnapshotFactory<InventoryItem> snapshotFactory(final Supplier<InventoryItem> supplier,
-                                                          final Function<InventoryItem, InventoryItem> injectorFunction) {
-        return (eventSourced, version) -> new Stack1Snapshot<>(eventSourced, version, supplier, injectorFunction);
     }
 
     @Provides
@@ -59,19 +54,20 @@ public class InventoryItemStack1Module extends AbstractModule {
     @Override
     protected void configure() {
 
+        // domain service
         bind(SampleDomainService.class).toInstance((id) -> id.toString());
-
-        bind(new TypeLiteral<Consumers<InventoryItem>>() {})
-                .toInstance(new InventoryItemConsumers());
 
         // command bus
         bind(new TypeLiteral<CommandBus<InventoryItem>>() {
-        })
-                .to(new TypeLiteral<Stack1CommandBus<InventoryItem>>() {
+        }).to(new TypeLiteral<Stack1CommandBus<InventoryItem>>() {
                 }).asEagerSingleton();
         bind(new TypeLiteral<CommandSubscriber<InventoryItem>>() {})
                 .to(new TypeLiteral<InventoryItemCmdSubscriber<InventoryItem>>() {
                 }).asEagerSingleton();
+
+        // consumers
+        bind(new TypeLiteral<Consumers<InventoryItem>>() {})
+                .toInstance(new InventoryItemConsumers());
 
         // command handlers
         bind(CreateInventoryItemHandler.class).asEagerSingleton();
@@ -79,23 +75,19 @@ public class InventoryItemStack1Module extends AbstractModule {
         bind(IncreaseHandler.class).asEagerSingleton();
         bind(DecreaseHandler.class); // DecreaseHandler is stateful, so it's not thread safe
         bind(InventoryItemCmdSubscriber.class).asEagerSingleton();
+
+        // reader and writer
+        bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {
+        }).to(new TypeLiteral<Stack1SnapshotReader<UUID, InventoryItem>>() {
+        }).asEagerSingleton();
+
+        bind(new TypeLiteral<Cache<UUID, SnapshotData<InventoryItem>>>() {
+        }).toInstance(CacheBuilder.newBuilder().maximumSize(1000).build());
+
+        bind(new TypeLiteral<WriteModelJournal<UUID, InventoryItem>>() {
+        }).to(new TypeLiteral<Stack1Journal<UUID, InventoryItem>>() {
+        }).asEagerSingleton();
+
     }
 
-    public static class InventoryItemConsumers implements Consumers<InventoryItem> {
-
-        @Override
-        public List<Consumer<List<EventMessage>>> eventMessageConsumers() {
-            return Arrays.asList((eventList) -> System.out.println("received " + eventList));
-        }
-
-        @Override
-        public List<Consumer<List<Command>>> commandsConsumers() {
-            return Arrays.asList((commandList) -> System.out.println("received " + commandList));
-        }
-
-        @Override
-        public List<Consumer<CommandErrorMessage>> errorMessageConsumers() {
-            return Arrays.asList((error) -> System.out.println("received " + error));
-        }
-    }
 }

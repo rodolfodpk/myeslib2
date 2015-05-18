@@ -2,6 +2,7 @@ package org.myeslib.infra;
 
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Event;
+import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.stream.Collectors;
 
 public interface SnapshotReader<K, A extends EventSourced> {
 
-    public Snapshot<A> getSnapshot(final K id);
+    Snapshot<A> getSnapshot(final K id);
 
     default List<Event> flatMap(final List<UnitOfWork> unitOfWorks) {
         return unitOfWorks.stream().flatMap((unitOfWork) -> unitOfWork.getEvents().stream()).collect(Collectors.toList());

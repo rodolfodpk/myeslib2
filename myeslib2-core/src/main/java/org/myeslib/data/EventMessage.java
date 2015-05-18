@@ -2,8 +2,10 @@ package org.myeslib.data;
 
 import net.jcip.annotations.Immutable;
 
+import java.io.Serializable;
+
 @Immutable
-public class EventMessage {
+public class EventMessage implements Serializable {
 
     private final EventMessageId eventMessageId;
     private final Event event;

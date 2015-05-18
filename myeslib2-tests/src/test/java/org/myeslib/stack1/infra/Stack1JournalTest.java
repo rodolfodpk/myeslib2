@@ -19,7 +19,6 @@ import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;

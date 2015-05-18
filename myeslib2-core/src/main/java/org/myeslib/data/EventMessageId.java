@@ -2,10 +2,11 @@ package org.myeslib.data;
 
 import net.jcip.annotations.Immutable;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Immutable
-public class EventMessageId {
+public class EventMessageId  implements Serializable {
 
     private final UUID uuid;
 

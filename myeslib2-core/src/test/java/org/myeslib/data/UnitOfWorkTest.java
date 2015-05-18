@@ -1,9 +1,6 @@
 package org.myeslib.data;
 
 import org.junit.Test;
-import org.myeslib.data.CommandId;
-import org.myeslib.data.UnitOfWork;
-import org.myeslib.data.UnitOfWorkId;
 
 import java.util.ArrayList;
 

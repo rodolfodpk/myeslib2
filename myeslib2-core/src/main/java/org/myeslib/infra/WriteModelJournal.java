@@ -2,7 +2,6 @@ package org.myeslib.infra;
 
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
-import org.myeslib.data.CommandId;
 import org.myeslib.data.UnitOfWork;
 
 public interface WriteModelJournal<K, E extends EventSourced> {

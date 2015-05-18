@@ -15,7 +15,6 @@ import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
