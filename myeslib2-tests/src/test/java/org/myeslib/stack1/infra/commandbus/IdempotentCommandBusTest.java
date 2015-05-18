@@ -31,7 +31,7 @@ public class IdempotentCommandBusTest extends TestCase {
     @Mock
     Consumer<CommandErrorMessage> errorConsumers;
     @Mock
-    TestCommandSubscriber commandSubscriber;
+    TestCommandSubscriber<InventoryItem> commandSubscriber;
     @Captor
     ArgumentCaptor<CommandErrorMessage> captor;
 
@@ -42,7 +42,7 @@ public class IdempotentCommandBusTest extends TestCase {
     public void before() {
         idempotentMap = new HashMap<>();
         Mockito.when(consumers.errorMessageConsumers()).thenReturn(Arrays.asList(errorConsumers));
-        commandBus = new IdempotentCommandBus<>(commandSubscriber, idempotentMap, consumers);
+        commandBus = new IdempotentCommandBus<>(idempotentMap, commandSubscriber, consumers);
     }
 
     @Test
@@ -76,5 +76,4 @@ public class IdempotentCommandBusTest extends TestCase {
         MatcherAssert.assertThat(message.getCommand(), Is.is(command));
         assert(message.getDescription().get().contains("I got you !"));
     }
-
 }
