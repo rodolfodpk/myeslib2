@@ -1,12 +1,15 @@
 package org.myeslib.stack1.infra.commandbus;
 
 import junit.framework.TestCase;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.myeslib.data.CommandId;
 import org.myeslib.infra.Consumers;
@@ -19,10 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IdempotentCommandBusTest extends TestCase {
@@ -37,44 +36,44 @@ public class IdempotentCommandBusTest extends TestCase {
     ArgumentCaptor<CommandErrorMessage> captor;
 
     CommandBus<InventoryItem> commandBus;
-    Map<CommandId, Boolean> idempotentMap;
+    Map<String, Boolean> idempotentMap;
 
     @Before
     public void before() {
         idempotentMap = new HashMap<>();
-        when(consumers.errorMessageConsumers()).thenReturn(Arrays.asList(errorConsumers));
-        commandBus = new IdempotentCommandBus<InventoryItem>(commandSubscriber, idempotentMap, consumers);
+        Mockito.when(consumers.errorMessageConsumers()).thenReturn(Arrays.asList(errorConsumers));
+        commandBus = new IdempotentCommandBus<>(idempotentMap, commandSubscriber, consumers);
     }
 
     @Test
     public void idempotentcy_must_works() {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         commandBus.post(command);
-        verify(commandSubscriber).on(command);
+        Mockito.verify(commandSubscriber).on(command);
         commandBus.post(command);
         commandBus.post(command);
-        assertThat(idempotentMap.get(command.getCommandId()), is(true));
-        verifyNoMoreInteractions(consumers, commandSubscriber);
+        MatcherAssert.assertThat(idempotentMap.get(command.getCommandId().uuid().toString()), Is.is(true));
+        Mockito.verifyNoMoreInteractions(consumers, commandSubscriber);
     }
 
     @Test
     public void happyExecution() {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         commandBus.post(command);
-        verify(commandSubscriber).on(command);
-        verifyNoMoreInteractions(consumers, commandSubscriber);
+        Mockito.verify(commandSubscriber).on(command);
+        Mockito.verifyNoMoreInteractions(consumers, commandSubscriber);
 
     }
 
     @Test
     public void errorsShouldBeNotified() {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
-        doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
+        Mockito.doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
         commandBus.post(command);
-        verify(errorConsumers).accept(captor.capture());
-        verify(commandSubscriber).on(command);
+        Mockito.verify(errorConsumers).accept(captor.capture());
+        Mockito.verify(commandSubscriber).on(command);
         CommandErrorMessage message = captor.getValue();
-        assertThat(message.getCommand(), is(command));
+        MatcherAssert.assertThat(message.getCommand(), Is.is(command));
         assert(message.getDescription().get().contains("I got you !"));
     }
 

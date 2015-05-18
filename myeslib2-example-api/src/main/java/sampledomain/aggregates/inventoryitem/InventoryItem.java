@@ -14,11 +14,11 @@ import sampledomain.services.SampleDomainService;
 
 import java.util.UUID;
 
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkArgument;
-import static org.myeslib.stack1.infra.helpers.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
-@Getter @Setter @Builder
+@Getter @Builder
 @EqualsAndHashCode(exclude = {"service", "interactionContext"})  @ToString(exclude = {"service", "interactionContext"})
 public class InventoryItem implements AggregateRoot {
 
@@ -27,6 +27,8 @@ public class InventoryItem implements AggregateRoot {
     public Integer available = 0;
 
     transient SampleDomainService service;
+
+    @Setter
     transient InteractionContext interactionContext;
 
     // domain behaviour
