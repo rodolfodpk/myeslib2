@@ -1,4 +1,4 @@
-package sampledomain.aggregates.inventoryitem;
+package sampledomain.aggregates.inventoryitem.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -8,12 +8,13 @@ import org.h2.jdbcx.JdbcConnectionPool;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.dao.config.DbMetadata;
 import org.myeslib.stack1.infra.dao.Stack1JdbiDao;
-import org.myeslib.stack1.infra.helpers.DatabaseHelper;
+import org.myeslib.stack1.infra.helpers.jdbi.DatabaseHelper;
 import org.skife.jdbi.v2.DBI;
+import sampledomain.aggregates.inventoryitem.InventoryItem;
 
 import java.util.UUID;
 
-public class InventoryItemDbModule extends AbstractModule {
+public class InventoryItemJdbiModule extends AbstractModule {
 
     @Provides
     @Singleton

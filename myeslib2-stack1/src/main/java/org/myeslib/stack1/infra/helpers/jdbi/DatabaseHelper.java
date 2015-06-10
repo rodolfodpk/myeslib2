@@ -1,4 +1,4 @@
-package org.myeslib.stack1.infra.helpers;
+package org.myeslib.stack1.infra.helpers.jdbi;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;

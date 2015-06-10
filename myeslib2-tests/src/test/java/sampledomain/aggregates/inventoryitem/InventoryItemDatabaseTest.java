@@ -12,13 +12,16 @@ import org.myeslib.data.CommandId;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.stack1.infra.Stack1TestSupport;
-import org.myeslib.stack1.infra.helpers.DatabaseHelper;
+import org.myeslib.stack1.infra.helpers.jdbi.DatabaseHelper;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemGsonModule;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemJdbiModule;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemModule;
 
 import java.util.UUID;
 
@@ -38,7 +41,7 @@ public class InventoryItemDatabaseTest extends Stack1TestSupport<UUID, Inventory
 
     @Before
     public void setup() {
-        injector = Guice.createInjector(new InventoryItemStack1Module(), new InventoryItemDbModule(), new InventoryGsonModule());
+        injector = Guice.createInjector(new InventoryItemModule(), new InventoryItemJdbiModule(), new InventoryItemGsonModule());
         injector.injectMembers(this);
         injector.getInstance(DatabaseHelper.class).initDb();
     }

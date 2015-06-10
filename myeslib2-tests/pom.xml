@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.myeslib</groupId>
         <artifactId>myeslib2</artifactId>
-        <version>0.0.27-SNAPSHOT</version>
+        <version>0.0.42-SNAPSHOT</version>
     </parent>
 
     <artifactId>myeslib2-tests</artifactId>

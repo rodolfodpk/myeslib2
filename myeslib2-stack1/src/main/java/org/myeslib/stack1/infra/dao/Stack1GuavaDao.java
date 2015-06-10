@@ -21,15 +21,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @NotThreadSafe
-public class Stack1MemDao<K, E extends EventSourced> implements WriteModelDao<K, E> {
+public class Stack1GuavaDao<K, E extends EventSourced> implements WriteModelDao<K, E> {
 
-    static final Logger logger = LoggerFactory.getLogger(Stack1MemDao.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1GuavaDao.class);
 
     private final LinkedListMultimap<K, UnitOfWork> uowMultiMap;
     private final Map<CommandId, Command> commandsMap;
 
     @Inject
-    public Stack1MemDao() {
+    public Stack1GuavaDao() {
         this.uowMultiMap = LinkedListMultimap.create();
         this.commandsMap = new HashMap<>();
     }
@@ -53,7 +53,7 @@ public class Stack1MemDao<K, E extends EventSourced> implements WriteModelDao<K,
         if (uowMultiMap.containsKey(targetId)) {
             final UnitOfWork last = uowMultiMap.get(targetId).stream().reduce((previous, current) -> current).get();
             if (unitOfWork.getVersion() != last.getVersion()+1) {
-                throw new ConcurrencyException("new version " + unitOfWork.getVersion() + " should be current version " + last.getVersion() + " +1 !");
+                throw new ConcurrencyException("new version " + unitOfWork.getVersion() + " should be current version [" + last.getVersion() + "] +1 !");
             }
         }
         uowMultiMap.put(targetId, unitOfWork);

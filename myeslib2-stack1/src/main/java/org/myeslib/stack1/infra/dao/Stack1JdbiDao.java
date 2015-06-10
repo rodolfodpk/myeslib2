@@ -10,6 +10,7 @@ import org.myeslib.infra.dao.config.DbMetadata;
 import org.myeslib.infra.dao.config.UowSerialization;
 import org.myeslib.infra.exceptions.CommandExecutionException;
 import org.myeslib.infra.exceptions.ConcurrencyException;
+import org.myeslib.stack1.infra.helpers.jdbi.ClobToStringMapper;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.StatementContext;
@@ -110,7 +111,7 @@ public class Stack1JdbiDao<K, E extends EventSourced> implements WriteModelDao<K
         checkNotNull(unitOfWork);
         checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
 
-        String insertUowSql = String.format("insert into %s (id, uow_data, version) values (:id, :uow_data, :version)", dbMetadata.unitOfWorkTable);
+        String insertUowSql = String.format("insert into %s (id, uow_data, version, inserted_on) values (:id, :uow_data, :version, CURRENT_TIMESTAMP)", dbMetadata.unitOfWorkTable);
         String insertCommandSql = String.format("insert into %s (id, cmd_data) values (:id, :cmd_data)", dbMetadata.commandTable);
 
         logger.debug(insertUowSql);

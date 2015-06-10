@@ -22,6 +22,7 @@ public class CommandsGsonFactory {
                         .registerSubtype(AutoValue_DecreaseInventory.class, DecreaseInventory.class.getSimpleName())
                         .registerSubtype(AutoValue_CreateInventoryItemThenIncreaseThenDecrease.class, CreateInventoryItemThenIncreaseThenDecrease.class.getSimpleName());
 
+
         this.gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT)
                 .registerTypeAdapterFactory(commandAdapter)
                 .registerTypeAdapterFactory(new AutoValueTypeAdapterFactory())

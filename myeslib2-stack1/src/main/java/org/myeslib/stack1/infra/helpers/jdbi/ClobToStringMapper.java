@@ -1,4 +1,4 @@
-package org.myeslib.stack1.infra.dao;
+package org.myeslib.stack1.infra.helpers.jdbi;
 
 import org.skife.jdbi.v2.util.TypedMapper;
 import org.slf4j.Logger;

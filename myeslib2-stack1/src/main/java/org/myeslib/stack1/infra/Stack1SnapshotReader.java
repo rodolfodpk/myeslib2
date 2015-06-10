@@ -57,9 +57,8 @@ public class Stack1SnapshotReader<K, E extends EventSourced> implements Snapshot
         final SnapshotData<E> lastSnapshot;
         final AtomicBoolean wasDaoCalled = new AtomicBoolean(false);
         try {
-            logger.info("id {} cache.get(id)", id);
             lastSnapshot = cache.get(id, () -> {
-                logger.info("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
+                logger.debug("id {} cache.get(id) does not contain anything for this id. Will have to search on dao", id);
                 wasDaoCalled.set(true);
                 return new SnapshotData<>(dao.getFull(id));
             });
@@ -67,21 +66,21 @@ public class Stack1SnapshotReader<K, E extends EventSourced> implements Snapshot
             throw new RuntimeException(e.getCause());
         }
 
-        logger.info("id {} wasDaoCalled ? {}", id, wasDaoCalled.get());
+        logger.debug("id {} wasDaoCalled ? {}", id, wasDaoCalled.get());
         if (wasDaoCalled.get()) {
             final E eventSourced = applyEventsFunction.apply(supplier.get(), flatMap(lastSnapshot.unitOfWorkList));
             return new Snapshot<>(injector.apply(eventSourced), lastVersion(lastSnapshot.unitOfWorkList));
         }
         final Long lastVersion = lastVersion(lastSnapshot.unitOfWorkList);
 
-        logger.info("id {} cached lastSnapshotData has version {}. will check if there any version beyond it", id, lastVersion);
+        logger.debug("id {} cached lastSnapshotData has version {}. will check if there any version beyond it", id, lastVersion);
         final List<UnitOfWork> partialTransactionHistory = dao.getPartial(id, lastVersion);
         if (partialTransactionHistory.isEmpty()) {
             final E eventSourced = applyEventsFunction.apply(supplier.get(), flatMap(lastSnapshot.unitOfWorkList));
             return new Snapshot<>(injector.apply(eventSourced), lastVersion);
         }
 
-        logger.info("id {} found {} pending transactions. Last version is now {}", id, partialTransactionHistory.size(), lastVersion);
+        logger.debug("id {} found {} pending transactions. Last version is now {}", id, partialTransactionHistory.size(), lastVersion);
         final List<UnitOfWork> newHistory = Stream.of(lastSnapshot.unitOfWorkList, partialTransactionHistory).flatMap(x -> x.stream()).collect(Collectors.toList());
         final Long newLastVersion = lastVersion(newHistory);
         cache.put(id, new SnapshotData<>(newHistory));

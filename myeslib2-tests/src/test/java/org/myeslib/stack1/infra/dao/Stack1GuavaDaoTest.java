@@ -19,11 +19,11 @@ import org.myeslib.infra.exceptions.ConcurrencyException;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1SnapshotReader;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
-import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemModule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.UUID;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class Stack1MemDaoTest {
+public class Stack1GuavaDaoTest {
 
     @Inject
     WriteModelDao<UUID, InventoryItem> dao;
@@ -41,10 +41,10 @@ public class Stack1MemDaoTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module()).with(new AbstractModule() {
+        injector = Guice.createInjector(Modules.override(new InventoryItemModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {}).to(new TypeLiteral<Stack1MemDao<UUID, InventoryItem>>() {}).asEagerSingleton();
+                bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {}).to(new TypeLiteral<Stack1GuavaDao<UUID, InventoryItem>>() {}).asEagerSingleton();
                 bind(new TypeLiteral<SnapshotReader<UUID, InventoryItem>>() {})
                         .to(new TypeLiteral<Stack1SnapshotReader<UUID, InventoryItem>>() {}).asEagerSingleton();
                 bind(new TypeLiteral<WriteModelJournal<UUID, InventoryItem>>() {})

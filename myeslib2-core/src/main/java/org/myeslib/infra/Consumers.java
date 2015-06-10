@@ -5,15 +5,22 @@ import org.myeslib.data.Command;
 import org.myeslib.data.EventMessage;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 public interface Consumers<E extends EventSourced> {
 
-    List<Consumer<List<EventMessage>>> eventMessageConsumers();
+    default List<Consumer<List<EventMessage>>> eventMessageConsumers() {
+        return Collections.emptyList();
+    }
 
-    List<Consumer<List<Command>>> commandsConsumers();
+    default List<Consumer<List<Command>>> commandsConsumers() {
+        return Collections.emptyList();
+    }
 
-    List<Consumer<CommandErrorMessage>> errorMessageConsumers();
+    default List<Consumer<CommandErrorMessage>> errorMessageConsumers() {
+        return Collections.emptyList();
+    }
 
 }

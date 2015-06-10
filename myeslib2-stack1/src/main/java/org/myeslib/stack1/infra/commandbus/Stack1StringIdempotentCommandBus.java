@@ -2,7 +2,6 @@ package org.myeslib.stack1.infra.commandbus;
 
 import org.myeslib.core.EventSourced;
 import org.myeslib.data.Command;
-import org.myeslib.data.CommandId;
 import org.myeslib.infra.Consumers;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.CommandSubscriber;
@@ -24,17 +23,17 @@ import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class IdempotentCommandBus<E extends EventSourced> implements CommandBus<E> {
+public class Stack1StringIdempotentCommandBus<E extends EventSourced> implements CommandBus<E> {
 
-    static final Logger logger = LoggerFactory.getLogger(IdempotentCommandBus.class);
+    static final Logger logger = LoggerFactory.getLogger(Stack1StringIdempotentCommandBus.class);
 
-    private final Map<CommandId, Boolean> idempotentMap;
+    private final Map<String, Boolean> idempotentMap;
     private final CommandSubscriber<E> commandSubscriber;
     private final Consumers<E> consumers;
     private final MultiMethod mm ;
 
     @Inject
-    public IdempotentCommandBus(Map<CommandId, Boolean> idempotentMap, CommandSubscriber<E> commandSubscriber, Consumers<E> consumers) {
+    public Stack1StringIdempotentCommandBus(Map<String, Boolean> idempotentMap, CommandSubscriber<E> commandSubscriber, Consumers<E> consumers) {
         this.idempotentMap = idempotentMap;
         this.commandSubscriber = commandSubscriber;
         this.consumers = consumers;
@@ -43,14 +42,14 @@ public class IdempotentCommandBus<E extends EventSourced> implements CommandBus<
 
     @Override
     public void post(Command command) {
-        if (idempotentMap.containsKey(command.getCommandId())) {
+        if (idempotentMap.containsKey(command.getCommandId().toString())) {
             logger.warn("Command {} ignored since it was already processed", command.getCommandId());
             return;
         }
         try {
             checkNotNull(command);
             mm.invoke(commandSubscriber, command);
-            idempotentMap.put(command.getCommandId(), true);
+            idempotentMap.put(command.getCommandId().toString(), true);
         } catch (Throwable t) {
             final CommandErrorMessage msg ;
             if (t instanceof ConcurrencyException) {

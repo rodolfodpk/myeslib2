@@ -39,8 +39,9 @@ public class Stack1Journal<K, E extends EventSourced> implements WriteModelJourn
         checkNotNull(unitOfWork);
         checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
         dao.append(targetId, command, unitOfWork);
-        List<EventMessage> eventMessages = unitOfWork.getEvents().stream()
-                    .map((event) -> new EventMessage(EventMessageId.create(), event)).collect(Collectors.toList());
+        final List<EventMessage> eventMessages = unitOfWork.getEvents().stream()
+                    .map((event) -> new EventMessage(EventMessageId.create(), event, targetId.toString(), unitOfWork.getVersion()))
+                    .collect(Collectors.toList());
         for (Consumer<List<EventMessage>> consumer : consumers.eventMessageConsumers()) {
             consumer.accept(eventMessages);
         }

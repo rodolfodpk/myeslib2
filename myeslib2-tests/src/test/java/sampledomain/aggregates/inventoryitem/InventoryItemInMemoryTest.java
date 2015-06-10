@@ -10,13 +10,14 @@ import org.myeslib.data.CommandId;
 import org.myeslib.infra.WriteModelDao;
 import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.stack1.infra.Stack1TestSupport;
-import org.myeslib.stack1.infra.dao.Stack1MemDao;
+import org.myeslib.stack1.infra.dao.Stack1GuavaDao;
 import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemModule;
 
 import java.util.UUID;
 
@@ -36,11 +37,11 @@ public class InventoryItemInMemoryTest extends Stack1TestSupport<UUID, Inventory
 
     @Before
     public void setup() {
-        injector = Guice.createInjector(new InventoryItemStack1Module(), new AbstractModule() {
+        injector = Guice.createInjector(new InventoryItemModule(), new AbstractModule() {
             @Override
             protected void configure() {
                 bind(new TypeLiteral<WriteModelDao<UUID, InventoryItem>>() {
-                }).to(new TypeLiteral<Stack1MemDao<UUID, InventoryItem>>() {
+                }).to(new TypeLiteral<Stack1GuavaDao<UUID, InventoryItem>>() {
                 }).asEagerSingleton();
             }
         });

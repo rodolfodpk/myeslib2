@@ -1,4 +1,4 @@
-package sampledomain.aggregates.inventoryitem;
+package sampledomain.aggregates.inventoryitem.modules;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -18,6 +18,9 @@ import org.myeslib.stack1.infra.Stack1InteractionContext;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1SnapshotReader;
 import org.myeslib.stack1.infra.commandbus.Stack1CommandBus;
+import sampledomain.aggregates.inventoryitem.InventoryItem;
+import sampledomain.aggregates.inventoryitem.InventoryItemCmdSubscriber;
+import sampledomain.aggregates.inventoryitem.InventoryItemConsumers;
 import sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
@@ -30,7 +33,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class InventoryItemStack1Module extends AbstractModule {
+public class InventoryItemModule extends AbstractModule {
 
     @Provides
     public Supplier<InventoryItem> supplier(SampleDomainService sampleDomainService) {

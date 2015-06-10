@@ -28,9 +28,7 @@ public class IncreaseHandler implements CommandHandler<IncreaseInventory> {
     public void handle(IncreaseInventory command) {
         final Snapshot<InventoryItem> snapshot = snapshotReader.getSnapshot(command.targetId());
         final InventoryItem aggregateRoot = snapshot.getAggregateInstance();
-
         aggregateRoot.increase(command.howMany());
-
         final UnitOfWork unitOfWork = UnitOfWork.create(UnitOfWorkId.create(), command.getCommandId(), snapshot.getVersion(), aggregateRoot.getEmittedEvents());
         journal.append(command.targetId(), command, unitOfWork);
     }

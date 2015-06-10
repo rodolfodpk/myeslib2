@@ -19,15 +19,15 @@ import org.myeslib.infra.dao.config.DbMetadata;
 import org.myeslib.infra.exceptions.ConcurrencyException;
 import org.myeslib.stack1.infra.Stack1Journal;
 import org.myeslib.stack1.infra.Stack1SnapshotReader;
-import org.myeslib.stack1.infra.helpers.DatabaseHelper;
-import sampledomain.aggregates.inventoryitem.InventoryGsonModule;
+import org.myeslib.stack1.infra.helpers.jdbi.DatabaseHelper;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
-import sampledomain.aggregates.inventoryitem.InventoryItemDbModule;
-import sampledomain.aggregates.inventoryitem.InventoryItemStack1Module;
 import sampledomain.aggregates.inventoryitem.commands.DecreaseInventory;
 import sampledomain.aggregates.inventoryitem.commands.IncreaseInventory;
 import sampledomain.aggregates.inventoryitem.events.InventoryDecreased;
 import sampledomain.aggregates.inventoryitem.events.InventoryIncreased;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemGsonModule;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemJdbiModule;
+import sampledomain.aggregates.inventoryitem.modules.InventoryItemModule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +45,7 @@ public class Stack1JdbiDaoTest {
 
     @BeforeClass
     public static void setup() throws Exception {
-        injector = Guice.createInjector(Modules.override(new InventoryItemStack1Module(), new InventoryGsonModule(), new InventoryItemDbModule()).with(new AbstractModule() {
+        injector = Guice.createInjector(Modules.override(new InventoryItemModule(), new InventoryItemGsonModule(), new InventoryItemJdbiModule()).with(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(new TypeLiteral<DbMetadata<InventoryItem>>() {}).toInstance(new DbMetadata<>("inventory_item"));

@@ -20,7 +20,6 @@ public class EventsGsonFactory {
                         .registerSubtype(AutoValue_InventoryIncreased.class, InventoryIncreased.class.getSimpleName())
                         .registerSubtype(AutoValue_InventoryDecreased.class, InventoryDecreased.class.getSimpleName());
 
-
         this.gson = new GsonBuilder().excludeFieldsWithModifiers(Modifier.TRANSIENT)
                 .registerTypeAdapterFactory(eventAdapter)
                 .registerTypeAdapterFactory(new AutoValueTypeAdapterFactory())

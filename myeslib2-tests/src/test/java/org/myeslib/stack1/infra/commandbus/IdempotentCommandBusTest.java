@@ -76,4 +76,5 @@ public class IdempotentCommandBusTest extends TestCase {
         MatcherAssert.assertThat(message.getCommand(), Is.is(command));
         assert(message.getDescription().get().contains("I got you !"));
     }
+
 }

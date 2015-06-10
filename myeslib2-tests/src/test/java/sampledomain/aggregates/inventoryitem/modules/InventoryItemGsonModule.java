@@ -1,4 +1,4 @@
-package sampledomain.aggregates.inventoryitem;
+package sampledomain.aggregates.inventoryitem.modules;
 
 import com.google.gson.Gson;
 import com.google.inject.AbstractModule;
@@ -7,13 +7,14 @@ import org.myeslib.data.Command;
 import org.myeslib.data.UnitOfWork;
 import org.myeslib.infra.dao.config.CmdSerialization;
 import org.myeslib.infra.dao.config.UowSerialization;
+import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.commands.CommandsGsonFactory;
 import sampledomain.aggregates.inventoryitem.events.EventsGsonFactory;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-public class InventoryGsonModule extends AbstractModule {
+public class InventoryItemGsonModule extends AbstractModule {
 
     @Provides
     @Singleton
