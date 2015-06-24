@@ -22,7 +22,6 @@ import sampledomain.aggregates.inventoryitem.events.InventoryItemCreated;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -35,14 +34,6 @@ public class Stack1JournalTest {
     WriteModelDao<UUID, InventoryItem> dao;
 
     @Mock
-    Consumer<List<EventMessage>> queryModelConsumer;
-
-    @Mock
-    Consumer<List<EventMessage>> sagaConsumer;
-
-    List<Consumer<List<EventMessage>>> consumerList ;
-
-    @Mock
     Consumers<InventoryItem> consumers;
 
     @Captor
@@ -50,8 +41,6 @@ public class Stack1JournalTest {
 
     @Before
     public void init() throws Exception {
-        consumerList = Arrays.asList(queryModelConsumer, sagaConsumer);
-        when(consumers.eventMessageConsumers()).thenReturn(consumerList);
     }
 
     @Test
@@ -88,11 +77,13 @@ public class Stack1JournalTest {
 
         store.append(id, command1, existingUow);
 
-        store.append(id, command2, newUow);
-
         verify(dao).append(id, command1, existingUow);
 
+        store.append(id, command2, newUow);
+
         verify(dao).append(id, command2, newUow);
+
+        //verifyNoMoreInteractions(dao, consumers);
 
     }
 
@@ -112,10 +103,11 @@ public class Stack1JournalTest {
 
         verify(dao).append(id, command, newUow);
 
-        verify(queryModelConsumer).accept(msgCaptor.capture());
-        verify(sagaConsumer).accept(msgCaptor.capture());
+        verify(consumers).consumeEvents(msgCaptor.capture());
 
         assertThat(msgCaptor.getValue().get(0).getEvent(), is(event));
+
+        verifyNoMoreInteractions(dao, consumers);
 
     }
 
@@ -135,8 +127,7 @@ public class Stack1JournalTest {
 
         verify(dao).append(command.targetId(), command, unitOfWork);
 
-        verify(queryModelConsumer, times(0)).accept(any());
-        verify(sagaConsumer, times(0)).accept(any());
+        verifyNoMoreInteractions(dao, consumers);
 
     }
 

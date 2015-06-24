@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -99,13 +98,9 @@ public class Stack1SagaInteractionContext<E extends EventSourced> implements Sag
 
     @Override
     public void processSideEffects() {
-
         if (!emittedCommands.isEmpty()) {
-            for (Consumer<List<Command>> consumer : consumers.commandsConsumers()) {
-                consumer.accept(emittedCommands);
-            }
+            consumers.consumeCommands(emittedCommands);
         }
-
     }
 
 }

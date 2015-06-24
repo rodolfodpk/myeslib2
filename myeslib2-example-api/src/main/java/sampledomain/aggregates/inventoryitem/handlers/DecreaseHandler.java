@@ -1,6 +1,5 @@
 package sampledomain.aggregates.inventoryitem.handlers;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.core.StatefulCommandHandler;
 import org.myeslib.data.Snapshot;
@@ -15,7 +14,6 @@ import javax.inject.Inject;
 import java.util.Optional;
 import java.util.UUID;
 
-@NotThreadSafe
 public class DecreaseHandler implements CommandHandler<DecreaseInventory>, StatefulCommandHandler {
 
     final WriteModelJournal<UUID, InventoryItem> journal;

@@ -1,11 +1,9 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
 
 import java.io.Serializable;
 import java.util.UUID;
 
-@Immutable
 public class UnitOfWorkId  implements Serializable {
 
     private final UUID uuid;

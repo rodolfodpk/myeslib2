@@ -1,6 +1,6 @@
 package sampledomain.aggregates.inventoryitem;
 
-import autovalue.shaded.com.google.common.common.collect.Lists;
+import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.inject.Guice;
@@ -18,7 +18,6 @@ import sampledomain.aggregates.inventoryitem.modules.InventoryItemGsonModule;
 import sampledomain.aggregates.inventoryitem.modules.InventoryItemJdbiModule;
 import sampledomain.aggregates.inventoryitem.modules.InventoryItemModule;
 
-import javax.inject.Named;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +31,6 @@ public class InventoryItemGsonTest {
     Injector injector;
 
     @Inject
-    @Named("events-json")
     Gson gson;
 
     @Before

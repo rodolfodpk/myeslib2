@@ -1,6 +1,5 @@
 package sampledomain.aggregates.inventoryitem.handlers;
 
-import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
@@ -13,7 +12,6 @@ import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItemThenInc
 import javax.inject.Inject;
 import java.util.UUID;
 
-@ThreadSafe
 public class CreateThenIncreaseThenDecreaseHandler implements CommandHandler<CreateInventoryItemThenIncreaseThenDecrease> {
 
     final WriteModelJournal<UUID, InventoryItem> journal;

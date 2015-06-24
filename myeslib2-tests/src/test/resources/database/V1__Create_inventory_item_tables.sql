@@ -33,7 +33,7 @@ create sequence seq_inventory_item_uow ;
 drop trigger if exists inventory_item_trigger ;
 
 create trigger inventory_item_trigger before insert on inventory_item_uow for each row
-	call "org.myeslib.stack1.infra.helpers.h2.InventoryItemOptimisticLockingTrigger" ;
+	call "org.myeslib.stack1.infra.dao.InventoryItemOptimisticLockingTrigger" ;
 
 drop table if exists inventory_item_cmd ;
 

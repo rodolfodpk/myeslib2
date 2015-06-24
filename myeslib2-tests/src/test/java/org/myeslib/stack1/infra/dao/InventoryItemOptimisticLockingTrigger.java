@@ -1,4 +1,4 @@
-package org.myeslib.stack1.infra.helpers.h2;
+package org.myeslib.stack1.infra.dao;
 
 import org.h2.api.Trigger;
 import org.skife.jdbi.v2.DBI;

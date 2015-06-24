@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.myeslib</groupId>
         <artifactId>myeslib2</artifactId>
-        <version>0.0.42-SNAPSHOT</version>
+        <version>0.0.47-SNAPSHOT</version>
     </parent>
 
     <artifactId>myeslib2-stack1</artifactId>
@@ -32,12 +32,13 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+
+        <!-- test -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
         </dependency>
-
-        <!-- test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

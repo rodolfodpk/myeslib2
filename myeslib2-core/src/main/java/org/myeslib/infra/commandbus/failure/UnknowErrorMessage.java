@@ -1,11 +1,9 @@
 package org.myeslib.infra.commandbus.failure;
 
-import net.jcip.annotations.Immutable;
 import org.myeslib.data.Command;
 
 import java.util.Optional;
 
-@Immutable
 public class UnknowErrorMessage implements CommandErrorMessage {
 
     private final CommandErrorMessageId id;

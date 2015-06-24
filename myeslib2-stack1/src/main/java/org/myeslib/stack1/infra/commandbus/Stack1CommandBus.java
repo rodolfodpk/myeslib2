@@ -18,7 +18,6 @@ import javax.inject.Inject;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -51,9 +50,7 @@ public class Stack1CommandBus<E extends EventSourced> implements CommandBus<E> {
                 msg = new UnknowErrorMessage(new CommandErrorMessageId(UUID.randomUUID()), command, getStackTrace(t));
             }
             logger.error("Detected an error [{}] for command [{}]. It will be notified", msg.getId(), command);
-            for (Consumer<CommandErrorMessage> commandErrorMessageConsumer : consumers.errorMessageConsumers()) {
-                commandErrorMessageConsumer.accept(msg);
-            }
+            consumers.consumeError(msg);
         }
     }
 

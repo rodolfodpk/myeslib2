@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -42,9 +41,7 @@ public class Stack1Journal<K, E extends EventSourced> implements WriteModelJourn
         final List<EventMessage> eventMessages = unitOfWork.getEvents().stream()
                     .map((event) -> new EventMessage(EventMessageId.create(), event, targetId.toString(), unitOfWork.getVersion()))
                     .collect(Collectors.toList());
-        for (Consumer<List<EventMessage>> consumer : consumers.eventMessageConsumers()) {
-            consumer.accept(eventMessages);
-        }
+        consumers.consumeEvents(eventMessages);
     }
 
 }

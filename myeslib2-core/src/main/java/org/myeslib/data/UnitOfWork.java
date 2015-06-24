@@ -1,27 +1,27 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
-
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
-@Immutable
 public class UnitOfWork implements Serializable, Comparable<UnitOfWork> {
 
     private final UnitOfWorkId id;
     private final CommandId commandId;
     private final Long version;
     private final List<? extends Event> events;
+    private final Date createdOn;
 
     UnitOfWork(UnitOfWorkId id, CommandId commandId, Long version, List<? extends Event> events) {
         this.id = id;
         this.commandId = commandId;
         this.version = version;
         this.events = events;
+        this.createdOn = new Date();
     }
 
     public static UnitOfWork create(UnitOfWorkId id, CommandId commandId, Long snapshotVersion, List<? extends Event> newEvents) {
@@ -64,6 +64,10 @@ public class UnitOfWork implements Serializable, Comparable<UnitOfWork> {
 
     public Long getVersion() {
         return version;
+    }
+
+    public Date getCreatedOn() {
+        return this.createdOn;
     }
 
     @Override

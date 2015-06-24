@@ -20,7 +20,6 @@ import org.myeslib.stack1.infra.Stack1SnapshotReader;
 import org.myeslib.stack1.infra.commandbus.Stack1CommandBus;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 import sampledomain.aggregates.inventoryitem.InventoryItemCmdSubscriber;
-import sampledomain.aggregates.inventoryitem.InventoryItemConsumers;
 import sampledomain.aggregates.inventoryitem.handlers.CreateInventoryItemHandler;
 import sampledomain.aggregates.inventoryitem.handlers.CreateThenIncreaseThenDecreaseHandler;
 import sampledomain.aggregates.inventoryitem.handlers.DecreaseHandler;
@@ -70,7 +69,7 @@ public class InventoryItemModule extends AbstractModule {
 
         // consumers
         bind(new TypeLiteral<Consumers<InventoryItem>>() {})
-                .toInstance(new InventoryItemConsumers());
+                .toInstance(new Consumers<>());
 
         // command handlers
         bind(CreateInventoryItemHandler.class).asEagerSingleton();

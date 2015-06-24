@@ -1,7 +1,9 @@
 package org.myeslib.stack1.infra;
 
 import org.myeslib.core.EventSourced;
-import org.myeslib.data.*;
+import org.myeslib.data.Command;
+import org.myeslib.data.CommandId;
+import org.myeslib.data.Event;
 import org.myeslib.infra.CommandScheduler;
 import org.myeslib.infra.Consumers;
 import org.myeslib.infra.SagaInteractionContext;
@@ -12,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -99,10 +100,8 @@ public class Stack1LazySagaInteractionContext<E extends EventSourced> implements
         }
 
         if (!emittedCommands.isEmpty()) {
-            for (Consumer<List<Command>> consumer : consumers.commandsConsumers()) {
-                log.debug("Calling back consumers of emitted commands for commandId = {}", getCommandId());
-                consumer.accept(emittedCommands);
-            }
+            log.debug("Calling back consumers of emitted commands for commandId = {}", getCommandId());
+            consumers.consumeCommands(emittedCommands);
         }
 
         for (CommandSchedule commandSchedule : commandSchedules) {

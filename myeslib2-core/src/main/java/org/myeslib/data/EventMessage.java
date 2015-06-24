@@ -1,13 +1,11 @@
 package org.myeslib.data;
 
-import net.jcip.annotations.Immutable;
 
 import java.io.Serializable;
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Immutable
 public class EventMessage implements Comparable<EventMessage>, Serializable {
 
     private final EventMessageId eventMessageId;

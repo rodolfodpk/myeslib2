@@ -111,7 +111,7 @@ public class Stack1JdbiDao<K, E extends EventSourced> implements WriteModelDao<K
         checkNotNull(unitOfWork);
         checkArgument(unitOfWork.getCommandId().equals(command.getCommandId()));
 
-        String insertUowSql = String.format("insert into %s (id, uow_data, version, inserted_on) values (:id, :uow_data, :version, CURRENT_TIMESTAMP)", dbMetadata.unitOfWorkTable);
+        String insertUowSql = String.format("insert into %s (id, uow_data, version, inserted_on) values (:id, :uow_data, :version, :inserted_on)", dbMetadata.unitOfWorkTable);
         String insertCommandSql = String.format("insert into %s (id, cmd_data) values (:id, :cmd_data)", dbMetadata.commandTable);
 
         logger.debug(insertUowSql);
@@ -124,6 +124,7 @@ public class Stack1JdbiDao<K, E extends EventSourced> implements WriteModelDao<K
                                 .bind("id", targetId.toString())
                                 .bind("uow_data", uowSer.toStringFunction.apply(unitOfWork))
                                 .bind("version", unitOfWork.getVersion())
+                                .bind("inserted_on", unitOfWork.getCreatedOn())
                                 .execute() ;
                         int result2 = conn.createStatement(insertCommandSql)
                                 .bind("id", command.getCommandId().toString())

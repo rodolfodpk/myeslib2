@@ -17,19 +17,15 @@ import org.myeslib.infra.commandbus.CommandBus;
 import org.myeslib.infra.commandbus.failure.CommandErrorMessage;
 import sampledomain.aggregates.inventoryitem.InventoryItem;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class IdempotentCommandBusTest extends TestCase {
 
     @Mock
     Consumers<InventoryItem> consumers;
-    @Mock
-    Consumer<CommandErrorMessage> errorConsumers;
     @Mock
     TestCommandSubscriber<InventoryItem> commandSubscriber;
     @Captor
@@ -41,7 +37,6 @@ public class IdempotentCommandBusTest extends TestCase {
     @Before
     public void before() {
         idempotentMap = new HashMap<>();
-        Mockito.when(consumers.errorMessageConsumers()).thenReturn(Arrays.asList(errorConsumers));
         commandBus = new IdempotentCommandBus<>(idempotentMap, commandSubscriber, consumers);
     }
 
@@ -70,7 +65,7 @@ public class IdempotentCommandBusTest extends TestCase {
         TestCommand command = new TestCommand(new CommandId(UUID.randomUUID()));
         Mockito.doThrow(new IllegalStateException("I got you !")).when(commandSubscriber).on(command);
         commandBus.post(command);
-        Mockito.verify(errorConsumers).accept(captor.capture());
+        Mockito.verify(consumers).consumeError(captor.capture());
         Mockito.verify(commandSubscriber).on(command);
         CommandErrorMessage message = captor.getValue();
         MatcherAssert.assertThat(message.getCommand(), Is.is(command));

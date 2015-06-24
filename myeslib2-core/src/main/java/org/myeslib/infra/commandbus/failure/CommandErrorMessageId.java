@@ -1,10 +1,8 @@
 package org.myeslib.infra.commandbus.failure;
 
-import net.jcip.annotations.Immutable;
 
 import java.util.UUID;
 
-@Immutable
 public class CommandErrorMessageId {
 
     private final UUID uuid;

@@ -1,13 +1,13 @@
 package sampledomain.aggregates.inventoryitem.events;
 
-import com.google.auto.value.AutoValue;
+import org.immutables.value.Value;
 import org.myeslib.data.Event;
 
-@AutoValue
+@Value.Immutable
+@Value.Style(strictBuilder = true)
 public abstract class InventoryIncreased implements Event {
-    InventoryIncreased() {}
     public abstract Integer howMany();
     public static InventoryIncreased create(Integer howMany) {
-        return new AutoValue_InventoryIncreased(howMany);
+        return ImmutableInventoryIncreased.builder().howMany(howMany).build();
     }
 }

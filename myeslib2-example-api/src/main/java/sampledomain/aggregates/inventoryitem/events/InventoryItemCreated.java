@@ -1,16 +1,16 @@
 package sampledomain.aggregates.inventoryitem.events;
 
-import com.google.auto.value.AutoValue;
+import org.immutables.value.Value;
 import org.myeslib.data.Event;
 
 import java.util.UUID;
 
-@AutoValue
+@Value.Immutable
+@Value.Style(strictBuilder = true)
 public abstract class InventoryItemCreated implements Event {
-    InventoryItemCreated() {}
     public abstract UUID id();
     public abstract String description();
     public static InventoryItemCreated create(UUID id, String description) {
-        return new AutoValue_InventoryItemCreated(id, description);
+        return ImmutableInventoryItemCreated.builder().id(id).description(description).build();
     }
 }

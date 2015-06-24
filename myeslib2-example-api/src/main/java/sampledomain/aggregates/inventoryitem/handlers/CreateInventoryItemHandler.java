@@ -1,6 +1,5 @@
 package sampledomain.aggregates.inventoryitem.handlers;
 
-import net.jcip.annotations.ThreadSafe;
 import org.myeslib.core.CommandHandler;
 import org.myeslib.data.Snapshot;
 import org.myeslib.data.UnitOfWork;
@@ -13,7 +12,6 @@ import sampledomain.aggregates.inventoryitem.commands.CreateInventoryItem;
 import javax.inject.Inject;
 import java.util.UUID;
 
-@ThreadSafe
 public class CreateInventoryItemHandler implements CommandHandler<CreateInventoryItem> {
 
     final WriteModelJournal<UUID, InventoryItem> journal;

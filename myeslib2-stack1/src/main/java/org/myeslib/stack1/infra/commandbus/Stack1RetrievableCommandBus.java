@@ -42,6 +42,12 @@ public class Stack1RetrievableCommandBus<E extends EventSourced> implements Comm
         } catch (Throwable t) {
             if (t instanceof ConcurrencyException) {
                 throw ((ConcurrencyException) t);
+            } else if (t instanceof IllegalArgumentException) {
+                throw ((IllegalArgumentException) t);
+            } else if (t instanceof IllegalStateException) {
+                throw ((IllegalStateException) t);
+            } else if (t instanceof NullPointerException) {
+                throw ((NullPointerException) t);
             } else {
                 throw new RuntimeException(t);
             }
